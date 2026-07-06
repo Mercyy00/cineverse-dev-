@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CineVerse — Premium Cinematic Experience</title>
+<meta name="description" content="CineVerse — Watch free movies and TV shows in HD. Hollywood, Bollywood, Anime, K-Drama and more."/>
+<link rel="icon" type="image/png" href="icon/favicon.png"/>
+<link rel="apple-touch-icon" href="icon/favicon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body class="dark-theme">
+
+<!-- LOADING SPLASH -->
+<div id="loadingSplash">
+  <div class="splash-logo">Cine<span>Verse</span></div>
+  <div class="splash-rings"></div>
+  <div style="color:var(--muted);font-size:.85rem;">Loading your cinematic experience...</div>
+  <div class="splash-bar"><div class="splash-bar-fill" id="splashFill"></div></div>
+</div>
+
+<!-- PROFILE SCREEN -->
+<div id="profileScreen">
+  <div class="profile-logo">Cine<span>Verse</span></div>
+  <div class="profile-title">Who's Watching? 🍿</div>
+  <div class="profile-subtitle">Select your profile to continue</div>
+  <div class="profiles-grid" id="profilesGrid"></div>
+  <button onclick="openAddProfileModal()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;font-weight:600;margin-top:8px;">+ Add New Profile</button>
+</div>
+
+<!-- ADD PROFILE MODAL -->
+<div id="addProfileModal">
+  <div class="add-profile-box" style="position:relative;">
+    <div class="modal-close-btn" onclick="closeAddProfileModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </div>
+    <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;margin-bottom:20px;">Add New Profile</div>
+    <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px;">Choose an avatar</div>
+    <div class="avatar-picker" id="avatarPicker">
+      <div class="avatar-option selected" data-emoji="🍿" onclick="selectAvatar(this)">🍿</div>
+      <div class="avatar-option" data-emoji="⚡" onclick="selectAvatar(this)">⚡</div>
+      <div class="avatar-option" data-emoji="⛩️" onclick="selectAvatar(this)">⛩️</div>
+      <div class="avatar-option" data-emoji="🦁" onclick="selectAvatar(this)">🦁</div>
+      <div class="avatar-option" data-emoji="🚀" onclick="selectAvatar(this)">🚀</div>
+      <div class="avatar-option" data-emoji="🎬" onclick="selectAvatar(this)">🎬</div>
+    </div>
+    <input id="newProfileName" class="auth-input" placeholder="Profile name (max 16 chars)" maxlength="16" style="margin-bottom:12px;width:100%;"/>
+    <label class="kids-toggle" onclick="toggleKidsMode()">
+      <div class="toggle-switch" id="kidsToggle"><div class="toggle-knob"></div></div>
+      <span style="font-size:.85rem;font-weight:600;">Kids Mode</span>
+    </label>
+    <button onclick="saveNewProfile()" class="auth-submit" style="margin-top:16px;width:100%;">Create Profile</button>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <div class="play-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+    </div>
+    Cine<span class="accent">Stream</span>
+  </a>
+  <div class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" onclick="scrollToSection('hero','Home')">Home</button>
+    <button class="nav-tab" onclick="scrollToSection('hollywoodSection','Hollywood')">Hollywood</button>
+    <button class="nav-tab" onclick="scrollToSection('bollywoodSection','Bollywood')">Bollywood</button>
+    <button class="nav-tab" onclick="scrollToSection('animeSection','Anime')">Anime</button>
+    <button class="nav-tab" onclick="scrollToSection('kdramaSection','K-Drama')">K-Drama</button>
+    <button class="nav-tab" onclick="scrollToSection('tvSection','TV Shows')">TV Shows</button>
+    <button class="nav-tab" onclick="scrollToSection('watchlistSection','My List')">My List</button>
+  </div>
+  <div class="nav-right">
+    <div class="nav-search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search movies..." autocomplete="off" oninput="handleSearch(this.value)" onkeydown="handleSearchKey(event)"/>
+      <span class="kbd-badge">⌘K</span>
+      <span class="search-clear" id="searchClear" onclick="clearSearch()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </span>
+      <div class="search-dropdown" id="searchDropdown"></div>
+    </div>
+    <button class="random-btn" onclick="openSurpriseSpinner()" title="Surprise Me!">
+      🎲 <span class="hide-sm">Surprise</span>
+    </button>
+    <div style="position:relative;">
+      <button class="btn-theme" onclick="toggleThemeDropdown()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        <span class="hide-sm">Theme</span>
+      </button>
+      <div class="theme-dropdown" id="themeDropdown">
+        <div class="theme-dropdown-title">Accent Theme</div>
+        <div class="theme-swatches">
+          <div class="theme-swatch active" id="sw-crimson" onclick="setTheme('crimson')"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
+          <div class="theme-swatch" id="sw-cyan" onclick="setTheme('cyan')"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
+          <div class="theme-swatch" id="sw-gold" onclick="setTheme('gold')"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
+          <div class="theme-swatch" id="sw-purple" onclick="setTheme('purple')"><div class="swatch-circle" style="background:#A855F7;"></div>Purple</div>
+        </div>
+        <div class="theme-divider"></div>
+        <button class="mode-toggle-btn" id="modeToggleBtn" onclick="toggleMode()">
+          <svg id="modeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          Light Mode
+        </button>
+      </div>
+    </div>
+    <button class="profile-btn" id="profileBtn" onclick="handleProfileClick()">
+      <div class="profile-btn-avatar" id="profileBtnAvatar">🍿</div>
+      <span id="profileBtnName">Profile</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
+    </button>
+    <button class="btn-signin" id="authBtn" onclick="handleAuthClick()">Sign In</button>
+  </div>
+</nav>
+
+<!-- TICKER BAR -->
+<div id="tickerBar">
+  <div class="ticker-inner" id="tickerInner">
+    <span class="ticker-item">🔥 <strong>Trending Now:</strong> Loading...</span>
+    <span class="ticker-item">🔥 <strong>Trending Now:</strong> Loading...</span>
+  </div>
+</div>
+
+<!-- HERO SECTION -->
+<section id="hero">
+  <div class="hero-bg" id="heroBg">
+    <img id="heroImg" src="" alt="" onerror="this.src='https://images.pexels.com/photos/1790556/pexels-photo-1790556.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200'"/>
+  </div>
+  <div class="hero-gradient"></div>
+  <div class="hero-content" id="heroContent">
+    <div class="hero-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      #1 Featured Today
+    </div>
+    <div class="hero-title skeleton" id="heroTitle" style="height:60px;border-radius:8px;width:80%;"></div>
+    <div class="hero-meta" id="heroMeta"></div>
+    <div class="hero-overview skeleton" id="heroOverview" style="height:80px;border-radius:8px;"></div>
+    <div class="hero-btns" id="heroBtns" style="opacity:0;"></div>
+  </div>
+  <div class="hero-rating-card" id="heroRatingCard" style="opacity:0;">
+    <div class="rating-ring" id="heroRating">--</div>
+    <div class="rating-label">★ IMDb Score</div>
+    <div style="margin-top:10px;font-size:.75rem;color:var(--muted);" id="heroVotes"></div>
+  </div>
+  <button class="hero-arrow left" onclick="prevHero()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+  </button>
+  <button class="hero-arrow right" onclick="nextHero()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+  </button>
+  <div class="hero-dots" id="heroDots"></div>
+</section>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(0.16,1,0.3,1);">
+
+<!-- MOOD SECTION -->
+<div id="moodSection">
+  <div class="section-title" style="padding:30px 5% 0;font-family:var(--font-heading);font-size:1.3rem;font-weight:800;">🎭 What's Your Mood Tonight?</div>
+  <div class="mood-grid" style="padding:0 5%;">
+    <button class="mood-btn" onclick="filterByMood('happy')"><span class="mood-emoji">😂</span>Fun & Laughs</button>
+    <button class="mood-btn" onclick="filterByMood('scary')"><span class="mood-emoji">😱</span>Thrills</button>
+    <button class="mood-btn" onclick="filterByMood('romantic')"><span class="mood-emoji">💕</span>Romance</button>
+    <button class="mood-btn" onclick="filterByMood('action')"><span class="mood-emoji">💥</span>Action</button>
+    <button class="mood-btn" onclick="filterByMood('thoughtful')"><span class="mood-emoji">🤔</span>Thoughtful</button>
+    <button class="mood-btn" onclick="filterByMood('adventure')"><span class="mood-emoji">🌍</span>Adventure</button>
+  </div>
+</div>
+
+<!-- MOOD RESULTS -->
+<div id="moodResultsSection">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title" id="moodResultsTitle">🎭 Based on Your Mood</div>
+      <button onclick="clearMood()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.82rem;">Clear ✕</button>
+    </div>
+    <div class="slider-wrap"><div class="slider-track" id="moodResultsTrack"></div></div>
+  </div>
+</div>
+
+<!-- CONTINUE WATCHING -->
+<div id="continueSection">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">▶ Continue Watching</div>
+    </div>
+    <div class="slider-wrap">
+      <button class="slider-arrow left" onclick="scrollSlider('continueTrack',-1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+      </button>
+      <div class="slider-track" id="continueTrack"></div>
+      <button class="slider-arrow right" onclick="scrollSlider('continueTrack',1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- BRAND HUBS -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+      Brand Hubs
+    </div>
+  </div>
+  <div class="brand-hubs-grid">
+    <div class="brand-hub-card hub-disney" onclick="loadBrandHub('Disney',2)">🏰 Disney</div>
+    <div class="brand-hub-card hub-marvel" onclick="loadBrandHub('Marvel',420)">⚡ Marvel</div>
+    <div class="brand-hub-card hub-star-wars" onclick="loadBrandHub('Star Wars',1)">⭐ Star Wars</div>
+    <div class="brand-hub-card hub-pixar" onclick="loadBrandHub('Pixar',3)">🎨 Pixar</div>
+    <div class="brand-hub-card hub-dc" onclick="loadBrandHub('DC Studios',9993)">🦇 DC</div>
+    <div class="brand-hub-card hub-originals" onclick="loadBrandHub('Originals',4171)" style="background:linear-gradient(135deg,var(--accent2),var(--accent));">✨ Originals</div>
+  </div>
+</div>
+
+<!-- QUOTE BANNER -->
+<div class="quote-banner" id="quoteBanner">
+  <div class="quote-text" id="quoteText">"Loading a cinematic quote..."</div>
+  <div class="quote-movie" id="quoteMovie">— CineStream</div>
+</div>
+
+<!-- TOP 10 TRENDING -->
+<div class="section" id="trendingSection">
+  <div class="section-header">
+    <div class="section-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      🔥 Top 10 Trending This Week
+    </div>
+  </div>
+  <div class="slider-wrap">
+    <button class="slider-arrow left" onclick="scrollSlider('top10Track',-1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="slider-track" id="top10Track"></div>
+    <button class="slider-arrow right" onclick="scrollSlider('top10Track',1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ANIME SECTION -->
+<div class="section" id="animeSection">
+  <div class="section-header">
+    <div class="section-title">⭐ Popular Anime & Dubbed Series</div>
+  </div>
+  <div class="slider-wrap">
+    <button class="slider-arrow left" onclick="scrollSlider('animeTrack',-1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="slider-track" id="animeTrack"></div>
+    <button class="slider-arrow right" onclick="scrollSlider('animeTrack',1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- K-DRAMA SECTION -->
+<div class="section" id="kdramaSection">
+  <div class="section-header">
+    <div class="section-title">🌏 Top Korean Dramas</div>
+  </div>
+  <div class="slider-wrap">
+    <button class="slider-arrow left" onclick="scrollSlider('kdramaTrack',-1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="slider-track" id="kdramaTrack"></div>
+    <button class="slider-arrow right" onclick="scrollSlider('kdramaTrack',1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- HOLLYWOOD SECTION -->
+<div class="section" id="hollywoodSection">
+  <div class="section-header">
+    <div class="section-title">🌐 Hollywood Blockbusters</div>
+  </div>
+  <div class="slider-wrap">
+    <button class="slider-arrow left" onclick="scrollSlider('hollywoodTrack',-1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="slider-track" id="hollywoodTrack"></div>
+    <button class="slider-arrow right" onclick="scrollSlider('hollywoodTrack',1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- BOLLYWOOD SECTION -->
+<div class="section" id="bollywoodSection">
+  <div class="section-header">
+    <div class="section-title">✨ Bollywood & Hotstar Hits</div>
+  </div>
+  <div class="slider-wrap">
+    <button class="slider-arrow left" onclick="scrollSlider('bollywoodTrack',-1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="slider-track" id="bollywoodTrack"></div>
+    <button class="slider-arrow right" onclick="scrollSlider('bollywoodTrack',1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- TV SHOWS SECTION -->
+<div class="section" id="tvSection">
+  <div class="section-header">
+    <div class="section-title">📺 Popular TV Shows</div>
+  </div>
+  <div class="slider-wrap">
+    <button class="slider-arrow left" onclick="scrollSlider('tvTrack',-1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="slider-track" id="tvTrack"></div>
+    <button class="slider-arrow right" onclick="scrollSlider('tvTrack',1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- WATCHLIST SECTION -->
+<div class="section" id="watchlistSection">
+  <div class="section-header">
+    <div class="section-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--accent)" stroke="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      📋 My Watchlist
+    </div>
+  </div>
+  <div class="slider-wrap">
+    <button class="slider-arrow left" onclick="scrollSlider('watchlistTrack',-1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div class="slider-track" id="watchlistTrack"></div>
+    <button class="slider-arrow right" onclick="scrollSlider('watchlistTrack',1)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- POPULAR GRID -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-title">🎬 Popular Collection</div>
+    <select class="sort-select" id="sortSelect" onchange="sortPopular()">
+      <option value="popular">Most Popular</option>
+      <option value="top_rated">Top Rated</option>
+      <option value="latest">Latest Release</option>
+    </select>
+  </div>
+  <div class="sort-bar">
+    <div class="genre-chips" id="genreChips"></div>
+  </div>
+  <div class="popular-grid" id="popularGrid"></div>
+  <button class="load-more-btn" id="loadMoreBtn" onclick="loadMorePopular()">Load More Content ↓</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Cine<span>Stream</span></div>
+      <div class="footer-desc">Your ultimate destination for free movie & TV streaming. Hollywood, Bollywood, Anime, K-Drama and more.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">Browse</div>
+      <a class="footer-link" href="#">Movies</a>
+      <a class="footer-link" href="#">TV Series</a>
+      <a class="footer-link" href="#">Anime</a>
+      <a class="footer-link" href="#">K-Drama</a>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <a class="footer-link" href="#">About Us</a>
+      <a class="footer-link" href="#">Contact</a>
+      <a class="footer-link" href="#">Privacy Policy</a>
+      <a class="footer-link" href="#">Terms of Service</a>
+    </div>
+    <div>
+      <div class="footer-col-title">Legal</div>
+      <div class="footer-desc" style="font-size:.75rem;">This site does not store any files on its server. Content is sourced from third-party providers via embedded players.</div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 CineStream. Built with ❤️ for cinema lovers.</span>
+    <span>Powered by TMDB API</span>
+  </div>
+</footer>
+
+</div><!-- end mainApp -->
+
+<!-- MOVIE DETAIL TRAY -->
+<div id="trayOverlay" onclick="closeTrayIfBackdrop(event)">
+  <div id="detailTray">
+    <div class="tray-backdrop" id="trayBackdrop">
+      <img id="trayBackdropImg" src="" alt=""/>
+      <div class="tray-backdrop-gradient"></div>
+      <div class="tray-backdrop-title">
+        <h2 id="trayTitle"></h2>
+        <div class="tray-badges" id="trayBadges"></div>
+      </div>
+      <button class="tray-close" onclick="closeTray()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="tray-body">
+      <div class="tray-meta" id="trayMeta"></div>
+      <div class="genre-pills" id="trayGenres"></div>
+      <div id="trayResumePrompt" class="resume-prompt" style="display:none;">
+        <div class="resume-text">
+          <strong>Continue watching?</strong><br/>
+          <span id="resumeText">You were at --</span>
+        </div>
+        <div class="resume-btns">
+          <button class="btn-sm accent" onclick="resumePlayback()">Resume</button>
+          <button class="btn-sm ghost" onclick="startOverPlayback()">Start Over</button>
+        </div>
+      </div>
+      <div class="tray-actions">
+        <button class="tray-play-btn" id="trayPlayBtn" onclick="playCurrentMovie()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+          Play Stream Now
+        </button>
+        <button class="tray-secondary-btn" id="trayTrailerBtn" onclick="openTrailer()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          Trailer
+        </button>
+        <button class="tray-secondary-btn" id="trayEpisodesBtn" style="display:none;" onclick="openTVSeries()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17,2 12,7 7,2"/></svg>
+          Seasons & Episodes
+        </button>
+        <button class="tray-secondary-btn" id="trayWatchlistBtn" onclick="toggleTrayWatchlist()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span id="trayWatchlistText">Add to My List</span>
+        </button>
+        <button class="tray-secondary-btn" onclick="shareMovie()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+      </div>
+      <div class="tray-section-title">📖 Storyline & Overview</div>
+      <div class="overview-text" id="trayOverview"></div>
+      <div class="tray-section-title">🎭 Top Cast & Starring</div>
+      <div class="cast-track" id="trayCastTrack"></div>
+      <div class="tray-section-title">🎬 More Like This</div>
+      <div class="slider-wrap" style="position:relative;">
+        <button class="slider-arrow left" onclick="scrollSlider('trayRecsTrack',-1)" title="Scroll Left">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <div class="slider-track" id="trayRecsTrack" style="padding-bottom:8px;"></div>
+        <button class="slider-arrow right" onclick="scrollSlider('trayRecsTrack',1)" title="Scroll Right">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+        </button>
+      </div>
+      <!-- REVIEWS -->
+      <div class="reviews-section">
+        <div class="tray-section-title">⭐ Community Reviews</div>
+        <div class="review-form">
+          <div class="star-selector" id="reviewStars">
+            <span class="star-btn active" data-star="1" onclick="setReviewStar(1)">★</span>
+            <span class="star-btn" data-star="2" onclick="setReviewStar(2)">★</span>
+            <span class="star-btn" data-star="3" onclick="setReviewStar(3)">★</span>
+            <span class="star-btn" data-star="4" onclick="setReviewStar(4)">★</span>
+            <span class="star-btn" data-star="5" onclick="setReviewStar(5)">★</span>
+          </div>
+          <textarea class="review-input" id="reviewInput" placeholder="Share your thoughts about this film..." maxlength="500" oninput="updateCharCount()"></textarea>
+          <div class="char-count"><span id="charCount">0</span>/500</div>
+          <button onclick="postReview()" class="btn-sm accent" style="margin-top:8px;">Post Review</button>
+        </div>
+        <div id="reviewsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TV SERIES OVERLAY -->
+<div id="tvSeriesOverlay">
+  <button class="tv-back-btn" onclick="closeTVSeries()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    Back to Browse
+  </button>
+  <div class="tv-hero" id="tvHero">
+    <div class="tv-hero-bg"><img id="tvHeroBg" src="" alt=""/></div>
+    <div class="tv-hero-gradient"></div>
+    <div class="tv-hero-content" id="tvHeroContent">
+      <div id="tvBadges"></div>
+      <div class="tv-hero-title" id="tvTitle"></div>
+      <div class="tv-hero-meta" id="tvMeta"></div>
+      <div class="genre-pills" id="tvGenres" style="margin-bottom:14px;"></div>
+      <div class="tv-hero-overview" id="tvOverview"></div>
+      <div class="hero-btns">
+        <button class="btn-play" onclick="playTVEpisode(1,1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+          Play S1 : E1
+        </button>
+        <button class="btn-list" id="tvWatchlistBtn" onclick="toggleTVWatchlist()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          <span id="tvWatchlistText">Add to My List</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="tv-episodes-section">
+    <select class="season-select" id="seasonSelect" onchange="loadSeason(this.value)">
+      <option value="1">Season 1</option>
+    </select>
+    <div class="episodes-grid" id="episodesGrid"></div>
+  </div>
+</div>
+
+<!-- SEE ALL OVERLAY -->
+<div id="seeAllOverlay">
+  <div class="see-all-header">
+    <button onclick="closeSeeAll()" style="background:transparent;border:none;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:600;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <h2 id="seeAllTitle" style="font-family:var(--font-heading);font-weight:800;font-size:1.3rem;"></h2>
+  </div>
+  <div class="see-all-grid" id="seeAllGrid"></div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" onclick="closeAuthIfBackdrop(event)">
+  <div class="auth-box" style="position:relative;">
+    <div class="modal-close-btn" onclick="closeAuthModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </div>
+    <div style="font-family:var(--font-heading);font-size:1.6rem;font-weight:900;margin-bottom:20px;text-align:center;">Welcome to <span style="color:var(--accent);">CineStream</span></div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="signinTab" onclick="switchAuthTab('signin')">Sign In</button>
+      <button class="auth-tab" id="signupTab" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+    <div id="signinForm" class="auth-form">
+      <input class="auth-input" id="signinEmail" type="email" placeholder="Email address"/>
+      <input class="auth-input" id="signinPassword" type="password" placeholder="Password"/>
+      <button class="auth-submit" onclick="handleSignIn()">Sign In</button>
+      <div class="social-divider">— or continue with —</div>
+      <div class="social-btns">
+        <button class="social-btn" onclick="socialLogin('Google')">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+        <button class="social-btn" onclick="socialLogin('Apple')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
+          Apple
+        </button>
+        <button class="social-btn" onclick="socialLogin('GitHub')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          GitHub
+        </button>
+      </div>
+    </div>
+    <div id="signupForm" class="auth-form" style="display:none;">
+      <input class="auth-input" id="signupName" type="text" placeholder="Full name"/>
+      <input class="auth-input" id="signupEmail" type="email" placeholder="Email address"/>
+      <input class="auth-input" id="signupPassword" type="password" placeholder="Create password"/>
+      <button class="auth-submit" onclick="handleSignUp()">Create Account</button>
+      <div class="social-divider">— or sign up with —</div>
+      <div class="social-btns">
+        <button class="social-btn" onclick="socialLogin('Google')">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+        <button class="social-btn" onclick="socialLogin('GitHub')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          GitHub
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT MODAL -->
+<div id="accountModal" onclick="closeAccountIfBackdrop(event)">
+  <div class="account-box" style="position:relative;">
+    <div class="modal-close-btn" onclick="closeAccountModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </div>
+    <div class="account-avatar" id="accountAvatar">🍿</div>
+    <div class="account-name" id="accountName">—</div>
+    <div class="account-email" id="accountEmail">—</div>
+    <div class="vip-badge">✨ VIP Premium Streamer</div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-num" id="statWatched">0</div><div class="stat-label">Watched</div></div>
+      <div class="stat-item"><div class="stat-num" id="statWatchlist">0</div><div class="stat-label">My List</div></div>
+      <div class="stat-item"><div class="stat-num" id="statReviews">0</div><div class="stat-label">Reviews</div></div>
+    </div>
+    <div class="account-btns">
+      <button class="btn-sm accent" onclick="openAchievements()">🏆 Achievements</button>
+      <button class="btn-sm ghost" onclick="switchProfile()">Switch Profile</button>
+      <button class="btn-sm ghost" onclick="signOut()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS MODAL -->
+<div id="achievementsModal" onclick="closeAchievementsIfBackdrop(event)">
+  <div class="achievements-box" style="position:relative;">
+    <div class="modal-close-btn" onclick="closeAchievements()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </div>
+    <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;">🏆 Achievement Badges</div>
+    <div style="font-size:.82rem;color:var(--muted);margin-top:6px;">Earn badges by watching and reviewing films</div>
+    <div class="achievement-grid" id="achievementGrid"></div>
+  </div>
+</div>
+
+<!-- TRAILER MODAL -->
+<div id="trailerModal" onclick="closeTrailerIfBackdrop(event)">
+  <div class="trailer-box" style="position:relative;">
+    <div class="trailer-header">
+      <div class="trailer-title" id="trailerTitle">Official Trailer</div>
+      <button onclick="closeTrailer()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="trailer-frame-wrap" id="trailerFrameWrap"></div>
+  </div>
+</div>
+
+<!-- ACTOR MODAL -->
+<div id="actorModal" onclick="closeActorIfBackdrop(event)">
+  <div class="actor-box" style="position:relative;">
+    <div class="modal-close-btn" onclick="closeActor()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </div>
+    <div class="actor-hero">
+      <img class="actor-photo" id="actorPhoto" src="" alt=""/>
+      <div>
+        <div class="account-name" id="actorName" style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;"></div>
+        <div class="account-email" id="actorKnownFor" style="margin-top:4px;font-size:.8rem;color:var(--muted);"></div>
+        <div id="actorBirthday" style="font-size:.78rem;color:var(--muted);margin-top:4px;"></div>
+      </div>
+    </div>
+    <div class="actor-bio" id="actorBio"></div>
+    <div class="actor-films">
+      <div class="actor-films-title">Known For</div>
+      <div class="actor-films-grid" id="actorFilmsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHORTCUTS PANEL -->
+<div id="shortcutsPanel" onclick="closeShortcuts()">
+  <div class="shortcuts-box" onclick="event.stopPropagation()">
+    <div class="shortcuts-title">⌨️ Keyboard Shortcuts</div>
+    <div class="shortcut-row"><span class="shortcut-desc">Focus Search</span><kbd class="shortcut-key">Ctrl + K</kbd></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Show Shortcuts</span><kbd class="shortcut-key">?</kbd></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Random Movie</span><kbd class="shortcut-key">R</kbd></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Close Modal</span><kbd class="shortcut-key">Esc</kbd></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Next Hero</span><kbd class="shortcut-key">→</kbd></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Prev Hero</span><kbd class="shortcut-key">←</kbd></div>
+    <div class="shortcut-row"><span class="shortcut-desc">Toggle Theme</span><kbd class="shortcut-key">D</kbd></div>
+    <div style="margin-top:16px;text-align:center;">
+      <button class="btn-sm ghost" onclick="closeShortcuts()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SURPRISE SPINNER -->
+<div id="spinnerModal" onclick="closeSpinnerIfBackdrop(event)">
+  <div class="spinner-box" style="position:relative;">
+    <div class="modal-close-btn" onclick="closeSpinner()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </div>
+    <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;margin-bottom:8px;">🎲 Surprise Me!</div>
+    <div style="font-size:.85rem;color:var(--muted);margin-bottom:20px;">Spin to discover a random movie</div>
+    <div class="spinner-wheel" id="spinnerWheel">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <defs>
+          <clipPath id="circleClip"><circle cx="100" cy="100" r="98"/></clipPath>
+        </defs>
+        <g clip-path="url(#circleClip)">
+          <path d="M100,100 L100,2 A98,98 0 0,1 191,51 Z" fill="#E50914"/>
+          <path d="M100,100 L191,51 A98,98 0 0,1 191,149 Z" fill="#00D2D3"/>
+          <path d="M100,100 L191,149 A98,98 0 0,1 100,198 Z" fill="#A855F7"/>
+          <path d="M100,100 L100,198 A98,98 0 0,1 9,149 Z" fill="#FFB800"/>
+          <path d="M100,100 L9,149 A98,98 0 0,1 9,51 Z" fill="#E50914" opacity="0.7"/>
+          <path d="M100,100 L9,51 A98,98 0 0,1 100,2 Z" fill="#00D2D3" opacity="0.7"/>
+        </g>
+        <circle cx="100" cy="100" r="98" fill="none" stroke="var(--border)" stroke-width="2"/>
+        <circle cx="100" cy="100" r="20" fill="var(--card)"/>
+        <text x="100" y="30" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Outfit">Action</text>
+        <text x="165" y="100" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Outfit" transform="rotate(60,165,100)">Comedy</text>
+        <text x="155" y="165" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Outfit" transform="rotate(120,155,165)">Horror</text>
+        <text x="100" y="185" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Outfit">Romance</text>
+        <text x="40" y="155" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="Outfit">Sci-Fi</text>
+        <text x="35" y="60" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="Outfit">Thriller</text>
+      </svg>
+    </div>
+    <div id="spinnerPointer" style="width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:24px solid var(--accent);margin:-10px auto 10px;"></div>
+    <button onclick="spinWheel()" class="btn-sm accent" style="width:100%;padding:12px;font-size:.95rem;">🎰 Spin!</button>
+    <div id="spinResult" style="margin-top:12px;font-size:.85rem;color:var(--muted);min-height:20px;text-align:center;"></div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer"></div>
+
+<!-- SCROLL TO TOP -->
+<button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="18,15 12,9 6,15"/></svg>
+</button>
+
+<!-- MOBILE NAV -->
+<nav id="mobileNav">
+  <div class="mobile-tab active" onclick="scrollToSection('hero','Home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+    Home
+  </div>
+  <div class="mobile-tab" onclick="scrollToSection('animeSection','Anime')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></svg>
+    Anime
+  </div>
+  <div class="mobile-tab" onclick="scrollToSection('kdramaSection','K-Drama')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23,7 16,12 23,17"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    K-Drama
+  </div>
+  <div class="mobile-tab" onclick="scrollToSection('watchlistSection','My List')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    My List
+  </div>
+  <div class="mobile-tab" onclick="handleProfileClick()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profile
+  </div>
+</nav>
+
+<script src="script.js"></script>
+</body>
+</html>

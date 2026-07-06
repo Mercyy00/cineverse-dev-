@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineVerse — Premium Cinematic Experience</title>
+  <link rel="icon" type="image/png" href="icon/favicon.png" />
+  <link rel="apple-touch-icon" href="icon/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+    .watch-topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--card); border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      padding: 0 32px; height: 74px; display: flex; align-items: center; gap: 16px;
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; font-weight: 600;
+      background: var(--card2); backdrop-filter: blur(12px); border: 1px solid var(--border);
+      padding: 8px 18px; border-radius: 50px; text-decoration: none; transition: all 0.3s;
+    }
+    .back-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .watch-title { font-size: 16px; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    .watch-logo { font-size: 24px; font-weight: 800; font-family: 'Outfit', sans-serif; color: var(--text); }
+
+    .player-section { position: relative; background: #000; margin-top: 74px; }
+    .player-wrapper { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
+    .player-wrapper iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
+
+    .party-toolbar {
+      max-width: 1200px; margin: 14px auto 0; padding: 12px 20px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .btn-create-party {
+      background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-weight: 700;
+      padding: 10px 20px; border-radius: 50px; font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; border: none;
+    }
+
+    .below-player { max-width: 1200px; margin: 0 auto; padding: 30px 24px 60px; }
+    .reviews-section { margin-top: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; color: var(--text); }
+    .review-form { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
+    .star-rating-select { display: flex; gap: 8px; font-size: 20px; color: #ffb800; cursor: pointer; }
+    .review-input { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px; font-size: 13px; min-height: 80px; outline: none; }
+    .btn-submit-review { background: var(--accent); color: #fff; border: none; border-radius: 50px; padding: 10px 24px; font-weight: 700; font-size: 13px; align-self: flex-start; cursor: pointer; }
+    .review-card { background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; color: var(--text); }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <div class="watch-topbar" id="watchTopbar">
+    <a href="index.html" class="back-btn">← Back to Browse</a>
+    <div class="watch-title" id="watchTitleBar">Loading…</div>
+
+    <!-- Mode & Accent Swatch Switcher -->
+    <div style="display:flex;align-items:center;gap:10px;margin-right:12px;">
+      <button class="btn-theme" id="watchModeToggle" onclick="toggleWatchMode()" style="padding:6px 14px;border-radius:24px;font-size:12px;font-weight:700;">
+        🌙 Theme
+      </button>
+      <div class="accent-swatch-picker" style="display:flex;gap:6px;">
+        <button class="swatch-btn crimson active" data-accent="crimson"></button>
+        <button class="swatch-btn cyan" data-accent="cyan"></button>
+        <button class="swatch-btn gold" data-accent="gold"></button>
+        <button class="swatch-btn purple" data-accent="purple"></button>
+      </div>
+    </div>
+
+    <div class="watch-logo">Cine<span style="color:var(--accent)">Verse</span></div>
+  </div>
+
+  <!-- Player Section -->
+  <div class="player-section" id="playerSection">
+    <div class="player-wrapper" id="playerWrapper"></div>
+  </div>
+
+  <!-- Watch Party & Server Bar -->
+  <div class="party-toolbar" style="max-width:1200px;margin:14px auto 0;padding:12px 20px;">
+    <div style="display:flex;align-items:center;gap:12px;width:100%;justify-content:space-between;flex-wrap:wrap;">
+      <div class="server-hub-container" id="serverHubContainer">
+        <span style="font-size:0.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-right:2px;display:flex;align-items:center;gap:4px;">
+          🌐 STREAM NODES:
+        </span>
+        <button class="server-card-btn server-btn active" data-server="vidsync">
+          <span class="server-icon-badge">⚡</span>
+          <span>VidSync</span>
+          <span class="server-tag-badge">FAST 4K</span>
+          <span class="server-pulse-dot"></span>
+        </button>
+        <button class="server-card-btn server-btn" data-server="cinesrc">
+          <span class="server-icon-badge">🎬</span>
+          <span>CineSrc</span>
+          <span class="server-tag-badge">AUTO-SKIP</span>
+          <span class="server-pulse-dot"></span>
+        </button>
+        <button class="server-card-btn server-btn" data-server="vidnest">
+          <span class="server-icon-badge">⛩️</span>
+          <span>VidNest Anime</span>
+          <span class="server-tag-badge">SUB/DUB</span>
+          <span class="server-pulse-dot"></span>
+        </button>
+        <button class="server-card-btn server-btn" data-server="vidnest_pahe">
+          <span class="server-icon-badge">🌸</span>
+          <span>AnimePahe</span>
+          <span class="server-tag-badge">PAHE HD</span>
+          <span class="server-pulse-dot"></span>
+        </button>
+        <button class="server-card-btn server-btn" data-server="vidsrc">
+          <span class="server-icon-badge">🔮</span>
+          <span>VidSrc</span>
+          <span class="server-tag-badge">MULTI-SUB</span>
+          <span class="server-pulse-dot"></span>
+        </button>
+        <button class="server-card-btn server-btn" data-server="autoembed">
+          <span class="server-icon-badge">🚀</span>
+          <span>AutoEmbed</span>
+          <span class="server-tag-badge">GLOBAL</span>
+          <span class="server-pulse-dot"></span>
+        </button>
+        <button class="server-card-btn server-btn" data-server="trailer">
+          <span class="server-icon-badge">🎥</span>
+          <span>Trailer HD</span>
+          <span class="server-tag-badge">1080P</span>
+        </button>
+      </div>
+      <button class="btn-create-party" id="createPartyBtn" style="flex-shrink:0;">
+        🍿 Create Watch Party Room
+      </button>
+    </div>
+  </div>
+
+  <!-- TV Show Episode Switcher Bar (Hidden for movies) -->
+  <div class="tv-picker-container" id="tvPickerContainer" style="display:none;max-width:1200px;margin:16px auto;padding:16px;background:rgba(18,18,26,0.7);border-radius:14px;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+      <span>Select Episode:</span>
+      <select id="seasonSelect" style="background:#14141e;color:#fff;padding:6px;border-radius:6px;"></select>
+    </div>
+    <div id="episodesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;"></div>
+  </div>
+
+  <!-- Floating Watch Party Drawer (Hidden by default) -->
+  <div class="party-drawer hidden" id="partyDrawer">
+    <div class="party-drawer-header">
+      <span>🍿 Watch Party Sync Room</span>
+      <button id="closePartyBtn" style="color:#fff;background:none;border:none;cursor:pointer;">✕</button>
+    </div>
+    <div style="padding:8px 12px;background:rgba(0,210,211,0.15);color:var(--accent-cyan);font-size:11px;font-weight:700;">
+      Room Code: <span id="roomCodeDisplay">PARTY-8F3K9A</span>
+    </div>
+    <div class="party-messages" id="partyMessages">
+      <div class="party-msg">System: Room created! Share code with friends to sync playback.</div>
+    </div>
+    <div class="party-input-box">
+      <input type="text" class="party-input" id="partyMsgInput" placeholder="Chat with room..." />
+      <button id="sendPartyMsgBtn" style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;border:none;cursor:pointer;">➔</button>
+    </div>
+  </div>
+
+  <!-- Below Player Content -->
+  <div class="below-player">
+    <div id="movieDetailHeader" style="display:flex;gap:20px;">
+      <img id="detailPoster" style="width:130px;border-radius:12px;display:none;" />
+      <div>
+        <h1 id="detailTitle" style="font-size:24px;font-weight:800;">Loading…</h1>
+        <div id="detailMeta" style="color:var(--muted);font-size:13px;margin:8px 0;"></div>
+        <p id="detailOverview" style="color:#a0a0b0;font-size:14px;max-width:700px;"></p>
+      </div>
+    </div>
+
+    <!-- Community Reviews Section -->
+    <div class="reviews-section">
+      <h3 style="font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;">💬 Community Reviews & Ratings</h3>
+      <div class="review-form">
+        <div class="star-rating-select" id="starRatingSelect">
+          <span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5" class="selected">★</span>
+        </div>
+        <textarea id="reviewTextInput" class="review-input" placeholder="Write your review here..."></textarea>
+        <button class="btn-submit-review" id="submitReviewBtn">Post Review</button>
+      </div>
+      <div class="reviews-list" id="reviewsList"></div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="player.js"></script>
+</body>
+</html>
