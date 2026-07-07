@@ -137,7 +137,7 @@ function renderEmbedServer(serverKey = 'vidsync') {
   const embedUrl = builder(movieId, mediaType, currentSeason, currentEpisode, watchedSeconds);
 
   const adblockActive = localStorage.getItem('cs_adblock') !== 'false';
-  const sandboxAttr = adblockActive ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"' : '';
+  const sandboxAttr = adblockActive ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock allow-popups allow-popups-to-escape-sandbox"' : '';
 
   wrapper.innerHTML = `
     <iframe
@@ -452,7 +452,7 @@ window.toggleAdblockMode = function() {
   const iframe = document.querySelector('.player-wrapper iframe');
   if (iframe) {
     if (state) {
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock allow-popups allow-popups-to-escape-sandbox');
     } else {
       iframe.removeAttribute('sandbox');
     }

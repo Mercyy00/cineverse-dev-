@@ -771,7 +771,7 @@ function openPlayer(item, isTV, season=1, episode=1) {
   if(existing) existing.remove();
 
   const adblockActive = localStorage.getItem('cs_adblock') !== 'false';
-  const sandboxAttr = adblockActive ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"' : '';
+  const sandboxAttr = adblockActive ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock allow-popups allow-popups-to-escape-sandbox"' : '';
   const adblockChecked = adblockActive ? 'checked' : '';
 
   const overlay = document.createElement('div');
@@ -925,7 +925,7 @@ function toggleAdblockMode(checkbox) {
   const playerFrame = document.getElementById('playerFrame');
   if(playerFrame) {
     if(state) {
-      playerFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+      playerFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock allow-popups allow-popups-to-escape-sandbox');
     } else {
       playerFrame.removeAttribute('sandbox');
     }
