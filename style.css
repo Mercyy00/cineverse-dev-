@@ -658,3 +658,180 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:40px 5%
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
+
+/* ================================================
+   RESPONSIVE IN-APP OVERLAY PLAYER & AD-BLOCKER
+================================================ */
+.watch-overlay-el {
+  position: fixed;
+  inset: 0;
+  z-index: 8500;
+  background: #07070A;
+  display: flex;
+  flex-direction: column;
+}
+
+.watch-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(18, 18, 26, 0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  z-index: 10;
+  gap: 12px;
+}
+
+.watch-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.watch-back-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.watch-overlay-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 40%;
+}
+
+.watch-episode-badge {
+  color: var(--accent);
+  font-size: 0.85rem;
+  margin-left: 6px;
+}
+
+.watch-desktop-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.adblock-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: rgba(0, 210, 211, 0.1);
+  border: 1px solid rgba(0, 210, 211, 0.3);
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #00d2d3;
+  user-select: none;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.adblock-toggle-label:hover {
+  background: rgba(0, 210, 211, 0.2);
+  border-color: #00d2d3;
+}
+
+.adblock-checkbox {
+  accent-color: #00d2d3;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+}
+
+.watch-player-container {
+  position: relative;
+  flex: 1;
+  background: #000;
+}
+
+.watch-mobile-controls {
+  display: none;
+  flex-direction: column;
+  background: rgba(18, 18, 26, 0.95);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  gap: 10px;
+}
+
+.watch-mobile-subrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mobile-servers-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--muted);
+  letter-spacing: 0.8px;
+}
+
+/* Light Theme Overrides */
+.light-theme .watch-overlay-header,
+.light-theme .watch-mobile-controls {
+  background: rgba(240, 240, 248, 0.95);
+}
+
+.light-theme .adblock-toggle-label {
+  background: rgba(0, 168, 169, 0.08);
+  border-color: rgba(0, 168, 169, 0.25);
+  color: #00a8a9;
+}
+
+.light-theme .watch-back-btn {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive Media Queries */
+@media (max-width: 768px) {
+  .watch-overlay-el {
+    overflow-y: auto;
+    display: block;
+  }
+  
+  .watch-overlay-header {
+    padding: 10px 14px;
+    height: auto;
+  }
+  
+  .watch-overlay-title {
+    font-size: 0.9rem;
+    max-width: 60%;
+  }
+
+  .watch-desktop-controls {
+    display: none;
+  }
+
+  .watch-player-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    flex: none;
+  }
+
+  .watch-mobile-controls {
+    display: flex;
+  }
+}

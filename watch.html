@@ -48,6 +48,45 @@
     .review-input { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px; font-size: 13px; min-height: 80px; outline: none; }
     .btn-submit-review { background: var(--accent); color: #fff; border: none; border-radius: 50px; padding: 10px 24px; font-weight: 700; font-size: 13px; align-self: flex-start; cursor: pointer; }
     .review-card { background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; color: var(--text); }
+
+    /* Mobile Responsive Overrides */
+    @media (max-width: 768px) {
+      .watch-topbar {
+        padding: 0 12px;
+        height: 64px;
+        gap: 8px;
+      }
+      .back-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+      .watch-logo {
+        font-size: 18px;
+      }
+      .player-section {
+        margin-top: 64px;
+      }
+      .below-player {
+        padding: 16px 12px 40px;
+      }
+      #movieDetailHeader {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 16px;
+      }
+      #detailPoster {
+        width: 100px !important;
+      }
+      .party-toolbar {
+        margin: 10px 12px 0;
+        padding: 10px 12px;
+      }
+      .tv-picker-container {
+        margin: 10px 12px;
+        padding: 12px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -80,51 +119,57 @@
   <!-- Watch Party & Server Bar -->
   <div class="party-toolbar" style="max-width:1200px;margin:14px auto 0;padding:12px 20px;">
     <div style="display:flex;align-items:center;gap:12px;width:100%;justify-content:space-between;flex-wrap:wrap;">
-      <div class="server-hub-container" id="serverHubContainer">
-        <span style="font-size:0.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-right:2px;display:flex;align-items:center;gap:4px;">
-          🌐 STREAM NODES:
-        </span>
-        <button class="server-card-btn server-btn active" data-server="vidsync">
-          <span class="server-icon-badge">⚡</span>
-          <span>VidSync</span>
-          <span class="server-tag-badge">FAST 4K</span>
-          <span class="server-pulse-dot"></span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="cinesrc">
-          <span class="server-icon-badge">🎬</span>
-          <span>CineSrc</span>
-          <span class="server-tag-badge">AUTO-SKIP</span>
-          <span class="server-pulse-dot"></span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="vidnest">
-          <span class="server-icon-badge">⛩️</span>
-          <span>VidNest Anime</span>
-          <span class="server-tag-badge">SUB/DUB</span>
-          <span class="server-pulse-dot"></span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="vidnest_pahe">
-          <span class="server-icon-badge">🌸</span>
-          <span>AnimePahe</span>
-          <span class="server-tag-badge">PAHE HD</span>
-          <span class="server-pulse-dot"></span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="vidsrc">
-          <span class="server-icon-badge">🔮</span>
-          <span>VidSrc</span>
-          <span class="server-tag-badge">MULTI-SUB</span>
-          <span class="server-pulse-dot"></span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="autoembed">
-          <span class="server-icon-badge">🚀</span>
-          <span>AutoEmbed</span>
-          <span class="server-tag-badge">GLOBAL</span>
-          <span class="server-pulse-dot"></span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="trailer">
-          <span class="server-icon-badge">🎥</span>
-          <span>Trailer HD</span>
-          <span class="server-tag-badge">1080P</span>
-        </button>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <label class="adblock-toggle-label" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;background:rgba(0, 210, 211, 0.1);border:1px solid rgba(0, 210, 211, 0.3);padding:6px 14px;border-radius:50px;font-size:0.78rem;font-weight:800;color:#00d2d3;user-select:none;transition:all 0.3s;white-space:nowrap;margin-right:8px;">
+          <input type="checkbox" id="adblockToggle" style="accent-color:#00d2d3;cursor:pointer;" onchange="toggleAdblockMode()" />
+          🛡️ Ad-Blocker
+        </label>
+        <div class="server-hub-container" id="serverHubContainer">
+          <span style="font-size:0.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-right:2px;display:flex;align-items:center;gap:4px;">
+            🌐 STREAM NODES:
+          </span>
+          <button class="server-card-btn server-btn active" data-server="vidsync">
+            <span class="server-icon-badge">⚡</span>
+            <span>VidSync</span>
+            <span class="server-tag-badge">FAST 4K</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn server-btn" data-server="cinesrc">
+            <span class="server-icon-badge">🎬</span>
+            <span>CineSrc</span>
+            <span class="server-tag-badge">AUTO-SKIP</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn server-btn" data-server="vidnest">
+            <span class="server-icon-badge">⛩️</span>
+            <span>VidNest Anime</span>
+            <span class="server-tag-badge">SUB/DUB</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn server-btn" data-server="vidnest_pahe">
+            <span class="server-icon-badge">🌸</span>
+            <span>AnimePahe</span>
+            <span class="server-tag-badge">PAHE HD</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn server-btn" data-server="vidsrc">
+            <span class="server-icon-badge">🔮</span>
+            <span>VidSrc</span>
+            <span class="server-tag-badge">MULTI-SUB</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn server-btn" data-server="autoembed">
+            <span class="server-icon-badge">🚀</span>
+            <span>AutoEmbed</span>
+            <span class="server-tag-badge">GLOBAL</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn server-btn" data-server="trailer">
+            <span class="server-icon-badge">🎥</span>
+            <span>Trailer HD</span>
+            <span class="server-tag-badge">1080P</span>
+          </button>
+        </div>
       </div>
       <button class="btn-create-party" id="createPartyBtn" style="flex-shrink:0;">
         🍿 Create Watch Party Room

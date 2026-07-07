@@ -136,6 +136,9 @@ function renderEmbedServer(serverKey = 'vidsync') {
   const builder = SERVER_URLS[serverKey] || SERVER_URLS.vidsync;
   const embedUrl = builder(movieId, mediaType, currentSeason, currentEpisode, watchedSeconds);
 
+  const adblockActive = localStorage.getItem('cs_adblock') !== 'false';
+  const sandboxAttr = adblockActive ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"' : '';
+
   wrapper.innerHTML = `
     <iframe
       src="${embedUrl}"
@@ -144,6 +147,7 @@ function renderEmbedServer(serverKey = 'vidsync') {
       frameborder="0"
       allow="encrypted-media; autoplay; fullscreen; picture-in-picture"
       allowfullscreen
+      ${sandboxAttr}
       style="position:absolute;top:0;left:0;width:100%;height:100%;"
       title="Stream Player"
     ></iframe>
@@ -211,7 +215,7 @@ function initWatchParty() {
     const text = msgInput.value.trim();
     if (!text) return;
     const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
-    const sender = activeProfile.name || 'JAY';
+    const sender = activeProfile.name || 'Guest';
 
     const box = $('partyMessages');
     const msgEl = document.createElement('div');
@@ -429,6 +433,29 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.onclick = () => renderEmbedServer(btn.dataset.server);
   });
 
+  // Set initial state of Adblock checkbox
+  const adblockToggle = document.getElementById('adblockToggle');
+  if (adblockToggle) {
+    adblockToggle.checked = localStorage.getItem('cs_adblock') !== 'false';
+  }
+
   loadContentDetails();
   renderEmbedServer('vidsync');
 });
+
+window.toggleAdblockMode = function() {
+  const checkbox = document.getElementById('adblockToggle');
+  if (!checkbox) return;
+  const state = checkbox.checked;
+  localStorage.setItem('cs_adblock', state ? 'true' : 'false');
+  
+  const iframe = document.querySelector('.player-wrapper iframe');
+  if (iframe) {
+    if (state) {
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+    } else {
+      iframe.removeAttribute('sandbox');
+    }
+    iframe.src = iframe.src;
+  }
+};

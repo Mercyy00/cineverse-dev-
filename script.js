@@ -99,7 +99,7 @@ function revealMainApp() {
 // ---- PROFILES ----
 function renderProfiles() {
   const defaultProfiles = [
-    {id:'p1',name:'JAY',avatar:'🍿',isKids:false},
+    {id:'p1',name: user?.name || 'Viewer 1',avatar:'🍿',isKids:false},
     {id:'p2',name:'Movie Buff',avatar:'⚡',isKids:false},
     {id:'p3',name:'Kids Mode',avatar:'🦁',isKids:true},
     {id:'p4',name:'Guest',avatar:'🚀',isKids:false},
@@ -770,64 +770,120 @@ function openPlayer(item, isTV, season=1, episode=1) {
   const existing = document.getElementById('watchOverlay');
   if(existing) existing.remove();
 
+  const adblockActive = localStorage.getItem('cs_adblock') !== 'false';
+  const sandboxAttr = adblockActive ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"' : '';
+  const adblockChecked = adblockActive ? 'checked' : '';
+
   const overlay = document.createElement('div');
   overlay.id = 'watchOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:8500;background:#07070A;display:flex;flex-direction:column;';
+  overlay.className = 'watch-overlay-el';
   overlay.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(18,18,26,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);z-index:10;gap:12px;">
-      <button onclick="closeWatch()" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:20px;cursor:pointer;font-weight:600;font-size:.85rem;transition:all .3s;flex-shrink:0;">
+    <!-- Top Header -->
+    <div class="watch-overlay-header">
+      <button onclick="closeWatch()" class="watch-back-btn">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
         Back to Browse
       </button>
-      <div style="font-family:var(--font-heading);font-weight:700;font-size:1.05rem;color:var(--text);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40%;">
-        ${title} ${isTV ? `<span style="color:var(--accent);font-size:.85rem;margin-left:6px;">(S${season} : E${episode})</span>` : ''}
+      <div class="watch-overlay-title">
+        ${title} ${isTV ? `<span class="watch-episode-badge">(S${season} : E${episode})</span>` : ''}
       </div>
-      <div class="server-hub-container" id="serverBtns">
+      
+      <!-- Desktop Controls -->
+      <div class="watch-desktop-controls">
+        <label class="adblock-toggle-label">
+          <input type="checkbox" class="adblock-checkbox" ${adblockChecked} onchange="toggleAdblockMode(this)" />
+          🛡️ Ad-Blocker
+        </label>
+        <div class="server-hub-container" id="serverBtns">
+          <button class="server-card-btn active" onclick="switchServer('srvVidsync',this)">
+            <span class="server-icon-badge">⚡</span>
+            <span>VidSync</span>
+            <span class="server-tag-badge">FAST 4K</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn" onclick="switchServer('srv2',this)">
+            <span class="server-icon-badge">🎬</span>
+            <span>CineSrc</span>
+            <span class="server-tag-badge">AUTO-SKIP</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn" onclick="switchServer('srv3',this)">
+            <span class="server-icon-badge">⛩️</span>
+            <span>VidNest Anime</span>
+            <span class="server-tag-badge">SUB/DUB</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn" onclick="switchServer('srv3_pahe',this)">
+            <span class="server-icon-badge">🌸</span>
+            <span>AnimePahe</span>
+            <span class="server-tag-badge">PAHE HD</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn" onclick="switchServer('srv1',this)">
+            <span class="server-icon-badge">🔮</span>
+            <span>VidSrc CC</span>
+            <span class="server-tag-badge">MULTI-SUB</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn" onclick="switchServer('srv4',this)">
+            <span class="server-icon-badge">🚀</span>
+            <span>MultiEmbed</span>
+            <span class="server-tag-badge">GLOBAL</span>
+            <span class="server-pulse-dot"></span>
+          </button>
+          <button class="server-card-btn" onclick="openMovieTrailer()">
+            <span class="server-icon-badge">🎥</span>
+            <span>Trailer HD</span>
+            <span class="server-tag-badge">1080P</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Player Container -->
+    <div class="watch-player-container">
+      <iframe id="playerFrame" src="${servers.srvVidsync}" ${sandboxAttr} allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media" style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>
+    </div>
+    
+    <!-- Mobile Controls Toolbar (shown below video on mobile) -->
+    <div class="watch-mobile-controls">
+      <div class="watch-mobile-subrow">
+        <label class="adblock-toggle-label">
+          <input type="checkbox" class="adblock-checkbox" ${adblockChecked} onchange="toggleAdblockMode(this)" />
+          🛡️ Ad-Blocker
+        </label>
+        <span class="mobile-servers-title">🔮 SELECT STREAM NODE:</span>
+      </div>
+      <div class="server-hub-container" id="mobileServerBtns">
         <button class="server-card-btn active" onclick="switchServer('srvVidsync',this)">
           <span class="server-icon-badge">⚡</span>
           <span>VidSync</span>
-          <span class="server-tag-badge">FAST 4K</span>
-          <span class="server-pulse-dot"></span>
         </button>
         <button class="server-card-btn" onclick="switchServer('srv2',this)">
           <span class="server-icon-badge">🎬</span>
           <span>CineSrc</span>
-          <span class="server-tag-badge">AUTO-SKIP</span>
-          <span class="server-pulse-dot"></span>
         </button>
         <button class="server-card-btn" onclick="switchServer('srv3',this)">
           <span class="server-icon-badge">⛩️</span>
-          <span>VidNest Anime</span>
-          <span class="server-tag-badge">SUB/DUB</span>
-          <span class="server-pulse-dot"></span>
+          <span>VidNest</span>
         </button>
         <button class="server-card-btn" onclick="switchServer('srv3_pahe',this)">
           <span class="server-icon-badge">🌸</span>
           <span>AnimePahe</span>
-          <span class="server-tag-badge">PAHE HD</span>
-          <span class="server-pulse-dot"></span>
         </button>
         <button class="server-card-btn" onclick="switchServer('srv1',this)">
           <span class="server-icon-badge">🔮</span>
-          <span>VidSrc CC</span>
-          <span class="server-tag-badge">MULTI-SUB</span>
-          <span class="server-pulse-dot"></span>
+          <span>VidSrc</span>
         </button>
         <button class="server-card-btn" onclick="switchServer('srv4',this)">
           <span class="server-icon-badge">🚀</span>
           <span>MultiEmbed</span>
-          <span class="server-tag-badge">GLOBAL</span>
-          <span class="server-pulse-dot"></span>
         </button>
         <button class="server-card-btn" onclick="openMovieTrailer()">
           <span class="server-icon-badge">🎥</span>
-          <span>Trailer HD</span>
-          <span class="server-tag-badge">1080P</span>
+          <span>Trailer</span>
         </button>
       </div>
-    </div>
-    <div style="position:relative;flex:1;background:#000;">
-      <iframe id="playerFrame" src="${servers.srvVidsync}" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>
     </div>`;
 
   document.body.appendChild(overlay);
@@ -852,9 +908,30 @@ function switchServer(type, btn) {
   const overlay = document.getElementById('watchOverlay');
   if(!overlay) return;
   const url = overlay._servers?.[type];
-  if(url) document.getElementById('playerFrame').src = url;
-  document.querySelectorAll('#serverBtns .server-card-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  if(url) {
+    const playerFrame = document.getElementById('playerFrame');
+    playerFrame.src = url;
+  }
+  document.querySelectorAll('.server-card-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`.server-card-btn[onclick*="'${type}'"]`).forEach(b => b.classList.add('active'));
+}
+
+function toggleAdblockMode(checkbox) {
+  if(!checkbox) return;
+  const state = checkbox.checked;
+  localStorage.setItem('cs_adblock', state ? 'true' : 'false');
+  document.querySelectorAll('.adblock-checkbox').forEach(cb => { cb.checked = state; });
+
+  const playerFrame = document.getElementById('playerFrame');
+  if(playerFrame) {
+    if(state) {
+      playerFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+    } else {
+      playerFrame.removeAttribute('sandbox');
+    }
+    playerFrame.src = playerFrame.src;
+  }
+  showToast(state ? '🛡️ Ad-Blocker (Sandbox) Enabled' : '⚠️ Ad-Blocker Disabled', state ? '✅' : 'ℹ️');
 }
 
 // Listen for Vidsync & CineSrc player progress & events
