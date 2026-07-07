@@ -28,7 +28,11 @@
   <div class="profile-title">Who's Watching? 🍿</div>
   <div class="profile-subtitle">Select your profile to continue</div>
   <div class="profiles-grid" id="profilesGrid"></div>
-  <button onclick="openAddProfileModal()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;font-weight:600;margin-top:8px;">+ Add New Profile</button>
+  <div style="display:flex;gap:20px;margin-top:12px;justify-content:center;align-items:center;">
+    <button onclick="openAddProfileModal()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;font-weight:600;">+ Add New Profile</button>
+    <span style="color:var(--border);font-size:.8rem;">|</span>
+    <button id="manageProfilesBtn" onclick="toggleManageMode()" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.85rem;font-weight:600;">Manage Profiles</button>
+  </div>
 </div>
 
 <!-- ADD PROFILE MODAL -->
@@ -244,7 +248,7 @@
 <!-- ANIME SECTION -->
 <div class="section" id="animeSection">
   <div class="section-header">
-    <div class="section-title">⭐ Popular Anime & Dubbed Series</div>
+    <div class="section-title">🔥 Trending Anime & Dubbed Series</div>
   </div>
   <div class="slider-wrap">
     <button class="slider-arrow left" onclick="scrollSlider('animeTrack',-1)">
@@ -435,6 +439,10 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           <span id="trayWatchlistText">Add to My List</span>
         </button>
+        <button class="tray-secondary-btn" id="trayDownloadBtn" onclick="openDownloadModal('movie', currentMovie.id, currentMovie.title||currentMovie.name)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
         <button class="tray-secondary-btn" onclick="shareMovie()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Share
@@ -498,6 +506,10 @@
         <button class="btn-list" id="tvWatchlistBtn" onclick="toggleTVWatchlist()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
           <span id="tvWatchlistText">Add to My List</span>
+        </button>
+        <button class="btn-list" id="tvDownloadBtn" onclick="openDownloadModal('tv', currentTV.id, currentTV.name||currentTV.title)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
         </button>
       </div>
     </div>

@@ -15,7 +15,7 @@ const mediaType = urlParams.get('type') === 'tv' ? 'tv' : 'movie';
 const initialTitle = decodeURIComponent(urlParams.get('title') || 'Interstellar');
 const startTime = parseInt(urlParams.get('startTime') || '0', 10) || 0;
 
-let currentServer = 'vidsync';
+let currentServer = 'rivestream';
 let currentSeason = parseInt(urlParams.get('season') || '1', 10) || 1;
 let currentEpisode = parseInt(urlParams.get('episode') || '1', 10) || 1;
 let movieDetailsData = null;
@@ -24,6 +24,10 @@ let watchTimer = null;
 let watchedSeconds = startTime;
 
 const SERVER_URLS = {
+  rivestream: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed?type=movie&id=${id}`,
+  riveagg: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed/agg?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed/agg?type=movie&id=${id}`,
+  rivetorrent: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed/torrent?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed/torrent?type=movie&id=${id}`,
+  oneembed: (id, type, s, e, st) => type === 'tv' ? `https://1embed.cc/embed/tv/${id}/${s}/${e}` : `https://1embed.cc/embed/movie/${id}`,
   vidsync: (id, type, s, e, st) => type === 'tv' ? `https://vidsync.live/embed/tv/${id}/${s}/${e}?startTime=${st}` : `https://vidsync.live/embed/movie/${id}?startTime=${st}`,
   cinesrc: (id, type, s, e, st) => {
     const accent = localStorage.getItem('cs_accent_theme') || 'crimson';
@@ -47,19 +51,6 @@ const SERVER_URLS = {
     if (st > 0) url += `?startAt=${st}`;
     return url;
   },
-  vidnest_pahe: (id, type, s, e, st, anilistId) => {
-    let url;
-    if (anilistId) {
-      url = `https://vidnest.fun/animepahe/${anilistId}/${e || 1}/sub`;
-    } else if (type === 'tv' || type === 'anime') {
-      url = `https://vidnest.fun/tv/${id}/${s || 1}/${e || 1}`;
-    } else {
-      url = `https://vidnest.fun/movie/${id}`;
-    }
-    if (st > 0) url += `?startAt=${st}`;
-    return url;
-  },
-  vidsrc: (id, type, s, e, st) => type === 'tv' ? `https://vidsrc.pro/embed/tv/${id}/${s}/${e}` : `https://vidsrc.pro/embed/movie/${id}`,
   autoembed: (id, type, s, e, st) => type === 'tv' ? `https://autoembed.cc/embed/tv/${id}/${s}/${e}` : `https://autoembed.cc/embed/movie/${id}`,
 };
 
@@ -124,7 +115,7 @@ function applyAccentTheme(accentName) {
 /* ================================================
    EMBED SERVER ENGINE & PROGRESS SAVER
 ================================================ */
-function renderEmbedServer(serverKey = 'vidsync') {
+function renderEmbedServer(serverKey = 'rivestream') {
   currentServer = serverKey;
   const wrapper = $('playerWrapper');
   if (!wrapper) return;
@@ -136,9 +127,6 @@ function renderEmbedServer(serverKey = 'vidsync') {
   const builder = SERVER_URLS[serverKey] || SERVER_URLS.vidsync;
   const embedUrl = builder(movieId, mediaType, currentSeason, currentEpisode, watchedSeconds);
 
-  const adblockActive = localStorage.getItem('cs_adblock') !== 'false';
-  const sandboxAttr = adblockActive ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock allow-popups allow-popups-to-escape-sandbox"' : '';
-
   wrapper.innerHTML = `
     <iframe
       src="${embedUrl}"
@@ -147,7 +135,6 @@ function renderEmbedServer(serverKey = 'vidsync') {
       frameborder="0"
       allow="encrypted-media; autoplay; fullscreen; picture-in-picture"
       allowfullscreen
-      ${sandboxAttr}
       style="position:absolute;top:0;left:0;width:100%;height:100%;"
       title="Stream Player"
     ></iframe>
@@ -215,7 +202,7 @@ function initWatchParty() {
     const text = msgInput.value.trim();
     if (!text) return;
     const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
-    const sender = activeProfile.name || 'Guest';
+    const sender = activeProfile.name || 'Viewer';
 
     const box = $('partyMessages');
     const msgEl = document.createElement('div');
@@ -394,33 +381,55 @@ async function loadWatchEpisodes(seasonNum) {
    CINERC PLAYER POSTMESSAGE LISTENER
 ================================================ */
 window.addEventListener('message', (event) => {
-  if (event.origin !== 'https://cinesrc.st') return;
   const data = event.data || {};
   const { type } = data;
   if (!type) return;
 
+  // 1embed events
   switch (type) {
-    case 'cinesrc:ready':
-      console.log('CineSrc Player ready');
+    case "VIDEO_PLAY":
+      console.log("1embed: Playing");
       break;
-    case 'cinesrc:timeupdate':
-      if (data.currentTime) {
-        watchedSeconds = Math.floor(data.currentTime);
+    case "VIDEO_PAUSE":
+      console.log("1embed: Paused");
+      break;
+    case "VIDEO_PROGRESS":
+      if (data.payload && data.payload.currentTime) {
+        watchedSeconds = Math.floor(data.payload.currentTime);
         saveWatchProgress(watchedSeconds);
       }
       break;
-    case 'cinesrc:nextepisode':
-      if (data.season && data.episode) {
-        currentSeason = data.season;
-        currentEpisode = data.episode;
-      }
+    case "VIDEO_ended":
+    case "VIDEO_ENDED":
+      console.log("1embed: Video ended");
       break;
-    case 'cinesrc:close':
-      window.location.href = 'index.html';
-      break;
-    case 'cinesrc:error':
-      console.error('CineSrc Player Error:', data.error);
-      break;
+  }
+
+  // CineSrc events
+  if (event.origin === 'https://cinesrc.st') {
+    switch (type) {
+      case 'cinesrc:ready':
+        console.log('CineSrc Player ready');
+        break;
+      case 'cinesrc:timeupdate':
+        if (data.currentTime) {
+          watchedSeconds = Math.floor(data.currentTime);
+          saveWatchProgress(watchedSeconds);
+        }
+        break;
+      case 'cinesrc:nextepisode':
+        if (data.season && data.episode) {
+          currentSeason = data.season;
+          currentEpisode = data.episode;
+        }
+        break;
+      case 'cinesrc:close':
+        window.location.href = 'index.html';
+        break;
+      case 'cinesrc:error':
+        console.error('CineSrc Player Error:', data.error);
+        break;
+    }
   }
 });
 
@@ -433,29 +442,14 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.onclick = () => renderEmbedServer(btn.dataset.server);
   });
 
-  // Set initial state of Adblock checkbox
-  const adblockToggle = document.getElementById('adblockToggle');
-  if (adblockToggle) {
-    adblockToggle.checked = localStorage.getItem('cs_adblock') !== 'false';
-  }
-
   loadContentDetails();
-  renderEmbedServer('vidsync');
+  renderEmbedServer('rivestream');
 });
 
-window.toggleAdblockMode = function() {
-  const checkbox = document.getElementById('adblockToggle');
-  if (!checkbox) return;
-  const state = checkbox.checked;
-  localStorage.setItem('cs_adblock', state ? 'true' : 'false');
-  
-  const iframe = document.querySelector('.player-wrapper iframe');
-  if (iframe) {
-    if (state) {
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock allow-popups allow-popups-to-escape-sandbox');
-    } else {
-      iframe.removeAttribute('sandbox');
-    }
-    iframe.src = iframe.src;
+function triggerDownload() {
+  if (mediaType === 'tv') {
+    window.open(`https://www.rivestream.app/download?type=tv&id=${movieId}&season=${currentSeason}&episode=${currentEpisode}`, '_blank');
+  } else {
+    window.open(`https://www.rivestream.app/download?type=movie&id=${movieId}`, '_blank');
   }
-};
+}

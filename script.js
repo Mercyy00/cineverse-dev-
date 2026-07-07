@@ -97,21 +97,80 @@ function revealMainApp() {
 }
 
 // ---- PROFILES ----
+let isManageMode = false;
+
+function toggleManageMode() {
+  isManageMode = !isManageMode;
+  const btn = document.getElementById('manageProfilesBtn');
+  if (btn) {
+    btn.textContent = isManageMode ? 'Done' : 'Manage';
+    btn.classList.toggle('active', isManageMode);
+  }
+  renderProfiles();
+}
+
+function deleteProfile(event, id) {
+  event.stopPropagation();
+  if (profiles.length <= 1) {
+    showToast('You must keep at least one profile!', '⚠️');
+    return;
+  }
+  const index = profiles.findIndex(p => p.id === id);
+  if (index !== -1) {
+    const deletedName = profiles[index].name;
+    profiles.splice(index, 1);
+    localStorage.setItem('cs_profiles', JSON.stringify(profiles));
+    
+    if (activeProfile && activeProfile.id === id) {
+      activeProfile = null;
+      localStorage.removeItem('cs_active_profile');
+      updateNavProfile();
+    }
+    
+    showToast(`Profile "${deletedName}" deleted`, '🗑️');
+    renderProfiles();
+  }
+}
+
 function renderProfiles() {
   const defaultProfiles = [
-    {id:'p1',name: user?.name || 'Viewer 1',avatar:'🍿',isKids:false},
+    {id:'p1',name:'Viewer',avatar:'🍿',isKids:false},
     {id:'p2',name:'Movie Buff',avatar:'⚡',isKids:false},
     {id:'p3',name:'Kids Mode',avatar:'🦁',isKids:true},
     {id:'p4',name:'Guest',avatar:'🚀',isKids:false},
   ];
   profiles = JSON.parse(localStorage.getItem('cs_profiles') || 'null') || defaultProfiles;
+  
+  // Make sure they are written to localStorage so they persist correctly
+  if (!localStorage.getItem('cs_profiles')) {
+    localStorage.setItem('cs_profiles', JSON.stringify(profiles));
+  }
+
   const grid = document.getElementById('profilesGrid');
   grid.innerHTML = '';
   profiles.forEach(p => {
     const card = document.createElement('div');
     card.className = 'profile-card';
-    card.innerHTML = `<div class="profile-avatar">${p.avatar}</div><div class="profile-name">${p.name}</div>${p.isKids ? '<div style="font-size:.7rem;color:var(--accent);">KIDS</div>' : ''}`;
-    card.onclick = () => selectProfile(p);
+    if (isManageMode) {
+      card.classList.add('managing');
+    }
+    
+    let deleteHtml = '';
+    if (isManageMode && profiles.length > 1) {
+      deleteHtml = `<div class="profile-delete-btn" onclick="deleteProfile(event, '${p.id}')">×</div>`;
+    }
+
+    card.innerHTML = `
+      ${deleteHtml}
+      <div class="profile-avatar">${p.avatar}</div>
+      <div class="profile-name">${p.name}</div>
+      ${p.isKids ? '<div style="font-size:.7rem;color:var(--accent);">KIDS</div>' : ''}
+    `;
+    
+    card.onclick = () => {
+      if (isManageMode) return;
+      selectProfile(p);
+    };
     grid.appendChild(card);
   });
 }
@@ -124,7 +183,11 @@ function selectProfile(p) {
 }
 
 function updateNavProfile() {
-  if(!activeProfile) return;
+  if(!activeProfile) {
+    document.getElementById('profileBtnAvatar').textContent = '🍿';
+    document.getElementById('profileBtnName').textContent = 'Profile';
+    return;
+  }
   document.getElementById('profileBtnAvatar').textContent = activeProfile.avatar;
   document.getElementById('profileBtnName').textContent = activeProfile.name;
 }
@@ -725,8 +788,9 @@ function openPlayer(item, isTV, season=1, episode=1) {
 
   // Check saved progress for startTime
   let startTimeParam = '';
+  let progressData = {};
   if (activeProfile && id) {
-    const progressData = JSON.parse(localStorage.getItem(`cs_progress_${activeProfile.id}`) || '{}');
+    progressData = JSON.parse(localStorage.getItem(`cs_progress_${activeProfile.id}`) || '{}');
     if (progressData[id] && progressData[id].seconds > 5) {
       startTimeParam = `&startTime=${Math.floor(progressData[id].seconds)}`;
     }
@@ -755,107 +819,59 @@ function openPlayer(item, isTV, season=1, episode=1) {
       : `https://vidnest.fun/movie/${id}${vidnestStartParam}`);
 
   const servers = {
+    srvRivestream: isTV 
+      ? `https://www.rivestream.app/embed?type=tv&id=${id}&season=${season}&episode=${episode}` 
+      : `https://www.rivestream.app/embed?type=movie&id=${id}`,
+    srvRiveagg: isTV 
+      ? `https://www.rivestream.app/embed/agg?type=tv&id=${id}&season=${season}&episode=${episode}` 
+      : `https://www.rivestream.app/embed/agg?type=movie&id=${id}`,
+    srvRivetorrent: isTV 
+      ? `https://www.rivestream.app/embed/torrent?type=tv&id=${id}&season=${season}&episode=${episode}` 
+      : `https://www.rivestream.app/embed/torrent?type=movie&id=${id}`,
+    srvOneembed: isTV 
+      ? `https://1embed.cc/embed/tv/${id}/${season}/${episode}` 
+      : `https://1embed.cc/embed/movie/${id}`,
     srvVidsync: vidsyncUrl,
     srv2: cinesrcUrl,
     srv3: vidnestUrl,
-    srv3_pahe: vidnestPaheUrl,
-    srv1: isTV 
-      ? `https://vidsrc.cc/v2/embed/tv/${id}/${season}/${episode}` 
-      : `https://vidsrc.cc/v2/embed/movie/${id}`,
     srv4: isTV 
-      ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}` 
-      : `https://multiembed.mov/?video_id=${id}&tmdb=1`
+      ? `https://autoembed.cc/embed/tv/${id}/${season}/${episode}` 
+      : `https://autoembed.cc/embed/movie/${id}`
   };
 
   const existing = document.getElementById('watchOverlay');
   if(existing) existing.remove();
 
-  const adblockActive = localStorage.getItem('cs_adblock') !== 'false';
-  const sandboxAttr = adblockActive ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock allow-popups allow-popups-to-escape-sandbox"' : '';
-  const adblockChecked = adblockActive ? 'checked' : '';
-
   const overlay = document.createElement('div');
   overlay.id = 'watchOverlay';
-  overlay.className = 'watch-overlay-el';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:8500;background:#07070A;display:flex;flex-direction:column;';
   overlay.innerHTML = `
-    <!-- Top Header -->
-    <div class="watch-overlay-header">
-      <button onclick="closeWatch()" class="watch-back-btn">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(18,18,26,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);z-index:10;gap:12px;">
+      <button onclick="closeWatch()" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:20px;cursor:pointer;font-weight:600;font-size:.85rem;transition:all .3s;flex-shrink:0;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
         Back to Browse
       </button>
-      <div class="watch-overlay-title">
-        ${title} ${isTV ? `<span class="watch-episode-badge">(S${season} : E${episode})</span>` : ''}
+      <div style="font-family:var(--font-heading);font-weight:700;font-size:1.05rem;color:var(--text);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40%;">
+        ${title} ${isTV ? `<span style="color:var(--accent);font-size:.85rem;margin-left:6px;">(S${season} : E${episode})</span>` : ''}
       </div>
-      
-      <!-- Desktop Controls -->
-      <div class="watch-desktop-controls">
-        <label class="adblock-toggle-label">
-          <input type="checkbox" class="adblock-checkbox" ${adblockChecked} onchange="toggleAdblockMode(this)" />
-          🛡️ Ad-Blocker
-        </label>
-        <div class="server-hub-container" id="serverBtns">
-          <button class="server-card-btn active" onclick="switchServer('srvVidsync',this)">
-            <span class="server-icon-badge">⚡</span>
-            <span>VidSync</span>
-            <span class="server-tag-badge">FAST 4K</span>
-            <span class="server-pulse-dot"></span>
-          </button>
-          <button class="server-card-btn" onclick="switchServer('srv2',this)">
-            <span class="server-icon-badge">🎬</span>
-            <span>CineSrc</span>
-            <span class="server-tag-badge">AUTO-SKIP</span>
-            <span class="server-pulse-dot"></span>
-          </button>
-          <button class="server-card-btn" onclick="switchServer('srv3',this)">
-            <span class="server-icon-badge">⛩️</span>
-            <span>VidNest Anime</span>
-            <span class="server-tag-badge">SUB/DUB</span>
-            <span class="server-pulse-dot"></span>
-          </button>
-          <button class="server-card-btn" onclick="switchServer('srv3_pahe',this)">
-            <span class="server-icon-badge">🌸</span>
-            <span>AnimePahe</span>
-            <span class="server-tag-badge">PAHE HD</span>
-            <span class="server-pulse-dot"></span>
-          </button>
-          <button class="server-card-btn" onclick="switchServer('srv1',this)">
-            <span class="server-icon-badge">🔮</span>
-            <span>VidSrc CC</span>
-            <span class="server-tag-badge">MULTI-SUB</span>
-            <span class="server-pulse-dot"></span>
-          </button>
-          <button class="server-card-btn" onclick="switchServer('srv4',this)">
-            <span class="server-icon-badge">🚀</span>
-            <span>MultiEmbed</span>
-            <span class="server-tag-badge">GLOBAL</span>
-            <span class="server-pulse-dot"></span>
-          </button>
-          <button class="server-card-btn" onclick="openMovieTrailer()">
-            <span class="server-icon-badge">🎥</span>
-            <span>Trailer HD</span>
-            <span class="server-tag-badge">1080P</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Player Container -->
-    <div class="watch-player-container">
-      <iframe id="playerFrame" src="${servers.srvVidsync}" ${sandboxAttr} allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media" style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>
-    </div>
-    
-    <!-- Mobile Controls Toolbar (shown below video on mobile) -->
-    <div class="watch-mobile-controls">
-      <div class="watch-mobile-subrow">
-        <label class="adblock-toggle-label">
-          <input type="checkbox" class="adblock-checkbox" ${adblockChecked} onchange="toggleAdblockMode(this)" />
-          🛡️ Ad-Blocker
-        </label>
-        <span class="mobile-servers-title">🔮 SELECT STREAM NODE:</span>
-      </div>
-      <div class="server-hub-container" id="mobileServerBtns">
-        <button class="server-card-btn active" onclick="switchServer('srvVidsync',this)">
+      <div class="server-hub-container" id="serverBtns">
+        <button class="server-card-btn active" onclick="switchServer('srvRivestream',this)">
+          <span class="server-icon-badge">⚡</span>
+          <span>RiveStream</span>
+        </button>
+        <button class="server-card-btn" onclick="switchServer('srvRiveagg',this)">
+          <span class="server-icon-badge">🚀</span>
+          <span>Rive Aggregator</span>
+        </button>
+        <button class="server-card-btn" onclick="switchServer('srvRivetorrent',this)">
+          <span class="server-icon-badge">🌪️</span>
+          <span>Rive Torrent</span>
+        </button>
+        <button class="server-card-btn" onclick="switchServer('srvOneembed',this)">
+          <span class="server-icon-badge">🔮</span>
+          <span>1embed</span>
+        </button>
+        <button class="server-card-btn" onclick="switchServer('srvVidsync',this)">
           <span class="server-icon-badge">⚡</span>
           <span>VidSync</span>
         </button>
@@ -865,25 +881,16 @@ function openPlayer(item, isTV, season=1, episode=1) {
         </button>
         <button class="server-card-btn" onclick="switchServer('srv3',this)">
           <span class="server-icon-badge">⛩️</span>
-          <span>VidNest</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srv3_pahe',this)">
-          <span class="server-icon-badge">🌸</span>
-          <span>AnimePahe</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srv1',this)">
-          <span class="server-icon-badge">🔮</span>
-          <span>VidSrc</span>
+          <span>VidNest Anime</span>
         </button>
         <button class="server-card-btn" onclick="switchServer('srv4',this)">
           <span class="server-icon-badge">🚀</span>
-          <span>MultiEmbed</span>
-        </button>
-        <button class="server-card-btn" onclick="openMovieTrailer()">
-          <span class="server-icon-badge">🎥</span>
-          <span>Trailer</span>
+          <span>AutoEmbed</span>
         </button>
       </div>
+    </div>
+    <div style="position:relative;flex:1;background:#000;">
+      <iframe id="playerFrame" src="${servers.srvRivestream}" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>
     </div>`;
 
   document.body.appendChild(overlay);
@@ -908,36 +915,26 @@ function switchServer(type, btn) {
   const overlay = document.getElementById('watchOverlay');
   if(!overlay) return;
   const url = overlay._servers?.[type];
-  if(url) {
-    const playerFrame = document.getElementById('playerFrame');
-    playerFrame.src = url;
-  }
-  document.querySelectorAll('.server-card-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll(`.server-card-btn[onclick*="'${type}'"]`).forEach(b => b.classList.add('active'));
-}
-
-function toggleAdblockMode(checkbox) {
-  if(!checkbox) return;
-  const state = checkbox.checked;
-  localStorage.setItem('cs_adblock', state ? 'true' : 'false');
-  document.querySelectorAll('.adblock-checkbox').forEach(cb => { cb.checked = state; });
-
-  const playerFrame = document.getElementById('playerFrame');
-  if(playerFrame) {
-    if(state) {
-      playerFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock allow-popups allow-popups-to-escape-sandbox');
-    } else {
-      playerFrame.removeAttribute('sandbox');
-    }
-    playerFrame.src = playerFrame.src;
-  }
-  showToast(state ? '🛡️ Ad-Blocker (Sandbox) Enabled' : '⚠️ Ad-Blocker Disabled', state ? '✅' : 'ℹ️');
+  if(url) document.getElementById('playerFrame').src = url;
+  document.querySelectorAll('#serverBtns .server-card-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 }
 
 // Listen for Vidsync & CineSrc player progress & events
 window.addEventListener("message", (event) => {
   const message = event.data;
   if (!message || typeof message !== "object") return;
+
+  if (message.type === "VIDEO_PROGRESS") {
+    const payload = message.payload || {};
+    const currentTime = payload.currentTime;
+    const duration = payload.duration || 3600;
+    if (currentMovie && currentTime) {
+      const pct = Math.min(100, Math.max(0, (currentTime / duration) * 100));
+      saveProgress(currentMovie.id, currentMovie, Math.floor(currentTime), pct);
+      renderContinueWatching();
+    }
+  }
 
   if (event.origin === "https://cinesrc.st") {
     const { type, currentTime, duration } = message;
@@ -1462,3 +1459,60 @@ document.addEventListener('keydown', e => {
     const iv = setInterval(() => { deg += 5; document.body.style.filter = `hue-rotate(${deg}deg)`; if(deg>=360){clearInterval(iv);document.body.style.filter='none';} }, 50);
   }
 });
+
+function openDownloadModal(type, id, title) {
+  let season = 1;
+  if (type === 'tv') {
+    season = document.getElementById('seasonSelect')?.value || 1;
+  }
+  
+  const riveUrl = type === 'tv' 
+    ? `https://www.rivestream.app/download?type=tv&id=${id}&season=${season}&episode=1`
+    : `https://www.rivestream.app/download?type=movie&id=${id}`;
+    
+  const oneembedUrl = type === 'tv'
+    ? `https://1embed.cc/download/tv/${id}/${season}/1`
+    : `https://1embed.cc/download/movie/${id}`;
+
+  let modal = document.getElementById('downloadChoiceModal');
+  if (modal) modal.remove();
+  
+  modal = document.createElement('div');
+  modal.id = 'downloadChoiceModal';
+  modal.className = 'download-modal';
+  modal.innerHTML = `
+    <div class="download-modal-box">
+      <div class="modal-close-btn" onclick="closeDownloadChoiceModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div class="download-modal-title">Download "${title}"</div>
+      <div class="download-modal-subtitle">Select your download provider:</div>
+      <div class="download-options-list">
+        <a href="${riveUrl}" target="_blank" onclick="closeDownloadChoiceModal()" class="download-option-btn">
+          <span class="option-icon">🚀</span>
+          <div class="option-details">
+            <div class="option-name">RiveStream Download</div>
+            <div class="option-desc">Fast aggregator download node</div>
+          </div>
+        </a>
+        <a href="${oneembedUrl}" target="_blank" onclick="closeDownloadChoiceModal()" class="download-option-btn">
+          <span class="option-icon">🔮</span>
+          <div class="option-details">
+            <div class="option-name">1embed Download</div>
+            <div class="option-desc">Pick quality (360p to 1080p MP4)</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  setTimeout(() => modal.classList.add('open'), 10);
+}
+
+function closeDownloadChoiceModal() {
+  const modal = document.getElementById('downloadChoiceModal');
+  if (modal) {
+    modal.classList.remove('open');
+    setTimeout(() => modal.remove(), 300);
+  }
+}
