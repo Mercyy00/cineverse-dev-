@@ -138,6 +138,13 @@ function animateSplash() {
   const tagline = document.getElementById('introTagline');
   const burst = document.getElementById('introBurst');
 
+  // Load and play intro music
+  const introAudio = new Audio('intro music.mp3');
+  introAudio.volume = 0.65;
+  introAudio.play().catch(e => {
+    console.warn("Autoplay blocked by browser policy:", e);
+  });
+
   // Stage 1 — Lens Flare Sweep (0ms)
   setTimeout(() => {
     if (flare) flare.classList.add('animate');
@@ -173,6 +180,17 @@ function animateSplash() {
   // Stage 5 — Sonic boom burst + fade out (3600ms)
   setTimeout(() => {
     if (burst) burst.classList.add('boom');
+    
+    // Fade out audio volume smoothly
+    let fadeInterval = setInterval(() => {
+      if (introAudio.volume > 0.05) {
+        introAudio.volume -= 0.05;
+      } else {
+        introAudio.volume = 0;
+        introAudio.pause();
+        clearInterval(fadeInterval);
+      }
+    }, 50);
   }, 3600);
 
   setTimeout(() => {

@@ -2134,3 +2134,16 @@ body.offline-active #mainApp {
     align-items: flex-start;
   }
 }
+
+/* Light Mode Readability Fixes */
+.light-theme .hero-overview,
+.light-theme .tv-hero-overview {
+  color: var(--muted) !important;
+}
+.light-theme .tv-hero-gradient {
+  background: linear-gradient(to right, rgba(240, 240, 248, 0.97) 40%, transparent 75%), linear-gradient(to top, rgba(240, 240, 248, 1) 0%, transparent 40%) !important;
+}
+.light-theme .tv-back-btn {
+  background: rgba(240, 240, 248, 0.85) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
