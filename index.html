@@ -23,12 +23,29 @@
 </div>
 
 
-<!-- LOADING SPLASH -->
+<!-- CINEMATIC INTRO -->
 <div id="loadingSplash">
-  <div class="splash-logo">Cine<span>Verse</span></div>
-  <div class="splash-rings"></div>
-  <div style="color:var(--muted);font-size:.85rem;">Loading your cinematic experience...</div>
-  <div class="splash-bar"><div class="splash-bar-fill" id="splashFill"></div></div>
+  <div class="intro-container">
+    <!-- Lens Flare Sweep -->
+    <div class="intro-lens-flare"></div>
+    
+    <!-- Lettermark C -->
+    <div class="intro-lettermark" id="introLettermark">C</div>
+    
+    <!-- Full Logo Type Reveal -->
+    <div class="intro-logo-text" id="introLogoText">
+      <span class="intro-letter">C</span><span class="intro-letter">I</span><span class="intro-letter">N</span><span class="intro-letter">E</span><span class="intro-letter-accent">V</span><span class="intro-letter-accent">E</span><span class="intro-letter-accent">R</span><span class="intro-letter-accent">S</span><span class="intro-letter-accent">E</span>
+    </div>
+    
+    <!-- Glowing Underline -->
+    <div class="intro-underline" id="introUnderline"></div>
+    
+    <!-- Tagline -->
+    <div class="intro-tagline" id="introTagline">Your Premium Cinematic Experience</div>
+    
+    <!-- Radial Burst -->
+    <div class="intro-burst" id="introBurst"></div>
+  </div>
 </div>
 
 <!-- PROFILE SCREEN -->
@@ -75,7 +92,7 @@
     <div class="play-icon">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
     </div>
-    Cine<span class="accent">Stream</span>
+    Cine<span class="accent">Verse</span>
   </a>
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" onclick="scrollToSection('hero','Home')">Home</button>
@@ -256,7 +273,7 @@
 <!-- QUOTE BANNER -->
 <div class="quote-banner" id="quoteBanner">
   <div class="quote-text" id="quoteText">"Loading a cinematic quote..."</div>
-  <div class="quote-movie" id="quoteMovie">— CineStream</div>
+  <div class="quote-movie" id="quoteMovie">— CineVerse</div>
 </div>
 
 <!-- TOP 10 TRENDING -->
@@ -398,7 +415,7 @@
 <footer>
   <div class="footer-grid">
     <div>
-      <div class="footer-brand">Cine<span>Stream</span></div>
+      <div class="footer-brand">Cine<span>Verse</span></div>
       <div class="footer-desc">Your ultimate destination for free movie & TV streaming. Hollywood, Bollywood, Anime, K-Drama and more.</div>
     </div>
     <div>
@@ -421,7 +438,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 CineStream. Built with ❤️ for cinema lovers.</span>
+    <span>© 2026 CineVerse. Built with ❤️ for cinema lovers.</span>
     <span>Powered by TMDB API</span>
   </div>
 </footer>
@@ -634,7 +651,7 @@
     <div class="modal-close-btn" onclick="closeAuthModal()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </div>
-    <div style="font-family:var(--font-heading);font-size:1.6rem;font-weight:900;margin-bottom:20px;text-align:center;">Welcome to <span style="color:var(--accent);">CineStream</span></div>
+    <div style="font-family:var(--font-heading);font-size:1.6rem;font-weight:900;margin-bottom:20px;text-align:center;">Welcome to <span style="color:var(--accent);">CineVerse</span></div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="signinTab" onclick="switchAuthTab('signin')">Sign In</button>
       <button class="auth-tab" id="signupTab" onclick="switchAuthTab('signup')">Create Account</button>
@@ -690,7 +707,7 @@
       <div class="account-avatar" id="accountAvatar" style="font-size:3.5rem;width:80px;height:80px;background:var(--card2);border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0;">🍿</div>
       <div>
         <div class="stats-modal-title" id="accountName" style="font-size:1.6rem;font-weight:900;margin-bottom:4px;color:var(--text);">Guest</div>
-        <div class="stats-modal-subtitle" id="accountEmail" style="font-size:0.85rem;color:var(--muted);margin-bottom:0;">guest@cinestream.io</div>
+        <div class="stats-modal-subtitle" id="accountEmail" style="font-size:0.85rem;color:var(--muted);margin-bottom:0;">guest@cineverse.io</div>
         <div class="vip-badge" style="background:linear-gradient(90deg,var(--accent2),var(--accent));color:#fff;font-size:0.68rem;font-weight:800;padding:3px 10px;border-radius:20px;display:inline-block;margin-top:6px;letter-spacing:0.5px;">✨ VIP PREMIER CINEPHILE</div>
       </div>
       <div style="margin-left:auto;display:flex;gap:10px;">
@@ -847,7 +864,7 @@
     
     <div class="settings-header">
       <div class="settings-title">⚙️ Control Center</div>
-      <div class="settings-subtitle">Customize your CineStream experience</div>
+      <div class="settings-subtitle">Customize your CineVerse experience</div>
     </div>
     
     <div class="settings-content">
@@ -922,8 +939,7 @@
               <option value="vidsync">VidSync (Cloud)</option>
               <option value="cinesrc">CineSrc (Premium UI)</option>
               <option value="vidnest">VidNest (Anime Node)</option>
-              <option value="multiembed">MultiEmbed (Alternative)</option>
-              <option value="multiembedvip">MultiEmbed VIP (Premium)</option>
+              <option value="vidsrc">VidSrc (Community Favorite)</option>
             </select>
           </div>
 

@@ -77,12 +77,54 @@ window.onload = async function() {
 };
 
 function animateSplash() {
-  let fill = document.getElementById('splashFill'), w = 0;
-  let iv = setInterval(() => {
-    w += 3 + Math.random()*4;
-    if(w >= 100) { w = 100; clearInterval(iv); setTimeout(showProfileScreen, 400); }
-    fill.style.width = w + '%';
-  }, 80);
+  const flare = document.querySelector('.intro-lens-flare');
+  const lettermark = document.getElementById('introLettermark');
+  const logoText = document.getElementById('introLogoText');
+  const letters = logoText ? logoText.querySelectorAll('.intro-letter, .intro-letter-accent') : [];
+  const underline = document.getElementById('introUnderline');
+  const tagline = document.getElementById('introTagline');
+  const burst = document.getElementById('introBurst');
+
+  // Stage 1 — Lens Flare Sweep (0ms)
+  setTimeout(() => {
+    if (flare) flare.classList.add('animate');
+  }, 400);
+
+  // Stage 2 — Lettermark "C" appears (800ms)
+  setTimeout(() => {
+    if (lettermark) lettermark.classList.add('visible');
+  }, 800);
+
+  // Stage 3 — Lettermark shrinks away, logo text appears (1800ms)
+  setTimeout(() => {
+    if (lettermark) lettermark.classList.add('shrink');
+    if (logoText) logoText.classList.add('visible');
+    
+    // Type out letters one by one
+    letters.forEach((letter, i) => {
+      setTimeout(() => {
+        letter.classList.add('typed');
+      }, i * 80);
+    });
+  }, 1800);
+
+  // Stage 4 — Underline expands + tagline fades in (2600ms)
+  setTimeout(() => {
+    if (underline) underline.classList.add('expand');
+  }, 2600);
+
+  setTimeout(() => {
+    if (tagline) tagline.classList.add('visible');
+  }, 2900);
+
+  // Stage 5 — Sonic boom burst + fade out (3600ms)
+  setTimeout(() => {
+    if (burst) burst.classList.add('boom');
+  }, 3600);
+
+  setTimeout(() => {
+    showProfileScreen();
+  }, 4200);
 }
 
 function showProfileScreen() {
@@ -705,7 +747,7 @@ function toggleTrayWatchlist() {
 
 function shareMovie() {
   if(!currentMovie) return;
-  const text = `Watch "${currentMovie.title||currentMovie.name}" on CineStream!`;
+  const text = `Watch "${currentMovie.title||currentMovie.name}" on CineVerse!`;
   if(navigator.share) {
     navigator.share({title:currentMovie.title||currentMovie.name, text, url:window.location.href}).catch(()=>{});
   } else {
@@ -1145,7 +1187,7 @@ function updateAuthUI() {
 function openAccountModal() {
   document.getElementById('accountAvatar').textContent = activeProfile?.avatar || user?.avatar || '🍿';
   document.getElementById('accountName').textContent = user?.name || activeProfile?.name || 'Guest';
-  document.getElementById('accountEmail').textContent = user?.email || 'guest@cinestream.io';
+  document.getElementById('accountEmail').textContent = user?.email || 'guest@cineverse.io';
 
   const profileId = activeProfile?.id || 'default';
   const progress = JSON.parse(localStorage.getItem(`cs_progress_${profileId}`) || '{}');

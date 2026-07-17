@@ -49,8 +49,7 @@ const SERVER_URLS = {
     if (st > 0) url += `?startAt=${st}`;
     return url;
   },
-  multiembed: (id, type, s, e, st) => type === 'tv' ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` : `https://multiembed.mov/?video_id=${id}&tmdb=1`,
-  multiembedvip: (id, type, s, e, st) => type === 'tv' ? `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${s}&e=${e}` : `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`,
+  vidsrc: (id, type, s, e, st) => type === 'tv' ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}` : `https://vidsrc.cc/v2/embed/movie/${id}`,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -231,9 +230,9 @@ function initWatchParty() {
 
     try {
       navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?id=${movieId}&party=${roomCode}`);
-      alert(`Watch Party Created! (${roomCode})\nShare link copied to clipboard.`);
+      showToast(`Watch Party Created! Link copied. Code: ${roomCode}`, '🍿');
     } catch (e) {
-      alert(`Watch Party Created! Code: ${roomCode}`);
+      showToast(`Watch Party Created! Code: ${roomCode}`, '🍿');
     }
   };
 
@@ -252,7 +251,9 @@ function initWatchParty() {
     const box = $('partyMessages');
     const msgEl = document.createElement('div');
     msgEl.className = 'party-msg';
-    msgEl.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    msgEl.innerHTML = `<strong></strong>: <span class="msg-body"></span>`;
+    msgEl.querySelector('strong').textContent = sender;
+    msgEl.querySelector('.msg-body').textContent = text;
     box.appendChild(msgEl);
     box.scrollTop = box.scrollHeight;
     msgInput.value = '';
@@ -281,7 +282,7 @@ function initCommunityReviews() {
     submitBtn.onclick = () => {
       const textInput = $('reviewTextInput');
       const text = textInput.value.trim();
-      if (!text) return alert('Please enter a review');
+      if (!text) return showToast('Please enter a review', '⚠️');
 
       const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
       const reviewObj = {
@@ -324,7 +325,7 @@ function initCommunityReviews() {
 
       textInput.value = '';
       renderReviews();
-      alert('Review posted successfully!');
+      showToast('Review posted successfully!', '✍️');
     };
   }
 
@@ -561,7 +562,7 @@ function triggerDownload() {
         statusEl.textContent = 'Encryption complete! Saved to library.';
         setTimeout(() => {
           overlay.classList.remove('active');
-          alert(`📥 "${movieDetailsData?.title || movieDetailsData?.name || initialTitle}" has been added to your Offline Downloads Library!`);
+          showToast(`📥 "${movieDetailsData?.title || movieDetailsData?.name || initialTitle}" added to Offline Downloads!`, '📥');
         }, 1000);
       } catch (e) {
         console.error('Error saving download:', e);
@@ -853,7 +854,9 @@ function startWatchPartyBotSimulation() {
       if (box) {
         const msgEl = document.createElement('div');
         msgEl.className = 'party-msg';
-        msgEl.innerHTML = `<strong>${bot.avatar} ${bot.name}:</strong> ${msg}`;
+        msgEl.innerHTML = `<strong></strong> <span class="msg-body"></span>`;
+        msgEl.querySelector('strong').textContent = `${bot.avatar} ${bot.name}:`;
+        msgEl.querySelector('.msg-body').textContent = msg;
         box.appendChild(msgEl);
         box.scrollTop = box.scrollHeight;
       }
@@ -868,4 +871,14 @@ function startWatchPartyBotSimulation() {
       sendPartyReaction(emoji);
     }
   }, 4000 + Math.random() * 4000); // 4 to 8 seconds
+}
+
+function showToast(msg, icon='ℹ️') {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3200);
 }
