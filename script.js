@@ -52,7 +52,29 @@ const ACHIEVEMENTS_DEF = [
 window.onload = async function() {
   loadTheme();
   loadUser();
-  animateSplash();
+  
+  const introPlayed = sessionStorage.getItem('cs_intro_played') === '1';
+  if (introPlayed) {
+    const splash = document.getElementById('loadingSplash');
+    if (splash) {
+      splash.style.display = 'none';
+      splash.classList.add('hidden');
+    }
+    const saved = localStorage.getItem('cs_active_profile');
+    if (saved) {
+      try {
+        activeProfile = JSON.parse(saved);
+        revealMainAppDirectly();
+      } catch (e) {
+        showProfileScreenDirectly();
+      }
+    } else {
+      showProfileScreenDirectly();
+    }
+  } else {
+    sessionStorage.setItem('cs_intro_played', '1');
+    animateSplash();
+  }
   
   const isOffline = localStorage.getItem('cs_offline_mode') === '1';
   if (isOffline) {
@@ -75,6 +97,37 @@ window.onload = async function() {
     updateNavProfile();
   }
 };
+
+function revealMainAppDirectly() {
+  const ps = document.getElementById('profileScreen');
+  if (ps) {
+    ps.style.opacity = '0';
+    ps.style.visibility = 'hidden';
+    ps.classList.add('hidden');
+  }
+  const app = document.getElementById('mainApp');
+  if (app) {
+    app.style.opacity = '1';
+    app.style.transform = 'translateY(0)';
+  }
+  updateNavProfile();
+  renderWatchlist();
+  renderContinueWatching();
+}
+
+function showProfileScreenDirectly() {
+  const splash = document.getElementById('loadingSplash');
+  if (splash) {
+    splash.style.display = 'none';
+    splash.classList.add('hidden');
+  }
+  const ps = document.getElementById('profileScreen');
+  if (ps) {
+    ps.style.opacity = '1';
+    ps.style.visibility = 'visible';
+    ps.classList.remove('hidden');
+  }
+}
 
 function animateSplash() {
   const flare = document.querySelector('.intro-lens-flare');
