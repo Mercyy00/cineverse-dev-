@@ -14,6 +14,15 @@
 </head>
 <body class="dark-theme">
 
+<!-- LIQUID GLASS BACKGROUND BLOBS -->
+<div class="liquid-bg-container" id="liquidBg">
+  <div class="liquid-blob blob1"></div>
+  <div class="liquid-blob blob2"></div>
+  <div class="liquid-blob blob3"></div>
+  <div class="liquid-blob blob4"></div>
+</div>
+
+
 <!-- LOADING SPLASH -->
 <div id="loadingSplash">
   <div class="splash-logo">Cine<span>Verse</span></div>
@@ -110,6 +119,13 @@
         </button>
       </div>
     </div>
+    <button class="btn-settings" onclick="openSettingsModal()" title="Settings">
+      <svg class="settings-cog" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      <span class="hide-sm">Settings</span>
+    </button>
     <button class="profile-btn" id="profileBtn" onclick="handleProfileClick()">
       <div class="profile-btn-avatar" id="profileBtnAvatar">🍿</div>
       <span id="profileBtnName">Profile</span>
@@ -118,6 +134,12 @@
     <button class="btn-signin" id="authBtn" onclick="handleAuthClick()">Sign In</button>
   </div>
 </nav>
+
+<!-- OFFLINE MODE BANNER -->
+<div class="offline-banner" id="offlineBanner">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+  Offline Mode Active — Accessing Simulated Download Nodes
+</div>
 
 <!-- TICKER BAR -->
 <div id="tickerBar">
@@ -159,6 +181,17 @@
 
 <!-- MAIN APP -->
 <div id="mainApp" style="opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(0.16,1,0.3,1);">
+
+<!-- OFFLINE LIBRARY SECTION -->
+<div class="section" id="offlineSection" style="display:none;padding:30px 5% 60px;width:100%;box-sizing:border-box;">
+  <div class="section-header">
+    <div class="section-title" style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;display:flex;align-items:center;gap:10px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      📥 Offline Downloads Library
+    </div>
+  </div>
+  <div class="offline-library-grid" id="offlineGrid"></div>
+</div>
 
 <!-- MOOD SECTION -->
 <div id="moodSection">
@@ -529,6 +562,68 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
     </button>
     <h2 id="seeAllTitle" style="font-family:var(--font-heading);font-weight:800;font-size:1.3rem;"></h2>
+    <button id="searchFilterToggle" class="search-filter-toggle-btn" onclick="toggleSearchFilters()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Filters
+    </button>
+  </div>
+  <div class="search-filter-panel" id="searchFilterPanel">
+    <div class="filter-group">
+      <label>Genre</label>
+      <select id="filterGenre" class="filter-input" onchange="applySearchFilters()">
+        <option value="">All Genres</option>
+        <option value="28">Action</option>
+        <option value="12">Adventure</option>
+        <option value="16">Animation</option>
+        <option value="35">Comedy</option>
+        <option value="80">Crime</option>
+        <option value="99">Documentary</option>
+        <option value="18">Drama</option>
+        <option value="10751">Family</option>
+        <option value="14">Fantasy</option>
+        <option value="36">History</option>
+        <option value="27">Horror</option>
+        <option value="9648">Mystery</option>
+        <option value="10749">Romance</option>
+        <option value="878">Sci-Fi</option>
+        <option value="53">Thriller</option>
+        <option value="10752">War</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Release Year</label>
+      <select id="filterYear" class="filter-input" onchange="applySearchFilters()">
+        <option value="">All Years</option>
+        <option value="2026">2026</option>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+        <option value="2022">2022</option>
+        <option value="2021">2021</option>
+        <option value="2020-2029">2020s</option>
+        <option value="2010-2019">2010s</option>
+        <option value="2000-2009">2000s</option>
+        <option value="1990-1999">1990s</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-rating-row">
+        <label>Min IMDb Rating</label>
+        <span class="filter-rating-val" id="filterRatingVal">0.0</span>
+      </div>
+      <input type="range" id="filterRating" min="0" max="10" step="0.5" value="0" class="filter-input" oninput="updateRatingFilterVal(this.value); applySearchFilters();" style="padding:0;height:auto;margin:6px 0;width:100%;cursor:pointer;accent-color:var(--accent);"/>
+    </div>
+    <div class="filter-group">
+      <label>Sort By</label>
+      <select id="filterSort" class="filter-input" onchange="applySearchFilters()">
+        <option value="popularity.desc">Popularity</option>
+        <option value="vote_average.desc">IMDb Rating</option>
+        <option value="release_date.desc">Release Date</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button class="settings-btn-action" onclick="resetSearchFilters()">Reset Filters</button>
+    </div>
   </div>
   <div class="see-all-grid" id="seeAllGrid"></div>
 </div>
@@ -586,23 +681,58 @@
 
 <!-- ACCOUNT MODAL -->
 <div id="accountModal" onclick="closeAccountIfBackdrop(event)">
-  <div class="account-box" style="position:relative;">
+  <div class="stats-modal-box" style="position:relative;">
     <div class="modal-close-btn" onclick="closeAccountModal()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </div>
-    <div class="account-avatar" id="accountAvatar">🍿</div>
-    <div class="account-name" id="accountName">—</div>
-    <div class="account-email" id="accountEmail">—</div>
-    <div class="vip-badge">✨ VIP Premium Streamer</div>
-    <div class="stats-row">
-      <div class="stat-item"><div class="stat-num" id="statWatched">0</div><div class="stat-label">Watched</div></div>
-      <div class="stat-item"><div class="stat-num" id="statWatchlist">0</div><div class="stat-label">My List</div></div>
-      <div class="stat-item"><div class="stat-num" id="statReviews">0</div><div class="stat-label">Reviews</div></div>
+    
+    <div style="display:flex;align-items:center;gap:20px;margin-bottom:24px;flex-wrap:wrap;">
+      <div class="account-avatar" id="accountAvatar" style="font-size:3.5rem;width:80px;height:80px;background:var(--card2);border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0;">🍿</div>
+      <div>
+        <div class="stats-modal-title" id="accountName" style="font-size:1.6rem;font-weight:900;margin-bottom:4px;color:var(--text);">Guest</div>
+        <div class="stats-modal-subtitle" id="accountEmail" style="font-size:0.85rem;color:var(--muted);margin-bottom:0;">guest@cinestream.io</div>
+        <div class="vip-badge" style="background:linear-gradient(90deg,var(--accent2),var(--accent));color:#fff;font-size:0.68rem;font-weight:800;padding:3px 10px;border-radius:20px;display:inline-block;margin-top:6px;letter-spacing:0.5px;">✨ VIP PREMIER CINEPHILE</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:10px;">
+        <button class="settings-btn-action" onclick="switchProfile()" style="padding:6px 14px;font-size:0.75rem;">Switch Profile</button>
+        <button class="settings-btn-action btn-danger" onclick="signOut()" style="padding:6px 14px;font-size:0.75rem;">Sign Out</button>
+      </div>
     </div>
-    <div class="account-btns">
-      <button class="btn-sm accent" onclick="openAchievements()">🏆 Achievements</button>
-      <button class="btn-sm ghost" onclick="switchProfile()">Switch Profile</button>
-      <button class="btn-sm ghost" onclick="signOut()">Sign Out</button>
+
+    <div class="stats-grid">
+      <!-- Stats Summary -->
+      <div class="stats-card" style="display:flex;flex-direction:column;justify-content:center;gap:12px;text-align:left;height:100%;">
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:10px;">
+          <span style="font-size:0.8rem;color:var(--muted);font-weight:700;">🎥 TOTAL WATCHED</span>
+          <span style="font-weight:800;color:var(--text);" id="statWatched">0 Titles</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:10px;">
+          <span style="font-size:0.8rem;color:var(--muted);font-weight:700;">📋 MY WATCHLIST</span>
+          <span style="font-weight:800;color:var(--text);" id="statWatchlist">0 Titles</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:10px;">
+          <span style="font-size:0.8rem;color:var(--muted);font-weight:700;">💬 REVIEWS POSTED</span>
+          <span style="font-weight:800;color:var(--text);" id="statReviews">0 Posted</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-bottom:2px;">
+          <span style="font-size:0.8rem;color:var(--muted);font-weight:700;">⏱️ TOTAL WATCH TIME</span>
+          <span style="font-weight:800;color:var(--accent);" id="statTime">0h 0m</span>
+        </div>
+      </div>
+
+      <!-- Genre Preference chart -->
+      <div class="stats-card" style="text-align:left;">
+        <div class="stats-label" style="margin-bottom:14px;font-weight:800;font-size:0.72rem;letter-spacing:0.8px;color:var(--muted);">📊 Genre Breakdown</div>
+        <div class="genre-bar-container" id="genreBarContainer">
+          <div style="font-size:0.78rem;color:var(--muted);padding:15px 0;">No stats available. Watch movies to generate breakdown!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievements Section -->
+    <div style="border-top:1px solid var(--border);padding-top:22px;">
+      <div class="stats-label" style="font-weight:800;font-size:0.72rem;letter-spacing:0.8px;margin-bottom:14px;text-align:left;color:var(--muted);">🏆 Achievement Badges</div>
+      <div class="achievements-stats-grid" id="statsAchievementsGrid"></div>
     </div>
   </div>
 </div>
@@ -708,6 +838,151 @@
   </div>
 </div>
 
+<!-- SETTINGS MODAL -->
+<div id="settingsModal" onclick="closeSettingsIfBackdrop(event)">
+  <div class="settings-box" onclick="event.stopPropagation()">
+    <div class="modal-close-btn" onclick="closeSettingsModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </div>
+    
+    <div class="settings-header">
+      <div class="settings-title">⚙️ Control Center</div>
+      <div class="settings-subtitle">Customize your CineStream experience</div>
+    </div>
+    
+    <div class="settings-content">
+      <!-- Sidebar / Tabs Menu -->
+      <div class="settings-nav">
+        <button class="settings-nav-btn active" id="btn-tab-appearance" onclick="switchSettingsTab('appearance')">🎨 Appearance</button>
+        <button class="settings-nav-btn" id="btn-tab-playback" onclick="switchSettingsTab('playback')">▶ Playback</button>
+        <button class="settings-nav-btn" id="btn-tab-system" onclick="switchSettingsTab('system')">🛠️ System</button>
+      </div>
+      
+      <!-- Settings Panels -->
+      <div class="settings-panels">
+        <!-- Appearance Panel -->
+        <div class="settings-panel active" id="panel-appearance">
+          <div class="setting-item-row">
+            <div class="setting-item-info">
+              <div class="setting-item-title">Liquid Glass Theme</div>
+              <div class="setting-item-desc">Enable smooth animated background blobs and premium glassmorphic UI overlay.</div>
+            </div>
+            <label class="glass-switch">
+              <input type="checkbox" id="settingLiquidGlass" onchange="toggleLiquidGlassSetting(this.checked)">
+              <span class="glass-slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item-row border-top">
+            <div class="setting-item-info">
+              <div class="setting-item-title">Accent Theme Accentuation</div>
+              <div class="setting-item-desc">Select the glowing color palette for neon highlights across the app.</div>
+            </div>
+          </div>
+          <div class="settings-accent-swatches">
+            <div class="theme-swatch" id="set-sw-crimson" onclick="setTheme('crimson')"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
+            <div class="theme-swatch" id="set-sw-cyan" onclick="setTheme('cyan')"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
+            <div class="theme-swatch" id="set-sw-gold" onclick="setTheme('gold')"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
+            <div class="theme-swatch" id="set-sw-purple" onclick="setTheme('purple')"><div class="swatch-circle" style="background:#A855F7;"></div>Purple</div>
+          </div>
+
+          <div class="setting-item-row border-top">
+            <div class="setting-item-info">
+              <div class="setting-item-title">Hero Ambient Glow</div>
+              <div class="setting-item-desc">Add active glow colors and gradients behind the featured titles.</div>
+            </div>
+            <label class="glass-switch">
+              <input type="checkbox" id="settingHeroGlow" onchange="toggleHeroGlowSetting(this.checked)">
+              <span class="glass-slider"></span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- Playback Panel -->
+        <div class="settings-panel" id="panel-playback">
+          <div class="setting-item-row">
+            <div class="setting-item-info">
+              <div class="setting-item-title">Autoplay Next Episode</div>
+              <div class="setting-item-desc">Automatically advance to the next TV episode when current playback finishes.</div>
+            </div>
+            <label class="glass-switch">
+              <input type="checkbox" id="settingAutoplay" onchange="toggleAutoplaySetting(this.checked)">
+              <span class="glass-slider"></span>
+            </label>
+          </div>
+          
+          <div class="setting-item-row border-top">
+            <div class="setting-item-info">
+              <div class="setting-item-title">Preferred Stream Server</div>
+              <div class="setting-item-desc">Set the default server node to play videos.</div>
+            </div>
+            <select class="settings-select" id="settingServer" onchange="saveSettingServer(this.value)">
+              <option value="rivestream">RiveStream (Aggregator)</option>
+              <option value="oneembed">1embed (Multi-Quality)</option>
+              <option value="vidsync">VidSync (Cloud)</option>
+              <option value="cinesrc">CineSrc (Premium UI)</option>
+              <option value="vidnest">VidNest (Anime Node)</option>
+              <option value="multiembed">MultiEmbed (Alternative)</option>
+              <option value="multiembedvip">MultiEmbed VIP (Premium)</option>
+            </select>
+          </div>
+
+          <div class="setting-item-row border-top">
+            <div class="setting-item-info">
+              <div class="setting-item-title">Playback Quality Target</div>
+              <div class="setting-item-desc">Specify preferred starting video quality.</div>
+            </div>
+            <select class="settings-select" id="settingQuality" onchange="saveSettingQuality(this.value)">
+              <option value="auto">Auto (Adaptive)</option>
+              <option value="1080p">Superb 1080p FHD</option>
+              <option value="720p">High 720p HD</option>
+              <option value="480p">Standard 480p SD</option>
+            </select>
+          </div>
+
+          <div class="setting-item-row border-top">
+            <div class="setting-item-info">
+              <div class="setting-item-title">Offline Mode 🔌</div>
+              <div class="setting-item-desc">Disconnect from internet and browse downloaded titles only.</div>
+            </div>
+            <label class="glass-switch">
+              <input type="checkbox" id="settingOffline" onchange="toggleOfflineMode(this.checked)">
+              <span class="glass-slider"></span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- System Panel -->
+        <div class="settings-panel" id="panel-system">
+          <div class="setting-item-row">
+            <div class="setting-item-info">
+              <div class="setting-item-title">Keyboard Accessibility Map</div>
+              <div class="setting-item-desc">Open the keyboard shortcuts drawer mapping out active hotkeys.</div>
+            </div>
+            <button class="settings-btn-action" onclick="closeSettingsModal(); document.getElementById('shortcutsPanel').classList.add('open');">Keyboard Map</button>
+          </div>
+
+          <div class="setting-item-row border-top">
+            <div class="setting-item-info text-danger">
+              <div class="setting-item-title">Clear Local Streaming History</div>
+              <div class="setting-item-desc">Remove all progress records, custom watchlists, and created user profiles.</div>
+            </div>
+            <button class="settings-btn-action btn-danger" onclick="clearSettingsHistory()">Clear All Data</button>
+          </div>
+
+          <div class="setting-item-row border-top">
+            <div class="setting-item-info">
+              <div class="setting-item-title">System Status</div>
+              <div class="setting-item-desc">Current database node status & API response time.</div>
+            </div>
+            <div class="settings-status-badge">ONLINE (18ms)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST CONTAINER -->
 <div id="toastContainer"></div>
 
@@ -737,6 +1012,10 @@
   <div class="mobile-tab" onclick="handleProfileClick()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     Profile
+  </div>
+  <div class="mobile-tab" onclick="openSettingsModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    Settings
   </div>
 </nav>
 

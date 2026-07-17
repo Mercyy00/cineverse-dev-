@@ -25,8 +25,6 @@ let watchedSeconds = startTime;
 
 const SERVER_URLS = {
   rivestream: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed?type=movie&id=${id}`,
-  riveagg: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed/agg?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed/agg?type=movie&id=${id}`,
-  rivetorrent: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed/torrent?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed/torrent?type=movie&id=${id}`,
   oneembed: (id, type, s, e, st) => type === 'tv' ? `https://1embed.cc/embed/tv/${id}/${s}/${e}` : `https://1embed.cc/embed/movie/${id}`,
   vidsync: (id, type, s, e, st) => type === 'tv' ? `https://vidsync.live/embed/tv/${id}/${s}/${e}?startTime=${st}` : `https://vidsync.live/embed/movie/${id}?startTime=${st}`,
   cinesrc: (id, type, s, e, st) => {
@@ -51,7 +49,8 @@ const SERVER_URLS = {
     if (st > 0) url += `?startAt=${st}`;
     return url;
   },
-  autoembed: (id, type, s, e, st) => type === 'tv' ? `https://autoembed.cc/embed/tv/${id}/${s}/${e}` : `https://autoembed.cc/embed/movie/${id}`,
+  multiembed: (id, type, s, e, st) => type === 'tv' ? `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}` : `https://multiembed.mov/?video_id=${id}&tmdb=1`,
+  multiembedvip: (id, type, s, e, st) => type === 'tv' ? `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${s}&e=${e}` : `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`,
 };
 
 const $ = (id) => document.getElementById(id);
@@ -93,6 +92,12 @@ function applyModeTheme(mode) {
   document.documentElement.className = mode === 'light' ? 'light-theme' : 'dark-theme';
   document.body.classList.remove('light-theme', 'dark-theme');
   document.body.classList.add(mode === 'light' ? 'light-theme' : 'dark-theme');
+  
+  // Inherit Liquid Glass Theme class
+  const isLiquid = localStorage.getItem('cs_liquid_glass') === '1';
+  if (isLiquid) document.body.classList.add('liquid-glass-theme');
+  else document.body.classList.remove('liquid-glass-theme');
+
   const toggleBtn = $('watchModeToggle');
   if (toggleBtn) {
     toggleBtn.innerHTML = mode === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode';
@@ -120,9 +125,17 @@ function renderEmbedServer(serverKey = 'rivestream') {
   const wrapper = $('playerWrapper');
   if (!wrapper) return;
 
-  $$('.server-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.server === serverKey);
+  $$('.server-premium-card').forEach(card => {
+    card.classList.toggle('active', card.dataset.server === serverKey);
   });
+
+  const activeCard = Array.from(document.querySelectorAll('.server-premium-card')).find(c => c.dataset.server === serverKey);
+  if (activeCard) {
+    const titleEl = activeCard.querySelector('.server-card-title');
+    if (titleEl && $('currentActiveServerName')) {
+      $('currentActiveServerName').textContent = titleEl.textContent;
+    }
+  }
 
   const builder = SERVER_URLS[serverKey] || SERVER_URLS.vidsync;
   const embedUrl = builder(movieId, mediaType, currentSeason, currentEpisode, watchedSeconds);
@@ -164,6 +177,7 @@ function saveWatchProgress(secs) {
       seconds: secs,
       percent: percent,
       timestamp: Date.now(),
+      movie: movieDetailsData || { id: movieId, title: initialTitle, poster_path: null, release_date: '2026', media_type: mediaType }
     };
 
     localStorage.setItem(key, JSON.stringify(allProgress));
@@ -188,6 +202,33 @@ function initWatchParty() {
     const roomCode = 'PARTY-' + Math.random().toString(36).substring(2, 8).toUpperCase();
     $('roomCodeDisplay').textContent = roomCode;
     drawer.classList.remove('hidden');
+    
+    // Start bot chat and reaction simulation
+    startWatchPartyBotSimulation();
+
+    // Unlock 'social' achievement
+    try {
+      const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
+      const profileId = activeProfile.id || 'default';
+      const unlockedKey = `cs_unlocked_achievements_${profileId}`;
+      const unlocked = JSON.parse(localStorage.getItem(unlockedKey) || '[]');
+      if (!unlocked.includes('social')) {
+        unlocked.push('social');
+        localStorage.setItem(unlockedKey, JSON.stringify(unlocked));
+        
+        // Show local toast
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:24px;left:24px;background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);font-size:0.85rem;display:flex;align-items:center;gap:8px;';
+        toast.innerHTML = '<span>🏆</span> Achievement Unlocked: Social Streamer! 🤝';
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transition = 'opacity 0.5s';
+          setTimeout(() => toast.remove(), 500);
+        }, 4000);
+      }
+    } catch (e) {}
+
     try {
       navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?id=${movieId}&party=${roomCode}`);
       alert(`Watch Party Created! (${roomCode})\nShare link copied to clipboard.`);
@@ -196,7 +237,11 @@ function initWatchParty() {
     }
   };
 
-  closeBtn.onclick = () => drawer.classList.add('hidden');
+  closeBtn.onclick = () => {
+    drawer.classList.add('hidden');
+    clearInterval(botInterval);
+    clearInterval(reactionInterval);
+  };
 
   const sendMessage = () => {
     const text = msgInput.value.trim();
@@ -253,6 +298,29 @@ function initCommunityReviews() {
       const existing = JSON.parse(localStorage.getItem(key) || '[]');
       existing.unshift(reviewObj);
       localStorage.setItem(key, JSON.stringify(existing));
+
+      // Unlock 'reviewer' achievement
+      try {
+        const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
+        const profileId = activeProfile.id || 'default';
+        const unlockedKey = `cs_unlocked_achievements_${profileId}`;
+        const unlocked = JSON.parse(localStorage.getItem(unlockedKey) || '[]');
+        if (!unlocked.includes('reviewer')) {
+          unlocked.push('reviewer');
+          localStorage.setItem(unlockedKey, JSON.stringify(unlocked));
+          
+          // Show local toast
+          const toast = document.createElement('div');
+          toast.style.cssText = 'position:fixed;bottom:24px;left:24px;background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);font-size:0.85rem;display:flex;align-items:center;gap:8px;';
+          toast.innerHTML = '<span>🏆</span> Achievement Unlocked: Critic! ✍️';
+          document.body.appendChild(toast);
+          setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.5s';
+            setTimeout(() => toast.remove(), 500);
+          }, 4000);
+        }
+      } catch (e) {}
 
       textInput.value = '';
       renderReviews();
@@ -341,6 +409,7 @@ async function loadContentDetails() {
     }
     loadWatchEpisodes(currentSeason);
   }
+  loadWatchCastAndSimilar();
 }
 
 async function loadWatchEpisodes(seasonNum) {
@@ -438,18 +507,365 @@ document.addEventListener('DOMContentLoaded', () => {
   initWatchParty();
   initCommunityReviews();
 
-  $$('.server-btn').forEach(btn => {
-    btn.onclick = () => renderEmbedServer(btn.dataset.server);
+  $$('.server-premium-card').forEach(card => {
+    card.onclick = () => renderEmbedServer(card.dataset.server);
   });
 
   loadContentDetails();
-  renderEmbedServer('rivestream');
+  
+  const preferredServer = localStorage.getItem('cs_preferred_player') || 'rivestream';
+  renderEmbedServer(preferredServer);
 });
 
 function triggerDownload() {
-  if (mediaType === 'tv') {
-    window.open(`https://www.rivestream.app/download?type=tv&id=${movieId}&season=${currentSeason}&episode=${currentEpisode}`, '_blank');
-  } else {
-    window.open(`https://www.rivestream.app/download?type=movie&id=${movieId}`, '_blank');
+  const overlay = $('downloadProgressOverlay');
+  const percentEl = $('downloadPercent');
+  const statusEl = $('downloadStatusText');
+  if (!overlay || !percentEl || !statusEl) return;
+
+  overlay.classList.add('active');
+  let progress = 0;
+  statusEl.textContent = 'Allocating local storage block...';
+  
+  const interval = setInterval(() => {
+    progress += Math.floor(Math.random() * 8) + 4;
+    if (progress >= 100) {
+      progress = 100;
+      clearInterval(interval);
+      
+      // Save movie details to offline library
+      try {
+        const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
+        const profileId = activeProfile.id || 'default';
+        const downloadKey = `cs_downloads_${profileId}`;
+        const downloads = JSON.parse(localStorage.getItem(downloadKey) || '[]');
+        
+        const isExists = downloads.some(d => d.id === movieId);
+        if (!isExists) {
+          const downloadItem = {
+            id: movieId,
+            title: movieDetailsData?.title || movieDetailsData?.name || initialTitle,
+            name: movieDetailsData?.name || movieDetailsData?.title || initialTitle,
+            poster_path: movieDetailsData?.poster_path || null,
+            backdrop_path: movieDetailsData?.backdrop_path || null,
+            release_date: movieDetailsData?.release_date || movieDetailsData?.first_air_date || '2026',
+            media_type: mediaType,
+            season: currentSeason,
+            episode: currentEpisode,
+            downloadedAt: Date.now()
+          };
+          downloads.push(downloadItem);
+          localStorage.setItem(downloadKey, JSON.stringify(downloads));
+        }
+
+        statusEl.textContent = 'Encryption complete! Saved to library.';
+        setTimeout(() => {
+          overlay.classList.remove('active');
+          alert(`📥 "${movieDetailsData?.title || movieDetailsData?.name || initialTitle}" has been added to your Offline Downloads Library!`);
+        }, 1000);
+      } catch (e) {
+        console.error('Error saving download:', e);
+        overlay.classList.remove('active');
+      }
+    } else {
+      percentEl.textContent = `${progress}%`;
+      if (progress > 10 && progress < 40) {
+        statusEl.textContent = 'Fetching media stream blocks...';
+      } else if (progress >= 40 && progress < 75) {
+        statusEl.textContent = 'Writing cached segments...';
+      } else if (progress >= 75) {
+        statusEl.textContent = 'Verifying digital signatures...';
+      }
+    }
+  }, 150);
+}
+
+function renderOfflinePlayer() {
+  const wrapper = $('playerWrapper');
+  if (!wrapper) return;
+  
+  const title = movieDetailsData?.title || movieDetailsData?.name || initialTitle;
+  
+  wrapper.innerHTML = `
+    <div class="offline-player-placeholder">
+      <div class="offline-player-icon">🔌</div>
+      <div class="offline-player-title">Offline Playback Mode</div>
+      <div class="offline-player-status">Playing Cache: ${title} (Simulated Stream)</div>
+      
+      <!-- Video Loop Simulation -->
+      <div id="simulatedVisual" style="width:100%;height:100%;position:absolute;inset:0;background:radial-gradient(circle, rgba(229,9,20,0.12) 0%, rgba(0,0,0,0) 70%);opacity:0.4;z-index:1;transition:opacity 0.5s;"></div>
+      
+      <!-- Custom Controls Overlay -->
+      <div class="offline-controls-overlay">
+        <button class="offline-play-btn" id="offlinePlayBtn">▶</button>
+        <div class="offline-timeline-container" id="offlineTimelineContainer">
+          <div class="offline-timeline-fill" id="offlineTimelineFill"></div>
+        </div>
+        <div class="offline-time-lbl" id="offlineTimeLbl">00:00 / 02:00</div>
+      </div>
+    </div>
+  `;
+
+  let isPlaying = false;
+  let simulatedSeconds = watchedSeconds || 0;
+  const totalSeconds = 120; // 2 mins mock length
+  let simInterval = null;
+
+  const playBtn = $('offlinePlayBtn');
+  const fill = $('offlineTimelineFill');
+  const label = $('offlineTimeLbl');
+  const visual = $('simulatedVisual');
+
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+
+  const updateTimeUI = () => {
+    fill.style.width = `${(simulatedSeconds / totalSeconds) * 100}%`;
+    label.textContent = `${formatTime(simulatedSeconds)} / ${formatTime(totalSeconds)}`;
+  };
+
+  updateTimeUI();
+
+  const togglePlay = () => {
+    isPlaying = !isPlaying;
+    if (isPlaying) {
+      playBtn.textContent = '⏸';
+      visual.style.opacity = '1';
+      simInterval = setInterval(() => {
+        simulatedSeconds++;
+        if (simulatedSeconds >= totalSeconds) {
+          simulatedSeconds = 0;
+          isPlaying = false;
+          clearInterval(simInterval);
+          playBtn.textContent = '▶';
+          visual.style.opacity = '0.4';
+        }
+        updateTimeUI();
+        saveWatchProgress(simulatedSeconds);
+      }, 1000);
+    } else {
+      playBtn.textContent = '▶';
+      visual.style.opacity = '0.4';
+      clearInterval(simInterval);
+    }
+  };
+
+  playBtn.onclick = togglePlay;
+  
+  $('offlineTimelineContainer').onclick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    simulatedSeconds = Math.floor(pct * totalSeconds);
+    updateTimeUI();
+    saveWatchProgress(simulatedSeconds);
+  };
+}
+
+// ---- SLIDER SCROLLING ----
+function scrollWatchSlider(id, dir) {
+  const track = $(id);
+  if (track) track.scrollBy({ left: dir * 300, behavior: 'smooth' });
+}
+
+// ---- CAST & SIMILAR FETCHING ----
+async function loadWatchCastAndSimilar() {
+  const isOffline = localStorage.getItem('cs_offline_mode') === '1';
+  if (isOffline) {
+    // Hide sections since we are offline and don't make API calls
+    $('castSectionTitle').style.display = 'none';
+    $('castSlider').style.display = 'none';
+    $('similarSectionTitle').style.display = 'none';
+    $('similarMoviesSection').style.display = 'none';
+    return;
   }
+
+  try {
+    const [creds, similar] = await Promise.all([
+      apiFetch(`/${mediaType}/${movieId}/credits`),
+      apiFetch(`/${mediaType}/${movieId}/similar`)
+    ]);
+
+    // 1. Render Cast
+    const castSlider = $('castSlider');
+    const castTitle = $('castSectionTitle');
+    if (castSlider && creds && creds.cast && creds.cast.length > 0) {
+      castSlider.innerHTML = '';
+      creds.cast.slice(0, 10).forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'cast-card';
+        card.onclick = () => openWatchActor(c.id);
+        card.innerHTML = `
+          <img class="cast-avatar" src="${c.profile_path ? IMG_BASE + 'w185' + c.profile_path : ''}" onerror="this.style.background='var(--card2)'"/>
+          <div class="cast-name">${c.name}</div>
+          <div class="cast-char">${c.character || 'Actor'}</div>
+        `;
+        castSlider.appendChild(card);
+      });
+      castTitle.style.display = 'block';
+      castSlider.style.display = 'flex';
+    } else {
+      castTitle.style.display = 'none';
+      castSlider.style.display = 'none';
+    }
+
+    // 2. Render Similar
+    const similarTrack = $('similarMoviesTrack');
+    const similarTitle = $('similarSectionTitle');
+    const similarSection = $('similarMoviesSection');
+    if (similarTrack && similar && similar.results && similar.results.length > 0) {
+      similarTrack.innerHTML = '';
+      similar.results.slice(0, 10).forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.style.flexShrink = '0';
+        card.style.width = '155px';
+        const isTV = m.media_type === 'tv' || mediaType === 'tv';
+        card.innerHTML = `
+          <div class="movie-card-poster" style="height:225px;position:relative;">
+            <img src="${m.poster_path ? IMG_BASE + 'w342' + m.poster_path : ''}" alt="${m.title || m.name}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" onerror="this.style.background='var(--card2)'"/>
+            ${m.vote_average ? `<div class="card-badge rating" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.7);color:#ffb800;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:700;">★ ${m.vote_average.toFixed(1)}</div>` : ''}
+            <div class="play-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;background:rgba(0,0,0,0.5);border-radius:12px;transition:opacity 0.2s;"><div class="play-circle" style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg></div></div>
+          </div>
+          <div class="card-info" style="padding-top:8px;">
+            <div class="card-title" style="font-weight:700;font-size:0.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text);text-align:left;">${m.title || m.name || 'Unknown'}</div>
+            <div class="card-meta" style="font-size:0.7rem;color:var(--muted);margin-top:2px;text-align:left;">${(m.release_date || m.first_air_date || '2026').slice(0, 4)} • ${isTV ? 'TV Series' : 'Movie'}</div>
+          </div>
+        `;
+        // Hover effects in JS style
+        const posterEl = card.querySelector('.movie-card-poster');
+        const overlayEl = card.querySelector('.play-overlay');
+        card.onmouseenter = () => { overlayEl.style.opacity = '1'; };
+        card.onmouseleave = () => { overlayEl.style.opacity = '0'; };
+        
+        card.onclick = () => {
+          window.location.href = `watch.html?id=${m.id}&type=${isTV ? 'tv' : 'movie'}&title=${encodeURIComponent(m.title || m.name)}`;
+        };
+        similarTrack.appendChild(card);
+      });
+      similarTitle.style.display = 'block';
+      similarSection.style.display = 'block';
+    } else {
+      similarTitle.style.display = 'none';
+      similarSection.style.display = 'none';
+    }
+
+  } catch(e) {
+    console.error('Error loading cast/similar:', e);
+  }
+}
+
+// ---- ACTOR BIO MODAL FOR WATCH PAGE ----
+async function openWatchActor(actorId) {
+  const modal = $('watchActorModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  $('watchActorName').textContent = 'Loading...';
+  $('watchActorBio').textContent = '';
+  
+  try {
+    const info = await apiFetch(`/person/${actorId}`);
+    if (!info) throw new Error('No info');
+    
+    $('watchActorPhoto').src = info.profile_path ? IMG_BASE + 'w185' + info.profile_path : '';
+    $('watchActorName').textContent = info.name || 'Unknown';
+    $('watchActorKnownFor').textContent = info.known_for_department || 'Acting';
+    $('watchActorBirthday').textContent = info.birthday ? `Born: ${info.birthday}` : 'Born: —';
+    $('watchActorBio').textContent = info.biography || 'No biography available.';
+  } catch(e) {
+    $('watchActorName').textContent = 'Info unavailable';
+    $('watchActorBio').textContent = 'Could not retrieve actor biography.';
+  }
+}
+
+function closeWatchActor() {
+  const modal = $('watchActorModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function closeWatchActorIfBackdrop(e) {
+  if (e.target === $('watchActorModal')) closeWatchActor();
+}
+
+// ---- FLOATING REACTIONS & WATCH PARTY BOT SIMULATION ----
+let botInterval = null;
+let reactionInterval = null;
+
+function sendPartyReaction(emoji) {
+  const container = $('floatingReactionContainer');
+  if (!container) return;
+
+  const reaction = document.createElement('div');
+  reaction.className = 'floating-emoji';
+  reaction.textContent = emoji;
+  
+  // Random horizontal variance
+  const randomOffset = Math.floor(Math.random() * 80) - 40; // -40px to +40px
+  reaction.style.right = `${50 + randomOffset}px`;
+  
+  container.appendChild(reaction);
+
+  // Remove after animation finishes
+  setTimeout(() => {
+    reaction.remove();
+  }, 3000);
+}
+
+function startWatchPartyBotSimulation() {
+  clearInterval(botInterval);
+  clearInterval(reactionInterval);
+
+  const botUsers = [
+    { name: 'PopcornQueen 🍿', avatar: '🍿' },
+    { name: 'CinephileMax ⚡', avatar: '⚡' },
+    { name: 'MovieBuff99 🎬', avatar: '🎬' },
+    { name: 'AnimeLover ⛩️', avatar: '⛩️' },
+    { name: 'FutureGeek 🚀', avatar: '🚀' }
+  ];
+
+  const botMessages = [
+    "Wow, this opening scene is absolute gold!",
+    "The cinematography in this shot is amazing.",
+    "Did anyone else notice that detail in the background?",
+    "Hahaha! That was hilarious!",
+    "OMG! I wasn't expecting that twist!",
+    "This soundtrack gives me goosebumps every single time.",
+    "Best scene coming up in 3... 2... 1...",
+    "I've watched this movie 5 times and it never gets old.",
+    "The acting is so top tier here.",
+    "Wait, is that actor the same one from the other series?",
+    "Perfect movie for tonight. Thanks for the room invite! 🍿",
+    "Stream is so smooth on this server node."
+  ];
+
+  const reactions = ['👍', '❤️', '😂', '😮', '🔥'];
+
+  // 1. Chat Bot Interval
+  botInterval = setInterval(() => {
+    const drawer = $('partyDrawer');
+    if (drawer && !drawer.classList.contains('hidden')) {
+      const bot = botUsers[Math.floor(Math.random() * botUsers.length)];
+      const msg = botMessages[Math.floor(Math.random() * botMessages.length)];
+      
+      const box = $('partyMessages');
+      if (box) {
+        const msgEl = document.createElement('div');
+        msgEl.className = 'party-msg';
+        msgEl.innerHTML = `<strong>${bot.avatar} ${bot.name}:</strong> ${msg}`;
+        box.appendChild(msgEl);
+        box.scrollTop = box.scrollHeight;
+      }
+    }
+  }, 8000 + Math.random() * 6000); // 8 to 14 seconds
+
+  // 2. Reaction Bot Interval
+  reactionInterval = setInterval(() => {
+    const drawer = $('partyDrawer');
+    if (drawer && !drawer.classList.contains('hidden')) {
+      const emoji = reactions[Math.floor(Math.random() * reactions.length)];
+      sendPartyReaction(emoji);
+    }
+  }, 4000 + Math.random() * 4000); // 4 to 8 seconds
 }

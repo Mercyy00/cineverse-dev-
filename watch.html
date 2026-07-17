@@ -117,47 +117,24 @@
   <!-- Player Section -->
   <div class="player-section" id="playerSection">
     <div class="player-wrapper" id="playerWrapper"></div>
+    
+    <!-- Download Progress Overlay -->
+    <div class="download-progress-overlay" id="downloadProgressOverlay">
+      <div class="download-progress-ring"></div>
+      <div class="download-percentage" id="downloadPercent">0%</div>
+      <div class="download-status-txt" id="downloadStatusText">Preparing download nodes...</div>
+    </div>
+
+    <!-- Floating Reactions Container -->
+    <div class="floating-reaction-container" id="floatingReactionContainer"></div>
   </div>
 
   <!-- Watch Party & Server Bar -->
   <div class="party-toolbar" style="max-width:1200px;margin:14px auto 0;padding:12px 20px;">
     <div style="display:flex;align-items:center;gap:12px;width:100%;justify-content:space-between;flex-wrap:wrap;">
-      <div class="server-hub-container" id="serverHubContainer">
-        <span style="font-size:0.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-right:2px;display:flex;align-items:center;gap:4px;">
-          🌐 STREAM NODES:
-        </span>
-        <button class="server-card-btn server-btn active" data-server="rivestream">
-          <span class="server-icon-badge">⚡</span>
-          <span>RiveStream</span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="riveagg">
-          <span class="server-icon-badge">🚀</span>
-          <span>Rive Aggregator</span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="rivetorrent">
-          <span class="server-icon-badge">🌪️</span>
-          <span>Rive Torrent</span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="oneembed">
-          <span class="server-icon-badge">🔮</span>
-          <span>1embed</span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="vidsync">
-          <span class="server-icon-badge">⚡</span>
-          <span>VidSync</span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="cinesrc">
-          <span class="server-icon-badge">🎬</span>
-          <span>CineSrc</span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="vidnest">
-          <span class="server-icon-badge">⛩️</span>
-          <span>VidNest Anime</span>
-        </button>
-        <button class="server-card-btn server-btn" data-server="autoembed">
-          <span class="server-icon-badge">🚀</span>
-          <span>AutoEmbed</span>
-        </button>
+      <div id="activeServerStatus" style="font-size:0.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:6px;user-select:none;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10B981;box-shadow:0 0 8px #10B981;animation:status-glow 2s infinite;"></span>
+        Stream Node: <span id="currentActiveServerName" style="color:var(--text);margin-left:4px;">RiveStream</span>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0;">
         <button class="btn-create-party" id="createPartyBtn">
@@ -167,6 +144,129 @@
           📥 Download Video
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Streaming Node Selector Grid Section -->
+  <div class="server-hub-section" style="max-width:1200px;margin:16px auto;padding:20px;background:var(--card);border:1px solid var(--border);border-radius:14px;">
+    <div class="watch-section-title" style="margin-top:0;margin-bottom:14px;font-size:16px;font-family:'Outfit',sans-serif;font-weight:800;display:flex;align-items:center;gap:8px;">
+      🌐 Select Stream Node
+      <span style="font-size:0.75rem;color:var(--muted);font-weight:600;">(Change server if video is slow or not loading)</span>
+    </div>
+    <div class="server-premium-grid" id="serverPremiumGrid">
+      
+      <!-- RiveStream -->
+      <div class="server-premium-card active" data-server="rivestream">
+        <div class="server-card-header">
+          <span class="server-badge-icon">⚡</span>
+          <div class="server-pulse-dot"></div>
+        </div>
+        <div class="server-card-info">
+          <div class="server-card-title">RiveStream Node</div>
+          <div class="server-card-desc">Default auto-aggregator stream</div>
+        </div>
+        <div class="server-card-meta">
+          <span class="server-meta-tag">Auto-Speed</span>
+          <span class="server-meta-tag green">1080p</span>
+        </div>
+      </div>
+
+      <!-- 1embed -->
+      <div class="server-premium-card" data-server="oneembed">
+        <div class="server-card-header">
+          <span class="server-badge-icon">🔮</span>
+          <div class="server-pulse-dot"></div>
+        </div>
+        <div class="server-card-info">
+          <div class="server-card-title">1embed Node</div>
+          <div class="server-card-desc">Multi-quality server selection</div>
+        </div>
+        <div class="server-card-meta">
+          <span class="server-meta-tag">Select Quality</span>
+          <span class="server-meta-tag purple">Ad-Free</span>
+        </div>
+      </div>
+
+      <!-- VidSync -->
+      <div class="server-premium-card" data-server="vidsync">
+        <div class="server-card-header">
+          <span class="server-badge-icon">🚀</span>
+          <div class="server-pulse-dot"></div>
+        </div>
+        <div class="server-card-info">
+          <div class="server-card-title">VidSync Cloud</div>
+          <div class="server-card-desc">High performance streaming node</div>
+        </div>
+        <div class="server-card-meta">
+          <span class="server-meta-tag">Ultra Fast</span>
+          <span class="server-meta-tag blue">HD HLS</span>
+        </div>
+      </div>
+
+      <!-- CineSrc -->
+      <div class="server-premium-card" data-server="cinesrc">
+        <div class="server-card-header">
+          <span class="server-badge-icon">🎬</span>
+          <div class="server-pulse-dot"></div>
+        </div>
+        <div class="server-card-info">
+          <div class="server-card-title">CineSrc Premium</div>
+          <div class="server-card-desc">Sleek interface with theme colors</div>
+        </div>
+        <div class="server-card-meta">
+          <span class="server-meta-tag">Theme Sync</span>
+          <span class="server-meta-tag gold">FHD 1080p</span>
+        </div>
+      </div>
+
+      <!-- VidNest Anime -->
+      <div class="server-premium-card" data-server="vidnest">
+        <div class="server-card-header">
+          <span class="server-badge-icon">⛩️</span>
+          <div class="server-pulse-dot"></div>
+        </div>
+        <div class="server-card-info">
+          <div class="server-card-title">VidNest Anime</div>
+          <div class="server-card-desc">Specialized anime stream node</div>
+        </div>
+        <div class="server-card-meta">
+          <span class="server-meta-tag">Sub / Dub</span>
+          <span class="server-meta-tag red">Anime</span>
+        </div>
+      </div>
+
+      <!-- MultiEmbed -->
+      <div class="server-premium-card" data-server="multiembed">
+        <div class="server-card-header">
+          <span class="server-badge-icon">🌐</span>
+          <div class="server-pulse-dot"></div>
+        </div>
+        <div class="server-card-info">
+          <div class="server-card-title">MultiEmbed Normal</div>
+          <div class="server-card-desc">High compatibility fallback server</div>
+        </div>
+        <div class="server-card-meta">
+          <span class="server-meta-tag">Stable Node</span>
+          <span class="server-meta-tag">Multi-Server</span>
+        </div>
+      </div>
+
+      <!-- MultiEmbed VIP -->
+      <div class="server-premium-card" data-server="multiembedvip">
+        <div class="server-card-header">
+          <span class="server-badge-icon">✨</span>
+          <div class="server-pulse-dot"></div>
+        </div>
+        <div class="server-card-info">
+          <div class="server-card-title">MultiEmbed VIP</div>
+          <div class="server-card-desc">Fast HLS stream with subtitles</div>
+        </div>
+        <div class="server-card-meta">
+          <span class="server-meta-tag">Multi Subtitles</span>
+          <span class="server-meta-tag gold">VIP Premium</span>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -191,6 +291,15 @@
     <div class="party-messages" id="partyMessages">
       <div class="party-msg">System: Room created! Share code with friends to sync playback.</div>
     </div>
+    <!-- Reaction Picker Bar -->
+    <div class="reaction-picker-bar">
+      <button class="reaction-btn" onclick="sendPartyReaction('👍')">👍</button>
+      <button class="reaction-btn" onclick="sendPartyReaction('❤️')">❤️</button>
+      <button class="reaction-btn" onclick="sendPartyReaction('😂')">😂</button>
+      <button class="reaction-btn" onclick="sendPartyReaction('😮')">😮</button>
+      <button class="reaction-btn" onclick="sendPartyReaction('😢')">😢</button>
+      <button class="reaction-btn" onclick="sendPartyReaction('🔥')">🔥</button>
+    </div>
     <div class="party-input-box">
       <input type="text" class="party-input" id="partyMsgInput" placeholder="Chat with room..." />
       <button id="sendPartyMsgBtn" style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;border:none;cursor:pointer;">➔</button>
@@ -208,6 +317,24 @@
       </div>
     </div>
 
+    <!-- Cast Slider Section -->
+    <div class="watch-section-title" id="castSectionTitle" style="display:none;font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;margin-top:40px;">👥 Starring Cast</div>
+    <div class="cast-slider-wrap" id="castSlider" style="display:none;"></div>
+
+    <!-- Similar Recommendations Slider Section -->
+    <div class="watch-section-title" id="similarSectionTitle" style="display:none;font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;margin-top:30px;">🔥 More Like This</div>
+    <div class="similar-slider-wrap" id="similarMoviesSection" style="display:none;margin-bottom:40px;position:relative;">
+      <div class="slider-wrap" style="margin: 0; position:relative;">
+        <button class="slider-arrow left" onclick="scrollWatchSlider('similarMoviesTrack',-1)" style="top:50%;transform:translateY(-50%);position:absolute;left:-16px;z-index:5;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <div class="slider-track" id="similarMoviesTrack" style="display:flex;gap:14px;overflow-x:auto;scroll-behavior:smooth;"></div>
+        <button class="slider-arrow right" onclick="scrollWatchSlider('similarMoviesTrack',1)" style="top:50%;transform:translateY(-50%);position:absolute;right:-16px;z-index:5;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+        </button>
+      </div>
+    </div>
+
     <!-- Community Reviews Section -->
     <div class="reviews-section">
       <h3 style="font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;">💬 Community Reviews & Ratings</h3>
@@ -219,6 +346,24 @@
         <button class="btn-submit-review" id="submitReviewBtn">Post Review</button>
       </div>
       <div class="reviews-list" id="reviewsList"></div>
+    </div>
+  </div>
+
+  <!-- ACTOR MODAL FOR WATCH PAGE -->
+  <div id="watchActorModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(20px);z-index:9000;align-items:center;justify-content:center;" onclick="closeWatchActorIfBackdrop(event)">
+    <div class="watch-actor-modal-box" style="position:relative;" onclick="event.stopPropagation()">
+      <div class="modal-close-btn" onclick="closeWatchActor()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+        <img id="watchActorPhoto" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid var(--border);" src="" onerror="this.style.background='var(--card2)'"/>
+        <div>
+          <h2 id="watchActorName" style="font-family:var(--font-heading);font-weight:900;font-size:1.4rem;color:var(--text);">Actor Name</h2>
+          <div id="watchActorKnownFor" style="font-size:0.75rem;color:var(--accent);font-weight:800;text-transform:uppercase;margin-top:4px;">Acting</div>
+          <div id="watchActorBirthday" style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Born: —</div>
+        </div>
+      </div>
+      <p id="watchActorBio" style="margin-top:16px;font-size:0.8rem;color:#c0c0d0;line-height:1.5;max-height:180px;overflow-y:auto;text-align:left;"></p>
     </div>
   </div>
 

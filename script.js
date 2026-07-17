@@ -53,16 +53,27 @@ window.onload = async function() {
   loadTheme();
   loadUser();
   animateSplash();
-  await loadGenres();
-  await Promise.all([loadHero(), loadPopular()]);
-  loadSliders();
-  renderGenreChips();
-  setRandomQuote();
-  setupCursorTrail();
-  setupScrollEvents();
-  setupKeyboard();
-  renderProfiles();
-  updateNavProfile();
+  
+  const isOffline = localStorage.getItem('cs_offline_mode') === '1';
+  if (isOffline) {
+    toggleOfflineMode(true, false);
+    setupCursorTrail();
+    setupScrollEvents();
+    setupKeyboard();
+    renderProfiles();
+    updateNavProfile();
+  } else {
+    await loadGenres();
+    await Promise.all([loadHero(), loadPopular()]);
+    loadSliders();
+    renderGenreChips();
+    setRandomQuote();
+    setupCursorTrail();
+    setupScrollEvents();
+    setupKeyboard();
+    renderProfiles();
+    updateNavProfile();
+  }
 };
 
 function animateSplash() {
@@ -223,6 +234,14 @@ function loadTheme() {
   document.body.className = mode === 'light' ? 'light-theme' : 'dark-theme';
   applyAccent(accent, false);
   updateModeBtn(mode);
+  
+  // Re-apply Liquid Glass Theme if enabled
+  const isLiquid = localStorage.getItem('cs_liquid_glass') === '1';
+  if (isLiquid) document.body.classList.add('liquid-glass-theme');
+  
+  // Re-apply Hero Ambient Glow if enabled
+  const isHeroGlow = localStorage.getItem('cs_hero_glow') !== '0';
+  if (isHeroGlow) document.body.classList.add('ambient-glow-theme');
 }
 function setTheme(t) {
   localStorage.setItem('cs_accent_theme', t);
@@ -235,6 +254,8 @@ function applyAccent(t, toast=false) {
   document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
   const sw = document.getElementById(`sw-${t}`);
   if(sw) sw.classList.add('active');
+  const swSet = document.getElementById(`set-sw-${t}`);
+  if(swSet) swSet.classList.add('active');
   if(toast) showToast(`Theme changed to ${t.charAt(0).toUpperCase()+t.slice(1)}`,'🎨');
 }
 function toggleMode() {
@@ -247,6 +268,15 @@ function toggleMode() {
   // re-apply accent
   const accent = localStorage.getItem('cs_accent_theme') || 'crimson';
   if(accent !== 'crimson') document.body.classList.add(`theme-${accent}`);
+  
+  // re-apply Liquid Glass Theme if enabled
+  const isLiquid = localStorage.getItem('cs_liquid_glass') === '1';
+  if (isLiquid) document.body.classList.add('liquid-glass-theme');
+  
+  // re-apply Hero Ambient Glow if enabled
+  const isHeroGlow = localStorage.getItem('cs_hero_glow') !== '0';
+  if (isHeroGlow) document.body.classList.add('ambient-glow-theme');
+
   updateModeBtn(newMode);
   document.getElementById('themeDropdown').classList.remove('open');
   showToast(`Switched to ${newMode} mode`,'🌙');
@@ -781,130 +811,17 @@ function openPlayer(item, isTV, season=1, episode=1) {
   const id = item.id || item;
   const title = item.title || item.name || (isTV ? 'TV Series' : 'Movie');
 
-  // Theme hex mapping for Vidsync player
-  const themeHexMap = { crimson: 'E50914', cyan: '00D2D3', gold: 'FFB800', purple: 'A855F7' };
-  const currentTheme = localStorage.getItem('cs_accent_theme') || 'crimson';
-  const themeHex = themeHexMap[currentTheme] || 'E50914';
-
   // Check saved progress for startTime
   let startTimeParam = '';
-  let progressData = {};
   if (activeProfile && id) {
-    progressData = JSON.parse(localStorage.getItem(`cs_progress_${activeProfile.id}`) || '{}');
+    const progressData = JSON.parse(localStorage.getItem(`cs_progress_${activeProfile.id}`) || '{}');
     if (progressData[id] && progressData[id].seconds > 5) {
       startTimeParam = `&startTime=${Math.floor(progressData[id].seconds)}`;
     }
   }
 
-  const vidsyncUrl = isTV
-    ? `https://vidsync.live/embed/tv/${id}/${season}/${episode}?autoPlay=true&nextButton=true&autoNext=true&theme=${themeHex}${startTimeParam}`
-    : `https://vidsync.live/embed/movie/${id}?autoPlay=true&theme=${themeHex}${startTimeParam}`;
-
-  const cinesrcStartTime = startTimeParam ? `&t=${Math.floor(progressData?.[id]?.seconds || 0)}` : '';
-  const cinesrcUrl = isTV
-    ? `https://cinesrc.st/embed/tv/${id}?s=${season}&e=${episode}&color=%23${themeHex}${cinesrcStartTime}`
-    : `https://cinesrc.st/embed/movie/${id}?color=%23${themeHex}${cinesrcStartTime}`;
-
-  const vidnestStartParam = startTimeParam ? `?startAt=${Math.floor(progressData?.[id]?.seconds || 0)}` : '';
-  const vidnestUrl = item.anilistId
-    ? `https://vidnest.fun/anime/${item.anilistId}/${episode}/sub${vidnestStartParam}`
-    : (isTV
-      ? `https://vidnest.fun/tv/${id}/${season}/${episode}${vidnestStartParam}`
-      : `https://vidnest.fun/movie/${id}${vidnestStartParam}`);
-
-  const vidnestPaheUrl = item.anilistId
-    ? `https://vidnest.fun/animepahe/${item.anilistId}/${episode}/sub${vidnestStartParam}`
-    : (isTV
-      ? `https://vidnest.fun/tv/${id}/${season}/${episode}${vidnestStartParam}`
-      : `https://vidnest.fun/movie/${id}${vidnestStartParam}`);
-
-  const servers = {
-    srvRivestream: isTV 
-      ? `https://www.rivestream.app/embed?type=tv&id=${id}&season=${season}&episode=${episode}` 
-      : `https://www.rivestream.app/embed?type=movie&id=${id}`,
-    srvRiveagg: isTV 
-      ? `https://www.rivestream.app/embed/agg?type=tv&id=${id}&season=${season}&episode=${episode}` 
-      : `https://www.rivestream.app/embed/agg?type=movie&id=${id}`,
-    srvRivetorrent: isTV 
-      ? `https://www.rivestream.app/embed/torrent?type=tv&id=${id}&season=${season}&episode=${episode}` 
-      : `https://www.rivestream.app/embed/torrent?type=movie&id=${id}`,
-    srvOneembed: isTV 
-      ? `https://1embed.cc/embed/tv/${id}/${season}/${episode}` 
-      : `https://1embed.cc/embed/movie/${id}`,
-    srvVidsync: vidsyncUrl,
-    srv2: cinesrcUrl,
-    srv3: vidnestUrl,
-    srv4: isTV 
-      ? `https://autoembed.cc/embed/tv/${id}/${season}/${episode}` 
-      : `https://autoembed.cc/embed/movie/${id}`
-  };
-
-  const existing = document.getElementById('watchOverlay');
-  if(existing) existing.remove();
-
-  const overlay = document.createElement('div');
-  overlay.id = 'watchOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;z-index:8500;background:#07070A;display:flex;flex-direction:column;';
-  overlay.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(18,18,26,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(20px);z-index:10;gap:12px;">
-      <button onclick="closeWatch()" style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:20px;cursor:pointer;font-weight:600;font-size:.85rem;transition:all .3s;flex-shrink:0;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
-        Back to Browse
-      </button>
-      <div style="font-family:var(--font-heading);font-weight:700;font-size:1.05rem;color:var(--text);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40%;">
-        ${title} ${isTV ? `<span style="color:var(--accent);font-size:.85rem;margin-left:6px;">(S${season} : E${episode})</span>` : ''}
-      </div>
-      <div class="server-hub-container" id="serverBtns">
-        <button class="server-card-btn active" onclick="switchServer('srvRivestream',this)">
-          <span class="server-icon-badge">⚡</span>
-          <span>RiveStream</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srvRiveagg',this)">
-          <span class="server-icon-badge">🚀</span>
-          <span>Rive Aggregator</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srvRivetorrent',this)">
-          <span class="server-icon-badge">🌪️</span>
-          <span>Rive Torrent</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srvOneembed',this)">
-          <span class="server-icon-badge">🔮</span>
-          <span>1embed</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srvVidsync',this)">
-          <span class="server-icon-badge">⚡</span>
-          <span>VidSync</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srv2',this)">
-          <span class="server-icon-badge">🎬</span>
-          <span>CineSrc</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srv3',this)">
-          <span class="server-icon-badge">⛩️</span>
-          <span>VidNest Anime</span>
-        </button>
-        <button class="server-card-btn" onclick="switchServer('srv4',this)">
-          <span class="server-icon-badge">🚀</span>
-          <span>AutoEmbed</span>
-        </button>
-      </div>
-    </div>
-    <div style="position:relative;flex:1;background:#000;">
-      <iframe id="playerFrame" src="${servers.srvRivestream}" allowfullscreen allow="autoplay; fullscreen; picture-in-picture; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>
-    </div>`;
-
-  document.body.appendChild(overlay);
-  document.body.style.overflow = 'hidden';
-  overlay._servers = servers;
-
-  if(item && item.id) {
-    let pct = 0;
-    overlay._progressTimer = setInterval(() => {
-      pct = Math.min(pct+1, 100);
-      saveProgress(item.id, item, pct*36, pct);
-    }, 10000);
-  }
-  document.title = 'CineVerse — Premium Cinematic Experience';
+  // Redirect to standalone watch.html
+  window.location.href = `watch.html?id=${id}&type=${isTV ? 'tv' : 'movie'}&season=${season}&episode=${episode}&title=${encodeURIComponent(title)}${startTimeParam}`;
 }
 
 function watchViaEmbed(embedUrl, title, isTV) {
@@ -995,9 +912,8 @@ async function openSeeAll(category) {
     else if(category === 'TV Shows') endpoint = '/tv/popular';
     else endpoint = '/movie/popular';
     const d = await api(endpoint);
-    const grid = document.getElementById('seeAllGrid');
-    grid.innerHTML = '';
-    (d.results||[]).forEach(m => { const c = createMovieCard(m); grid.appendChild(c); });
+    currentSeeAllMovies = d.results || [];
+    applySearchFilters(true);
   } catch(e) { document.getElementById('seeAllGrid').innerHTML = '<div style="color:var(--muted);padding:20px;">Failed to load content.</div>'; }
 }
 
@@ -1020,13 +936,8 @@ async function loadBrandHub(name, companyId) {
     if (name === 'Star Wars') endpoint = `/discover/movie?with_keywords=161176|1930|208462&sort_by=popularity.desc`;
     
     const d = await api(endpoint);
-    grid.innerHTML = '';
-    const results = d.results || [];
-    if (!results.length) {
-      grid.innerHTML = `<div style="color:var(--muted);padding:30px;text-align:center;">No titles found in ${name} collection.</div>`;
-      return;
-    }
-    results.forEach(m => { const c = createMovieCard(m); grid.appendChild(c); });
+    currentSeeAllMovies = d.results || [];
+    applySearchFilters(true);
   } catch(e) { grid.innerHTML = '<div style="color:var(--muted);padding:20px;">Failed to load collection.</div>'; }
 }
 
@@ -1091,19 +1002,99 @@ async function submitSearch(q) {
 
   try {
     const d = await api(`/search/multi?query=${encodeURIComponent(q)}`);
-    const results = (d.results || []).filter(r => r.media_type !== 'person');
-    if (!results.length) {
-      grid.innerHTML = `<div style="color:var(--muted);padding:40px 20px;text-align:center;">No movies or TV shows found matching "${q}".</div>`;
-      return;
-    }
-    grid.innerHTML = '';
-    results.forEach(m => {
-      const card = createMovieCard(m);
-      grid.appendChild(card);
-    });
+    currentSeeAllMovies = (d.results || []).filter(r => r.media_type !== 'person');
+    applySearchFilters(true);
   } catch(e) {
     grid.innerHTML = '<div style="color:var(--muted);padding:20px;">Search failed to load results.</div>';
   }
+}
+
+// ---- ADVANCED SEARCH FILTERS ----
+let currentSeeAllMovies = [];
+
+function toggleSearchFilters() {
+  const panel = document.getElementById('searchFilterPanel');
+  const btn = document.getElementById('searchFilterToggle');
+  if (panel && btn) {
+    panel.classList.toggle('open');
+    btn.classList.toggle('active');
+  }
+}
+
+function updateRatingFilterVal(val) {
+  const lbl = document.getElementById('filterRatingVal');
+  if (lbl) lbl.textContent = parseFloat(val).toFixed(1);
+}
+
+function applySearchFilters(reset=false) {
+  if (reset) {
+    document.getElementById('filterGenre').value = '';
+    document.getElementById('filterYear').value = '';
+    document.getElementById('filterRating').value = '0';
+    document.getElementById('filterRatingVal').textContent = '0.0';
+    document.getElementById('filterSort').value = 'popularity.desc';
+  }
+
+  const genreId = document.getElementById('filterGenre').value;
+  const yearRange = document.getElementById('filterYear').value;
+  const minRating = parseFloat(document.getElementById('filterRating').value);
+  const sortBy = document.getElementById('filterSort').value;
+
+  let filtered = [...currentSeeAllMovies];
+
+  // 1. Genre filter
+  if (genreId) {
+    const id = parseInt(genreId, 10);
+    filtered = filtered.filter(m => (m.genre_ids || []).includes(id));
+  }
+
+  // 2. Year filter
+  if (yearRange) {
+    if (yearRange.includes('-')) {
+      const [start, end] = yearRange.split('-').map(Number);
+      filtered = filtered.filter(m => {
+        const year = parseInt((m.release_date || m.first_air_date || '').slice(0, 4), 10);
+        return year >= start && year <= end;
+      });
+    } else {
+      filtered = filtered.filter(m => (m.release_date || m.first_air_date || '').slice(0, 4) === yearRange);
+    }
+  }
+
+  // 3. Rating filter
+  if (minRating > 0) {
+    filtered = filtered.filter(m => (m.vote_average || 0) >= minRating);
+  }
+
+  // 4. Sort
+  filtered.sort((a, b) => {
+    if (sortBy === 'popularity.desc') {
+      return (b.popularity || 0) - (a.popularity || 0);
+    } else if (sortBy === 'vote_average.desc') {
+      return (b.vote_average || 0) - (a.vote_average || 0);
+    } else if (sortBy === 'release_date.desc') {
+      const dateA = new Date(a.release_date || a.first_air_date || '1970-01-01');
+      const dateB = new Date(b.release_date || b.first_air_date || '1970-01-01');
+      return dateB - dateA;
+    }
+    return 0;
+  });
+
+  // Render to grid
+  const grid = document.getElementById('seeAllGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (!filtered.length) {
+    grid.innerHTML = '<div style="color:var(--muted);padding:40px;text-align:center;width:100%;grid-column:1/-1;">No movies or TV shows match the selected filters.</div>';
+    return;
+  }
+  filtered.forEach(m => {
+    grid.appendChild(createMovieCard(m));
+  });
+}
+
+function resetSearchFilters() {
+  applySearchFilters(true);
 }
 
 // ---- AUTH ----
@@ -1152,17 +1143,91 @@ function updateAuthUI() {
 
 // ---- ACCOUNT MODAL ----
 function openAccountModal() {
-  document.getElementById('accountAvatar').textContent = activeProfile?.avatar || user?.avatar || '🎬';
+  document.getElementById('accountAvatar').textContent = activeProfile?.avatar || user?.avatar || '🍿';
   document.getElementById('accountName').textContent = user?.name || activeProfile?.name || 'Guest';
   document.getElementById('accountEmail').textContent = user?.email || 'guest@cinestream.io';
+
+  const profileId = activeProfile?.id || 'default';
+  const progress = JSON.parse(localStorage.getItem(`cs_progress_${profileId}`) || '{}');
   const wl = getWatchlist();
-  document.getElementById('statWatchlist').textContent = wl.length;
-  const prog = JSON.parse(localStorage.getItem(`cs_progress_${activeProfile?.id||'guest'}`) || '{}');
-  document.getElementById('statWatched').textContent = Object.keys(prog).length;
-  const reviews = Object.keys(localStorage).filter(k => k.startsWith('cs_reviews_')).reduce((a,k) => {
-    try { return a + JSON.parse(localStorage.getItem(k)||'[]').length; } catch(e) { return a; }
-  }, 0);
-  document.getElementById('statReviews').textContent = reviews;
+  const watchedCount = Object.keys(progress).length;
+  const watchlistCount = wl.length;
+  
+  // Calculate total reviews
+  const reviewCount = Object.keys(localStorage)
+    .filter(k => k.startsWith('cs_reviews_'))
+    .reduce((acc, k) => {
+      try { return acc + JSON.parse(localStorage.getItem(k) || '[]').length; } catch(e) { return acc; }
+    }, 0);
+
+  document.getElementById('statWatched').textContent = `${watchedCount} Title${watchedCount !== 1 ? 's' : ''}`;
+  document.getElementById('statWatchlist').textContent = `${watchlistCount} Title${watchlistCount !== 1 ? 's' : ''}`;
+  document.getElementById('statReviews').textContent = `${reviewCount} Posted`;
+
+  // 1. Calculate watch time
+  let totalSeconds = 0;
+  Object.values(progress).forEach(p => {
+    totalSeconds += p.seconds || 0;
+  });
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  document.getElementById('statTime').textContent = `${hours}h ${minutes}m`;
+
+  // 2. Genre Breakdown
+  const genreCounts = {};
+  let totalGenresCount = 0;
+  Object.values(progress).forEach(p => {
+    if (p.movie && p.movie.genre_ids) {
+      p.movie.genre_ids.forEach(gid => {
+        const gname = allGenres[gid] || 'Other';
+        genreCounts[gname] = (genreCounts[gname] || 0) + 1;
+        totalGenresCount++;
+      });
+    }
+  });
+
+  const genreContainer = document.getElementById('genreBarContainer');
+  if (totalGenresCount === 0) {
+    genreContainer.innerHTML = '<div style="font-size:0.78rem;color:var(--muted);padding:15px 0;">No stats available. Watch movies to generate breakdown!</div>';
+  } else {
+    const sortedGenres = Object.entries(genreCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4); // Top 4 genres
+
+    genreContainer.innerHTML = sortedGenres.map(([gname, count]) => {
+      const pct = Math.round((count / totalGenresCount) * 100);
+      return `
+        <div class="genre-bar-row">
+          <div class="genre-bar-name" title="${gname}">${gname}</div>
+          <div class="genre-bar-wrapper">
+            <div class="genre-bar-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="genre-bar-count">${pct}%</div>
+        </div>`;
+    }).join('');
+  }
+
+  // 3. Render Achievements Grid
+  const achGrid = document.getElementById('statsAchievementsGrid');
+  if (achGrid) {
+    achGrid.innerHTML = ACHIEVEMENTS_DEF.map(a => {
+      let current = 0;
+      if (a.type === 'watch') current = watchedCount;
+      if (a.type === 'watchlist') current = watchlistCount;
+      if (a.type === 'review') current = reviewCount;
+      const unlocked = current >= a.req;
+      return `
+        <div class="achievement-stats-card ${unlocked ? 'unlocked' : ''}">
+          <div class="achievement-stats-icon">${a.icon}</div>
+          <div class="achievement-stats-name">${a.name}</div>
+          <div class="achievement-stats-desc">${a.desc}</div>
+          <div style="font-size:0.6rem;font-weight:800;color:${unlocked ? 'var(--accent)' : 'var(--muted)'};margin-top:4px;">
+            ${unlocked ? 'UNLOCKED' : `${current}/${a.req}`}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
   document.getElementById('accountModal').classList.add('open');
 }
 function closeAccountModal() { document.getElementById('accountModal').classList.remove('open'); }
@@ -1177,37 +1242,35 @@ function switchProfile() {
   ps.style.visibility = 'visible'; ps.style.opacity = '1'; ps.style.transform = 'none';
 }
 
-// ---- ACHIEVEMENTS ----
-function openAchievements() {
-  closeAccountModal();
-  const grid = document.getElementById('achievementGrid');
-  const progress = JSON.parse(localStorage.getItem(`cs_progress_${activeProfile?.id||'guest'}`) || '{}');
-  const wl = getWatchlist();
-  const watched = Object.keys(progress).length;
-  const reviews = Object.keys(localStorage).filter(k=>k.startsWith('cs_reviews_')).reduce((a,k)=>{try{return a+JSON.parse(localStorage.getItem(k)||'[]').length;}catch(e){return a;}},0);
-  grid.innerHTML = ACHIEVEMENTS_DEF.map(a => {
-    let current = 0;
-    if(a.type==='watch') current = watched;
-    if(a.type==='watchlist') current = wl.length;
-    if(a.type==='review') current = reviews;
-    const unlocked = current >= a.req;
-    return `<div class="achievement-card ${unlocked?'unlocked':''}">
-      <div class="achievement-icon">${a.icon}</div>
-      <div class="achievement-name">${a.name}</div>
-      <div class="achievement-desc">${a.desc}</div>
-      ${unlocked ? '<div style="color:var(--accent);font-size:.65rem;font-weight:700;margin-top:4px;">UNLOCKED ✓</div>' : `<div style="color:var(--muted);font-size:.65rem;margin-top:4px;">${current}/${a.req}</div>`}
-    </div>`;
-  }).join('');
-  document.getElementById('achievementsModal').classList.add('open');
-}
-function closeAchievements() { document.getElementById('achievementsModal').classList.remove('open'); }
-function closeAchievementsIfBackdrop(e) { if(e.target===document.getElementById('achievementsModal')) closeAchievements(); }
 function checkAchievements() {
-  const progress = JSON.parse(localStorage.getItem(`cs_progress_${activeProfile?.id||'guest'}`) || '{}');
+  if (!activeProfile) return;
+  const profileId = activeProfile.id || 'default';
+  const progress = JSON.parse(localStorage.getItem(`cs_progress_${profileId}`) || '{}');
   const watched = Object.keys(progress).length;
-  if(watched === 1) showToast('🎬 Achievement Unlocked: First Watch!','🏆');
-  if(watched === 5) showToast('🍿 Achievement Unlocked: Binge Watcher!','🏆');
-  if(watched === 10) showToast('🎭 Achievement Unlocked: Cinephile!','🏆');
+  const wl = getWatchlist();
+  
+  const reviewCount = Object.keys(localStorage)
+    .filter(k => k.startsWith('cs_reviews_'))
+    .reduce((acc, k) => {
+      try { return acc + JSON.parse(localStorage.getItem(k) || '[]').length; } catch(e) { return acc; }
+    }, 0);
+
+  const unlockedKey = `cs_unlocked_achievements_${profileId}`;
+  const unlocked = JSON.parse(localStorage.getItem(unlockedKey) || '[]');
+
+  const checkAndUnlock = (id, cond, name, icon) => {
+    if (cond && !unlocked.includes(id)) {
+      unlocked.push(id);
+      localStorage.setItem(unlockedKey, JSON.stringify(unlocked));
+      showToast(`🏆 Achievement Unlocked: ${name}!`, icon);
+    }
+  };
+
+  checkAndUnlock('first_watch', watched >= 1, 'First Watch', '🎬');
+  checkAndUnlock('binge_5', watched >= 5, 'Binge Watcher', '🍿');
+  checkAndUnlock('cinephile', watched >= 10, 'Cinephile', '🎭');
+  checkAndUnlock('watchlist_3', wl.length >= 3, 'Curator', '📋');
+  checkAndUnlock('reviewer', reviewCount >= 1, 'Critic', '✍️');
 }
 
 // ---- TRAILER ----
@@ -1405,6 +1468,7 @@ function setupKeyboard() {
       document.getElementById('shortcutsPanel').classList.remove('open');
       closeSpinner(); closeWatch();
       closeTVSeries();
+      closeSettingsModal();
     }
     if(e.key === 'ArrowRight' && !e.ctrlKey) nextHero();
     if(e.key === 'ArrowLeft' && !e.ctrlKey) prevHero();
@@ -1515,4 +1579,208 @@ function closeDownloadChoiceModal() {
     modal.classList.remove('open');
     setTimeout(() => modal.remove(), 300);
   }
+}
+
+// ---- SETTINGS MODAL ENGINE ----
+function openSettingsModal() {
+  const modal = document.getElementById('settingsModal');
+  if (!modal) return;
+  modal.classList.add('open');
+  
+  // Sync fields with saved settings in localStorage
+  const liquidGlass = localStorage.getItem('cs_liquid_glass') === '1';
+  const inputLG = document.getElementById('settingLiquidGlass');
+  if (inputLG) inputLG.checked = liquidGlass;
+  
+  const heroGlow = localStorage.getItem('cs_hero_glow') !== '0';
+  const inputHG = document.getElementById('settingHeroGlow');
+  if (inputHG) inputHG.checked = heroGlow;
+  
+  const autoplay = localStorage.getItem('cs_autoplay') === '1';
+  const inputAP = document.getElementById('settingAutoplay');
+  if (inputAP) inputAP.checked = autoplay;
+  
+  const server = localStorage.getItem('cs_preferred_player') || 'rivestream';
+  const selectSrv = document.getElementById('settingServer');
+  if (selectSrv) selectSrv.value = server;
+  
+  const quality = localStorage.getItem('cs_stream_quality') || 'auto';
+  const selectQty = document.getElementById('settingQuality');
+  if (selectQty) selectQty.value = quality;
+
+  const offlineMode = localStorage.getItem('cs_offline_mode') === '1';
+  const inputOM = document.getElementById('settingOffline');
+  if (inputOM) inputOM.checked = offlineMode;
+
+  // Highlight active accent swatch in settings
+  const accent = localStorage.getItem('cs_accent_theme') || 'crimson';
+  document.querySelectorAll('.settings-accent-swatches .theme-swatch').forEach(s => s.classList.remove('active'));
+  const activeSwatch = document.getElementById(`set-sw-${accent}`);
+  if (activeSwatch) activeSwatch.classList.add('active');
+
+  // Load default settings tab
+  switchSettingsTab('appearance');
+}
+
+function closeSettingsModal() {
+  const modal = document.getElementById('settingsModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function closeSettingsIfBackdrop(e) {
+  if (e.target === document.getElementById('settingsModal')) {
+    closeSettingsModal();
+  }
+}
+
+function switchSettingsTab(tabName) {
+  // Update nav buttons
+  document.querySelectorAll('.settings-nav-btn').forEach(btn => btn.classList.remove('active'));
+  const activeBtn = document.getElementById(`btn-tab-${tabName}`);
+  if (activeBtn) activeBtn.classList.add('active');
+  
+  // Update panels
+  document.querySelectorAll('.settings-panel').forEach(panel => panel.classList.remove('active'));
+  const activePanel = document.getElementById(`panel-${tabName}`);
+  if (activePanel) activePanel.classList.add('active');
+}
+
+function toggleLiquidGlassSetting(checked) {
+  localStorage.setItem('cs_liquid_glass', checked ? '1' : '0');
+  if (checked) {
+    document.body.classList.add('liquid-glass-theme');
+    showToast('Liquid Glass Theme enabled!', '🎨');
+  } else {
+    document.body.classList.remove('liquid-glass-theme');
+    showToast('Liquid Glass Theme disabled.', '🎨');
+  }
+}
+
+function toggleHeroGlowSetting(checked) {
+  localStorage.setItem('cs_hero_glow', checked ? '1' : '0');
+  if (checked) {
+    document.body.classList.add('ambient-glow-theme');
+    showToast('Hero ambient glow enabled!', '✨');
+  } else {
+    document.body.classList.remove('ambient-glow-theme');
+    showToast('Hero ambient glow disabled.', '✨');
+  }
+}
+
+function toggleAutoplaySetting(checked) {
+  localStorage.setItem('cs_autoplay', checked ? '1' : '0');
+  showToast(checked ? 'Autoplay next episode enabled!' : 'Autoplay next episode disabled.', '▶');
+}
+
+function saveSettingServer(value) {
+  localStorage.setItem('cs_preferred_player', value);
+  showToast(`Default stream server set to ${value.charAt(0).toUpperCase() + value.slice(1)}`, '🚀');
+}
+
+function saveSettingQuality(value) {
+  localStorage.setItem('cs_stream_quality', value);
+  showToast(`Preferred playback quality set to ${value}`, '📺');
+}
+
+function clearSettingsHistory() {
+  if (confirm('Are you sure you want to clear all data? This will wipe your watch progress, watchlists, settings, and custom profiles.')) {
+    localStorage.clear();
+    showToast('All settings and data wiped. Reloading...', '🧹');
+    setTimeout(() => {
+      window.location.reload();
+    }, 1200);
+  }
+}
+
+// ---- OFFLINE MODE LOGIC ----
+function toggleOfflineMode(active, showToastMessage = true) {
+  if (active) {
+    localStorage.setItem('cs_offline_mode', '1');
+    document.body.classList.add('offline-active');
+    
+    // Hide all normal sections
+    const sectionsToHide = [
+      'hero', 'moodSection', 'moodResultsSection', 'continueSection', 
+      'trendingSection', 'animeSection', 'kdramaSection', 'hollywoodSection', 
+      'bollywoodSection', 'tvSection', 'watchlistSection'
+    ];
+    sectionsToHide.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+
+    // Show offline section
+    const offlineSec = document.getElementById('offlineSection');
+    if (offlineSec) offlineSec.style.display = 'block';
+
+    renderOfflineLibrary();
+
+    if (showToastMessage) showToast('🔌 Offline Mode Activated!', '⚠️');
+  } else {
+    localStorage.setItem('cs_offline_mode', '0');
+    document.body.classList.remove('offline-active');
+
+    // Show all normal sections (revert to defaults)
+    const sectionsToShow = [
+      'hero', 'moodSection', 'continueSection', 'trendingSection', 
+      'animeSection', 'kdramaSection', 'hollywoodSection', 'bollywoodSection', 'tvSection', 'watchlistSection'
+    ];
+    sectionsToShow.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = '';
+    });
+
+    // Hide offline section
+    const offlineSec = document.getElementById('offlineSection');
+    if (offlineSec) offlineSec.style.display = 'none';
+
+    // Rerender watchlist/continue sections just in case
+    renderWatchlist();
+    renderContinueWatching();
+
+    if (showToastMessage) showToast('🌐 Online Mode Activated!', '✅');
+  }
+  
+  const offlineCheck = document.getElementById('settingOffline');
+  if (offlineCheck) offlineCheck.checked = active;
+}
+
+function renderOfflineLibrary() {
+  const profileId = activeProfile?.id || 'default';
+  const downloadKey = `cs_downloads_${profileId}`;
+  const downloads = JSON.parse(localStorage.getItem(downloadKey) || '[]');
+  const grid = document.getElementById('offlineGrid');
+  if (!grid) return;
+
+  grid.innerHTML = '';
+  if (!downloads.length) {
+    grid.innerHTML = `
+      <div style="color:var(--muted);text-align:center;padding:60px 20px;grid-column:1/-1;width:100%;font-size:0.9rem;">
+        <div style="font-size:2.5rem;margin-bottom:12px;">📥</div>
+        <strong>No downloads yet.</strong><br/>
+        Go online, open a movie or TV show, and click "Download Video" to save it for offline playback.
+      </div>`;
+    return;
+  }
+
+  downloads.forEach(m => {
+    // Generate card
+    const div = document.createElement('div');
+    div.className = 'movie-card';
+    const isTV = m.media_type === 'tv';
+    div.innerHTML = `
+      <div class="movie-card-poster">
+        <img src="${m.poster_path ? IMG+'w342'+m.poster_path : ''}" alt="${m.title||m.name}" loading="lazy" onerror="this.style.background='var(--card2)'"/>
+        <div class="play-overlay"><div class="play-circle"><svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg></div></div>
+        <div class="card-badge" style="background:#10B981;color:#fff;">DOWNLOADED</div>
+      </div>
+      <div class="card-info">
+        <div class="card-title">${m.title || m.name || 'Unknown'}</div>
+        <div class="card-meta">${(m.release_date||m.first_air_date||'').slice(0,4)} • ${isTV ? 'TV Series' : 'Movie'}</div>
+      </div>`;
+    div.onclick = () => {
+      openPlayer(m, isTV, m.season || 1, m.episode || 1);
+    };
+    grid.appendChild(div);
+  });
 }
