@@ -50,6 +50,7 @@ const SERVER_URLS = {
     if (st > 0) url += `?startAt=${st}`;
     return url;
   },
+  vidcodin: (id, type, s, e, st) => type === 'tv' ? `https://vidcodin.net/embed/tv/${id}/${s}/${e}` : `https://vidcodin.net/embed/movie/${id}`,
 };
 
 const $ = (id) => document.getElementById(id);
