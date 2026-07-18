@@ -26,6 +26,7 @@ let watchedSeconds = startTime;
 const SERVER_URLS = {
   rivestream: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed?type=movie&id=${id}`,
   oneembed: (id, type, s, e, st) => type === 'tv' ? `https://1embed.cc/embed/tv/${id}/${s}/${e}` : `https://1embed.cc/embed/movie/${id}`,
+  mapple: (id, type, s, e, st) => type === 'tv' ? `https://mapple.uk/watch/tv/${id}-${s}-${e}` : `https://mapple.uk/watch/movie/${id}`,
   vidsync: (id, type, s, e, st) => type === 'tv' ? `https://vidsync.live/embed/tv/${id}/${s}/${e}?startTime=${st}` : `https://vidsync.live/embed/movie/${id}?startTime=${st}`,
   cinesrc: (id, type, s, e, st) => {
     const accent = localStorage.getItem('cs_accent_theme') || 'crimson';
