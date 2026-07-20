@@ -985,51 +985,39 @@ function startWatchPartyBotSimulation() {
 ================================================ */
 function triggerDownload() {
   closePlayerSidebar();
-  const overlay = $('downloadProgressOverlay');
-  const percentEl = $('downloadPercent');
-  const statusEl = $('downloadStatusText');
-  if (!overlay || !percentEl || !statusEl) return;
+  
+  const title = movieDetailsData?.title || movieDetailsData?.name || initialTitle;
+  
+  // Save to offline library
+  try {
+    const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
+    const profileId = activeProfile.id || 'default';
+    const downloadKey = `cs_downloads_${profileId}`;
+    const downloads = JSON.parse(localStorage.getItem(downloadKey) || '[]');
 
-  overlay.classList.add('active');
-  let progress = 0;
-  statusEl.textContent = 'Allocating local storage block...';
-
-  const interval = setInterval(() => {
-    progress += Math.floor(Math.random() * 8) + 5;
-    if (progress >= 100) {
-      progress = 100;
-      clearInterval(interval);
-
-      try {
-        const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
-        const profileId = activeProfile.id || 'default';
-        const downloadKey = `cs_downloads_${profileId}`;
-        const downloads = JSON.parse(localStorage.getItem(downloadKey) || '[]');
-
-        const isExists = downloads.some(d => d.id === movieId);
-        if (!isExists) {
-          downloads.push({
-            id: movieId,
-            title: movieDetailsData?.title || movieDetailsData?.name || initialTitle,
-            poster_path: movieDetailsData?.poster_path || null,
-            media_type: mediaType,
-            downloadedAt: Date.now()
-          });
-          localStorage.setItem(downloadKey, JSON.stringify(downloads));
-        }
-
-        statusEl.textContent = 'Encryption complete! Saved to library.';
-        setTimeout(() => {
-          overlay.classList.remove('active');
-          showToast(`📥 Saved to Offline Library!`, '📥');
-        }, 1000);
-      } catch (e) {
-        overlay.classList.remove('active');
-      }
-    } else {
-      percentEl.textContent = `${progress}%`;
+    const isExists = downloads.some(d => d.id === movieId);
+    if (!isExists) {
+      downloads.push({
+        id: movieId,
+        title: title,
+        poster_path: movieDetailsData?.poster_path || null,
+        media_type: mediaType,
+        downloadedAt: Date.now()
+      });
+      localStorage.setItem(downloadKey, JSON.stringify(downloads));
+      localStorage.setItem('cs_downloads_default', JSON.stringify(downloads));
     }
-  }, 150);
+  } catch (e) {}
+
+  if (typeof openDownloadModal === 'function') {
+    openDownloadModal(mediaType, movieId, title);
+  } else {
+    const zxcUrl = mediaType === 'tv'
+      ? `https://zxcstream.xyz/download/tv/${movieId}/${currentSeason}/${currentEpisode}`
+      : `https://zxcstream.xyz/download/movie/${movieId}`;
+    window.open(zxcUrl, '_blank');
+    showToast(`⚡ Opening ZXCStream Direct HD Download...`, '📥');
+  }
 }
 
 function showToast(msg, icon = 'ℹ️') {
