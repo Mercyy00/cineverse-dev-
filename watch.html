@@ -27,7 +27,7 @@
     .watch-title { font-size: 16px; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
     .watch-logo { font-size: 24px; font-weight: 800; font-family: 'Outfit', sans-serif; color: var(--text); }
 
-    .player-section { position: relative; background: #000; margin-top: 74px; }
+    .player-section { position: relative; z-index: 1; background: #000; margin-top: 74px; }
     .player-wrapper { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
     .player-wrapper iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
 
@@ -484,11 +484,49 @@
       flex-shrink: 0;
     }
 
-    /* ── Active Server Status (compact, top of player) ── */
-    .player-active-status {
+    /* ── Active Server Status & Player Controls Overlay ── */
+    .player-top-controls {
       position: absolute;
       top: 12px;
       right: 12px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .player-fullscreen-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      user-select: none;
+    }
+    .player-fullscreen-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+    .player-fullscreen-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .player-active-status {
+      position: relative;
+      top: 0;
+      right: 0;
       z-index: 10;
       display: flex;
       align-items: center;
@@ -515,6 +553,171 @@
       border-radius: 50%;
       background: #10B981;
       box-shadow: 0 0 6px #10B981;
+    }
+
+    /* ═══════════════════════════════════════════
+       FULLSCREEN PLAYER STYLES
+    ═══════════════════════════════════════════ */
+    #playerSection:fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 999999 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #000 !important;
+    }
+    #playerSection:-webkit-full-screen {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 999999 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #000 !important;
+    }
+    #playerSection:-moz-full-screen {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 999999 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #000 !important;
+    }
+    #playerSection:-ms-fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 999999 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #000 !important;
+    }
+    #playerSection.is-pseudo-fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 999999 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #000 !important;
+    }
+
+    /* ── Hide all fixed overlays when in pseudo-fullscreen ── */
+    body:has(#playerSection.is-pseudo-fullscreen) .watch-topbar,
+    body:has(#playerSection.is-pseudo-fullscreen) .sidebar-menu-btn,
+    body:has(#playerSection.is-pseudo-fullscreen) .sidebar-overlay,
+    body:has(#playerSection.is-pseudo-fullscreen) .player-sidebar,
+    body:has(#playerSection.is-pseudo-fullscreen) .party-drawer {
+      display: none !important;
+    }
+
+    #playerSection:fullscreen .player-wrapper {
+      position: absolute !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      padding-top: 0 !important;
+      margin: 0 !important;
+    }
+    #playerSection:-webkit-full-screen .player-wrapper {
+      position: absolute !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      padding-top: 0 !important;
+      margin: 0 !important;
+    }
+    #playerSection:-moz-full-screen .player-wrapper {
+      position: absolute !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      padding-top: 0 !important;
+      margin: 0 !important;
+    }
+    #playerSection:-ms-fullscreen .player-wrapper {
+      position: absolute !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      padding-top: 0 !important;
+      margin: 0 !important;
+    }
+    #playerSection.is-pseudo-fullscreen .player-wrapper {
+      position: absolute !important;
+      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      padding-top: 0 !important;
+      margin: 0 !important;
+    }
+
+    #playerSection:fullscreen iframe {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      border: none !important;
+    }
+    #playerSection:-webkit-full-screen iframe {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      border: none !important;
+    }
+    #playerSection:-moz-full-screen iframe {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      border: none !important;
+    }
+    #playerSection:-ms-fullscreen iframe {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      border: none !important;
+    }
+    #playerSection.is-pseudo-fullscreen iframe {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      border: none !important;
     }
 
     /* ═══════════════════════════════════════════
@@ -677,6 +880,10 @@
 
       <!-- Action Buttons -->
       <div class="sidebar-action-btns">
+        <button class="sidebar-action-btn" id="sidebarFullscreenBtn" onclick="toggleFullscreen()">
+          <div class="sidebar-action-icon" style="background:rgba(255,255,255,0.06);border-radius:8px;">⛶</div>
+          Toggle Fullscreen
+        </button>
         <button class="sidebar-action-btn party-btn" id="sidebarPartyBtn" onclick="handleSidebarWatchParty()">
           <div class="sidebar-action-icon" style="background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(229,9,20,0.2));border-radius:8px;">🍿</div>
           Watch Party
@@ -694,10 +901,23 @@
   <div class="player-section" id="playerSection">
     <div class="player-wrapper" id="playerWrapper"></div>
     
-    <!-- Active Server Status Badge (on player) -->
-    <div class="player-active-status visible" id="playerActiveStatus">
-      <span class="status-dot"></span>
-      <span id="currentActiveServerName">Viduki</span>
+    <!-- Top Player Controls Bar -->
+    <div class="player-top-controls" id="playerTopControls">
+      <button class="player-fullscreen-btn" id="playerFullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen (Press F)">
+        <svg class="icon-expand" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+        <svg class="icon-compress" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none;">
+          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+        </svg>
+        <span class="fs-text">Fullscreen</span>
+      </button>
+
+      <!-- Active Server Status Badge (on player) -->
+      <div class="player-active-status visible" id="playerActiveStatus">
+        <span class="status-dot"></span>
+        <span id="currentActiveServerName">Viduki</span>
+      </div>
     </div>
 
     <!-- Download Progress Overlay -->

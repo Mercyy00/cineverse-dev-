@@ -1395,7 +1395,7 @@ async function openTrailer() {
     const yt = (d.results||[]).find(v => v.site==='YouTube' && v.type==='Trailer') || d.results?.[0];
     if(yt) {
       document.getElementById('trailerTitle').textContent = `${currentMovie.title||currentMovie.name} — Official Trailer`;
-      document.getElementById('trailerFrameWrap').innerHTML = `<iframe src="https://www.youtube.com/embed/${yt.key}?autoplay=1" allowfullscreen allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>`;
+      document.getElementById('trailerFrameWrap').innerHTML = `<iframe src="https://www.youtube.com/embed/${yt.key}?autoplay=1" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>`;
       document.getElementById('trailerModal').classList.add('open');
     } else { showToast('No trailer available','📹'); }
   } catch(e) { showToast('Could not load trailer','⚠️'); }

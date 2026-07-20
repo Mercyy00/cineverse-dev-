@@ -220,13 +220,16 @@ function renderEmbedServer(serverKey = 'viduki1') {
 
   wrapper.innerHTML = `
     <iframe
+      id="embedIframe"
       src="${embedUrl}"
       width="100%"
       height="100%"
       frameborder="0"
-      allow="encrypted-media; autoplay; fullscreen; picture-in-picture"
+      allow="autoplay; fullscreen; picture-in-picture; encrypted-media; accelerometer; gyroscope"
       allowfullscreen
-      style="position:absolute;top:0;left:0;width:100%;height:100%;"
+      webkitallowfullscreen
+      mozallowfullscreen
+      style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
       title="Stream Player"
     ></iframe>
   `;
@@ -725,8 +728,26 @@ function toggleSidebarSection(sectionId) {
    POSTMESSAGE LISTENERS — Viduki + Legacy
 ================================================ */
 window.addEventListener('message', (event) => {
-  const data = event.data || {};
-  const { type } = data;
+  const data = event.data;
+  if (!data || typeof data !== 'object') return;
+
+  const type = data.type || '';
+  const evtName = typeof data.event === 'string' ? data.event : '';
+  const action = typeof data.action === 'string' ? data.action : '';
+  
+  // ─── Fullscreen request messages from embed players ───
+  if (
+    type === 'requestFullscreen' || 
+    type === 'toggleFullscreen' || 
+    type === 'FULLSCREEN' || 
+    type === 'zxcstream:fullscreen' ||
+    evtName === 'fullscreen' ||
+    action === 'fullscreen'
+  ) {
+    toggleFullscreen();
+    return;
+  }
+
   if (!type) return;
 
   // ─── Viduki: Server Fallback ───
@@ -1241,3 +1262,126 @@ function showToast(msg, icon='ℹ️') {
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 3200);
 }
+
+/* ================================================
+   FULLSCREEN PLAYER CONTROLLER & FALLBACK
+================================================ */
+function toggleFullscreen(targetEl) {
+  const section = targetEl || document.getElementById('playerSection');
+  if (!section) return;
+
+  const isFs = !!(document.fullscreenElement || 
+                  document.webkitFullscreenElement || 
+                  document.mozFullScreenElement || 
+                  document.msFullscreenElement || 
+                  section.classList.contains('is-pseudo-fullscreen'));
+
+  if (!isFs) {
+    // ─── Enter Fullscreen ───
+    const req = section.requestFullscreen || 
+                section.webkitRequestFullscreen || 
+                section.mozRequestFullScreen || 
+                section.msRequestFullscreen;
+
+    if (req) {
+      req.call(section).then(() => {
+        updateFullscreenUI(true);
+      }).catch(err => {
+        console.warn('Native fullscreen blocked, using pseudo-fullscreen fallback:', err);
+        section.classList.add('is-pseudo-fullscreen');
+        updateFullscreenUI(true);
+      });
+    } else {
+      // Browser doesn't support Fullscreen API — use CSS pseudo-fullscreen
+      section.classList.add('is-pseudo-fullscreen');
+      updateFullscreenUI(true);
+    }
+  } else {
+    // ─── Exit Fullscreen ───
+    if (section.classList.contains('is-pseudo-fullscreen')) {
+      section.classList.remove('is-pseudo-fullscreen');
+      updateFullscreenUI(false);
+    } else {
+      const exit = document.exitFullscreen || 
+                   document.webkitExitFullscreen || 
+                   document.mozCancelFullScreen || 
+                   document.msExitFullscreen;
+      if (exit) {
+        exit.call(document).catch(e => console.warn('Exit fullscreen failed:', e));
+      }
+    }
+  }
+}
+
+function updateFullscreenUI(isFullscreen) {
+  // Update fullscreen button icons
+  const fsBtn = document.getElementById('playerFullscreenBtn');
+  if (fsBtn) {
+    const expIcon = fsBtn.querySelector('.icon-expand');
+    const compIcon = fsBtn.querySelector('.icon-compress');
+    const txt = fsBtn.querySelector('.fs-text');
+    if (expIcon) expIcon.style.display = isFullscreen ? 'none' : 'block';
+    if (compIcon) compIcon.style.display = isFullscreen ? 'block' : 'none';
+    if (txt) txt.textContent = isFullscreen ? 'Exit Fullscreen' : 'Fullscreen';
+    fsBtn.classList.toggle('active', isFullscreen);
+  }
+
+  const sidebarFsBtn = document.getElementById('sidebarFullscreenBtn');
+  if (sidebarFsBtn) {
+    sidebarFsBtn.classList.toggle('active', isFullscreen);
+  }
+
+  // Hide/show overlapping fixed-position elements (JS fallback for CSS :has())
+  const overlayEls = [
+    document.getElementById('watchTopbar'),
+    document.getElementById('sidebarMenuBtn'),
+    document.getElementById('sidebarOverlay'),
+    document.getElementById('playerSidebar'),
+    document.getElementById('partyDrawer')
+  ];
+
+  overlayEls.forEach(el => {
+    if (!el) return;
+    if (isFullscreen) {
+      el.dataset.prevDisplay = el.style.display || '';
+      el.style.display = 'none';
+    } else {
+      el.style.display = el.dataset.prevDisplay || '';
+      delete el.dataset.prevDisplay;
+    }
+  });
+
+  // Close sidebar when entering fullscreen
+  if (isFullscreen) {
+    closePlayerSidebar();
+  }
+}
+
+// Global Event Listeners for Fullscreen State Sync & Keyboard Shortcuts
+['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
+  document.addEventListener(evt, () => {
+    const section = document.getElementById('playerSection');
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    if (section && !isFs) {
+      section.classList.remove('is-pseudo-fullscreen');
+    }
+    updateFullscreenUI(isFs);
+  });
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'f' || e.key === 'F') {
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable)) {
+      return;
+    }
+    toggleFullscreen();
+  } else if (e.key === 'Escape') {
+    const section = document.getElementById('playerSection');
+    if (section && section.classList.contains('is-pseudo-fullscreen')) {
+      section.classList.remove('is-pseudo-fullscreen');
+      updateFullscreenUI(false);
+    }
+  }
+});
+
