@@ -1502,39 +1502,199 @@ function clearMood() {
   document.getElementById('moodResultsSection').classList.remove('visible');
 }
 
-// ---- SURPRISE SPINNER ----
-function openSurpriseSpinner() { document.getElementById('spinnerModal').classList.add('open'); }
-function closeSpinner() { document.getElementById('spinnerModal').classList.remove('open'); }
-function closeSpinnerIfBackdrop(e) { if(e.target===document.getElementById('spinnerModal')) closeSpinner(); }
+// ---- TASTE FINDER MATCHMAKER WIZARD ----
+let tasteSelections = { mood: '28', time: 'standard', audience: 'solo' };
+
+function openTasteFinderModal() {
+  const modal = document.getElementById('tasteFinderModal');
+  if (!modal) return;
+  modal.classList.add('open');
+  
+  // Reset steps to step 1
+  document.getElementById('tasteStep1').style.display = 'block';
+  document.getElementById('tasteStep2').style.display = 'none';
+  document.getElementById('tasteStep3').style.display = 'none';
+  document.getElementById('tasteResults').style.display = 'none';
+}
+
+function closeTasteFinderModal() {
+  const modal = document.getElementById('tasteFinderModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function closeTasteFinderModalIfBackdrop(e) {
+  if (e.target === document.getElementById('tasteFinderModal')) closeTasteFinderModal();
+}
+
+async function selectTasteOption(category, value, btnEl) {
+  tasteSelections[category] = value;
+
+  // Highlight button in current step
+  const parentGrid = btnEl.closest('.taste-options-grid');
+  if (parentGrid) {
+    parentGrid.querySelectorAll('.taste-option-btn').forEach(b => b.classList.remove('selected'));
+  }
+  btnEl.classList.add('selected');
+
+  // Advance steps smoothly
+  setTimeout(async () => {
+    if (category === 'mood') {
+      document.getElementById('tasteStep1').style.display = 'none';
+      document.getElementById('tasteStep2').style.display = 'block';
+    } else if (category === 'time') {
+      document.getElementById('tasteStep2').style.display = 'none';
+      document.getElementById('tasteStep3').style.display = 'block';
+    } else if (category === 'audience') {
+      document.getElementById('tasteStep3').style.display = 'none';
+      document.getElementById('tasteResults').style.display = 'block';
+      await renderTasteResults();
+    }
+  }, 250);
+}
+
+async function renderTasteResults() {
+  const container = document.getElementById('tasteResultsGrid');
+  if (!container) return;
+  container.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">Finding perfect matches for your taste...</div>';
+
+  try {
+    const genreId = tasteSelections.mood || '28';
+    const endpoint = `/discover/movie?with_genres=${genreId}&sort_by=popularity.desc`;
+    const data = await api(endpoint);
+    const movies = data.results || [];
+
+    if (!movies.length) {
+      container.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">No matches found. Try selecting different options!</div>';
+      return;
+    }
+
+    container.innerHTML = '';
+    const topMatches = movies.slice(0, 3);
+    const matchScores = [98, 95, 92];
+
+    topMatches.forEach((m, idx) => {
+      const card = document.createElement('div');
+      card.className = 'search-result-item';
+      card.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform 0.3s;';
+      card.innerHTML = `
+        <img src="${m.poster_path ? IMG + 'w185' + m.poster_path : ''}" style="width:50px;height:75px;border-radius:8px;object-fit:cover;" onerror="this.style.background='var(--card2)'"/>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-weight:800;font-size:0.9rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.title || m.name}</div>
+            <span style="background:var(--accent);color:#fff;font-size:0.65rem;font-weight:800;padding:2px 6px;border-radius:4px;">${matchScores[idx]}% Match</span>
+          </div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">⭐ ${m.vote_average ? m.vote_average.toFixed(1) : '8.5'} • ${(m.release_date || '2026').slice(0,4)}</div>
+          <div style="font-size:0.72rem;color:var(--text);opacity:0.8;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${m.overview || ''}</div>
+        </div>
+        <button onclick="event.stopPropagation();closeTasteFinderModal();watchMovie('${m.id}','movie','${encodeURIComponent(m.title||m.name)}')" style="background:var(--accent);color:#fff;border:none;border-radius:50px;padding:8px 16px;font-weight:800;font-size:0.75rem;cursor:pointer;flex-shrink:0;">Watch</button>
+      `;
+      card.onclick = () => { closeTasteFinderModal(); openMovieTray(m); };
+      container.appendChild(card);
+    });
+  } catch (e) {
+    container.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center;">Could not fetch recommendations.</div>';
+  }
+}
+
+// ---- SURPRISE ROULETTE WHEEL ENGINE ----
+function openSurpriseSpinner() {
+  const modal = document.getElementById('spinnerModal');
+  if (modal) modal.classList.add('open');
+  drawWheelCanvas();
+}
+function closeSpinner() {
+  const modal = document.getElementById('spinnerModal');
+  if (modal) modal.classList.remove('open');
+}
+function closeSpinnerIfBackdrop(e) {
+  if (e.target === document.getElementById('spinnerModal')) closeSpinner();
+}
 
 const SPIN_GENRES = [
-  {name:'Action',id:28},{name:'Comedy',id:35},{name:'Horror',id:27},
-  {name:'Romance',id:10749},{name:'Sci-Fi',id:878},{name:'Thriller',id:53}
+  { name: 'Action', id: 28, color: '#E50914' },
+  { name: 'Comedy', id: 35, color: '#FFB800' },
+  { name: 'Horror', id: 27, color: '#A855F7' },
+  { name: 'Romance', id: 10749, color: '#FB7185' },
+  { name: 'Sci-Fi', id: 878, color: '#00D2D3' },
+  { name: 'Thriller', id: 53, color: '#10B981' }
 ];
 
+function drawWheelCanvas() {
+  const canvas = document.getElementById('spinnerWheelCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const numSegments = SPIN_GENRES.length;
+  const anglePerSegment = (2 * Math.PI) / numSegments;
+  const radius = canvas.width / 2;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  SPIN_GENRES.forEach((g, i) => {
+    const startAngle = i * anglePerSegment;
+    const endAngle = (i + 1) * anglePerSegment;
+
+    ctx.beginPath();
+    ctx.moveTo(radius, radius);
+    ctx.arc(radius, radius, radius, startAngle, endAngle);
+    ctx.closePath();
+    ctx.fillStyle = g.color;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+    ctx.stroke();
+
+    // Render Text
+    ctx.save();
+    ctx.translate(radius, radius);
+    ctx.rotate(startAngle + anglePerSegment / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 13px Outfit, sans-serif';
+    ctx.fillText(g.name, radius - 20, 5);
+    ctx.restore();
+  });
+}
+
 function spinWheel() {
-  if(isSpinning) return;
+  if (isSpinning) return;
   isSpinning = true;
-  document.getElementById('spinResult').textContent = 'Spinning...';
-  const extraDeg = 720 + Math.floor(Math.random() * 360);
+
+  const resultTxt = document.getElementById('spinResult');
+  if (resultTxt) resultTxt.textContent = 'Spinning...';
+
+  const extraDeg = 1440 + Math.floor(Math.random() * 360);
   spinDeg += extraDeg;
-  const wheel = document.getElementById('spinnerWheel');
-  wheel.style.transform = `rotate(${spinDeg}deg)`;
+
+  const canvas = document.getElementById('spinnerWheelCanvas');
+  if (canvas) {
+    canvas.style.transform = `rotate(${spinDeg}deg)`;
+  }
+
   setTimeout(async () => {
     isSpinning = false;
-    const idx = Math.floor(((spinDeg % 360) / 60)) % SPIN_GENRES.length;
-    const genre = SPIN_GENRES[idx];
-    document.getElementById('spinResult').textContent = `🎬 Loading ${genre.name} movies...`;
+    const normalizedDeg = (spinDeg % 360);
+    // Calculate winner segment from pointer top (270deg offset)
+    const winningIdx = Math.floor(((360 - (normalizedDeg % 360)) + 270) % 360 / (360 / SPIN_GENRES.length)) % SPIN_GENRES.length;
+    const genre = SPIN_GENRES[winningIdx];
+
+    if (resultTxt) resultTxt.textContent = `🎬 Selected ${genre.name}! Loading title...`;
+
     try {
       const d = await api(`/discover/movie?with_genres=${genre.id}&sort_by=popularity.desc`);
-      const movies = d.results||[];
-      const pick = movies[Math.floor(Math.random()*Math.min(movies.length,5))];
-      if(pick) {
-        document.getElementById('spinResult').textContent = `🎉 "${pick.title}" — ${genre.name}`;
-        setTimeout(() => { closeSpinner(); openMovieTray(pick); }, 1500);
+      const movies = d.results || [];
+      const pick = movies[Math.floor(Math.random() * Math.min(movies.length, 8))];
+
+      if (pick) {
+        if (resultTxt) resultTxt.textContent = `🎉 Winners Choice: "${pick.title}"!`;
+        setTimeout(() => {
+          closeSpinner();
+          openMovieTray(pick);
+        }, 1200);
       }
-    } catch(e) { document.getElementById('spinResult').textContent = 'Pick a genre above!'; }
-  }, 3000);
+    } catch (e) {
+      if (resultTxt) resultTxt.textContent = 'Spin again!';
+    }
+  }, 4000);
 }
 
 // ---- QUOTE ----

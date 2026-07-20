@@ -591,8 +591,13 @@ async function loadContentDetails() {
 
   const poster = $('detailPoster');
   if (poster) {
-    poster.src = details.poster_path ? `${IMG_BASE}w185${details.poster_path}` : '';
+    const posterUrl = details.poster_path ? `${IMG_BASE}w185${details.poster_path}` : '';
+    poster.src = posterUrl;
     poster.style.display = 'block';
+
+    if (typeof samplePosterColor === 'function' && posterUrl) {
+      samplePosterColor(posterUrl);
+    }
   }
   const titleEl = $('detailTitle');
   if (titleEl) titleEl.textContent = title;

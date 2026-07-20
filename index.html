@@ -113,6 +113,11 @@
       </span>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
+    <!-- Taste Finder Trigger -->
+    <button class="random-btn" onclick="openTasteFinderModal()" title="Taste Finder Matchmaker" style="background:linear-gradient(135deg,rgba(0,210,211,0.2),rgba(229,9,20,0.2));border-color:var(--accent-cyan);">
+      🎯 <span class="hide-sm">Taste Finder</span>
+    </button>
+    <!-- Surprise Roulette Wheel -->
     <button class="random-btn" onclick="openSurpriseSpinner()" title="Surprise Me!">
       🎲 <span class="hide-sm">Surprise</span>
     </button>
@@ -122,12 +127,16 @@
         <span class="hide-sm">Theme</span>
       </button>
       <div class="theme-dropdown" id="themeDropdown">
-        <div class="theme-dropdown-title">Accent Theme</div>
-        <div class="theme-swatches">
-          <div class="theme-swatch active" id="sw-crimson" onclick="setTheme('crimson')"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
-          <div class="theme-swatch" id="sw-cyan" onclick="setTheme('cyan')"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
-          <div class="theme-swatch" id="sw-gold" onclick="setTheme('gold')"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
-          <div class="theme-swatch" id="sw-purple" onclick="setTheme('purple')"><div class="swatch-circle" style="background:#A855F7;"></div>Purple</div>
+        <div class="theme-dropdown-title">8 Cinematic Palettes</div>
+        <div class="theme-swatches" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div class="theme-swatch active" data-theme="crimson"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
+          <div class="theme-swatch" data-theme="cyan"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
+          <div class="theme-swatch" data-theme="gold"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
+          <div class="theme-swatch" data-theme="violet"><div class="swatch-circle" style="background:#A855F7;"></div>Violet</div>
+          <div class="theme-swatch" data-theme="emerald"><div class="swatch-circle" style="background:#10B981;"></div>Emerald</div>
+          <div class="theme-swatch" data-theme="rose"><div class="swatch-circle" style="background:#FB7185;"></div>Rose</div>
+          <div class="theme-swatch" data-theme="sunset"><div class="swatch-circle" style="background:linear-gradient(135deg,#FF7A45,#FFC53D);"></div>Sunset</div>
+          <div class="theme-swatch" data-theme="monochrome"><div class="swatch-circle" style="background:#F3F3F8;"></div>Mono</div>
         </div>
         <div class="theme-divider"></div>
         <button class="mode-toggle-btn" id="modeToggleBtn" onclick="toggleMode()">
@@ -818,40 +827,23 @@
   </div>
 </div>
 
-<!-- SURPRISE SPINNER -->
+<!-- SURPRISE ROULETTE WHEEL -->
 <div id="spinnerModal" onclick="closeSpinnerIfBackdrop(event)">
-  <div class="spinner-box" style="position:relative;">
+  <div class="spinner-box" style="position:relative;text-align:center;">
     <div class="modal-close-btn" onclick="closeSpinner()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </div>
-    <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:800;margin-bottom:8px;">🎲 Surprise Me!</div>
-    <div style="font-size:.85rem;color:var(--muted);margin-bottom:20px;">Spin to discover a random movie</div>
-    <div class="spinner-wheel" id="spinnerWheel">
-      <svg width="200" height="200" viewBox="0 0 200 200">
-        <defs>
-          <clipPath id="circleClip"><circle cx="100" cy="100" r="98"/></clipPath>
-        </defs>
-        <g clip-path="url(#circleClip)">
-          <path d="M100,100 L100,2 A98,98 0 0,1 191,51 Z" fill="#E50914"/>
-          <path d="M100,100 L191,51 A98,98 0 0,1 191,149 Z" fill="#00D2D3"/>
-          <path d="M100,100 L191,149 A98,98 0 0,1 100,198 Z" fill="#A855F7"/>
-          <path d="M100,100 L100,198 A98,98 0 0,1 9,149 Z" fill="#FFB800"/>
-          <path d="M100,100 L9,149 A98,98 0 0,1 9,51 Z" fill="#E50914" opacity="0.7"/>
-          <path d="M100,100 L9,51 A98,98 0 0,1 100,2 Z" fill="#00D2D3" opacity="0.7"/>
-        </g>
-        <circle cx="100" cy="100" r="98" fill="none" stroke="var(--border)" stroke-width="2"/>
-        <circle cx="100" cy="100" r="20" fill="var(--card)"/>
-        <text x="100" y="30" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Outfit">Action</text>
-        <text x="165" y="100" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Outfit" transform="rotate(60,165,100)">Comedy</text>
-        <text x="155" y="165" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Outfit" transform="rotate(120,155,165)">Horror</text>
-        <text x="100" y="185" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="Outfit">Romance</text>
-        <text x="40" y="155" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="Outfit">Sci-Fi</text>
-        <text x="35" y="60" text-anchor="middle" fill="white" font-size="10" font-weight="bold" font-family="Outfit">Thriller</text>
-      </svg>
+    <div style="font-family:var(--font-heading);font-size:1.4rem;font-weight:800;margin-bottom:6px;">🎲 Surprise Roulette Wheel</div>
+    <div style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">Spin to discover your next cinematic hit!</div>
+    
+    <div class="wheel-container">
+      <div class="wheel-pointer"></div>
+      <canvas id="spinnerWheelCanvas" width="280" height="280" class="wheel-canvas"></canvas>
+      <div class="wheel-center-cap">🎰</div>
     </div>
-    <div id="spinnerPointer" style="width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:24px solid var(--accent);margin:-10px auto 10px;"></div>
-    <button onclick="spinWheel()" class="btn-sm accent" style="width:100%;padding:12px;font-size:.95rem;">🎰 Spin!</button>
-    <div id="spinResult" style="margin-top:12px;font-size:.85rem;color:var(--muted);min-height:20px;text-align:center;"></div>
+
+    <button onclick="spinWheel()" class="btn-sm accent" style="width:100%;padding:12px;font-size:1rem;font-weight:800;border-radius:50px;margin-top:14px;box-shadow:0 6px 20px var(--accent-glow);">🎰 Spin the Wheel!</button>
+    <div id="spinResult" style="margin-top:14px;font-size:.9rem;color:var(--accent-cyan);font-weight:800;min-height:24px;text-align:center;"></div>
   </div>
 </div>
 
@@ -1036,6 +1028,85 @@
   </div>
 </nav>
 
+<!-- TASTE FINDER MATCHMAKER WIZARD MODAL -->
+<div id="tasteFinderModal" onclick="closeTasteFinderModalIfBackdrop(event)">
+  <div class="taste-box" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.6rem;">🎯</span>
+        <div class="taste-step-title" style="margin:0;">Taste Finder Matchmaker</div>
+      </div>
+      <button onclick="closeTasteFinderModal()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Step 1: Mood -->
+    <div id="tasteStep1" class="taste-step">
+      <div class="taste-step-desc">Step 1 of 3: What mood are you in right now?</div>
+      <div class="taste-options-grid">
+        <button class="taste-option-btn" onclick="selectTasteOption('mood', '28', this)">
+          <span class="taste-option-icon">🍿</span> Action & High Thrill
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('mood', '35', this)">
+          <span class="taste-option-icon">😂</span> Laugh-out-Loud
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('mood', '878', this)">
+          <span class="taste-option-icon">🧠</span> Mind-Bending Sci-Fi
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('mood', '10749', this)">
+          <span class="taste-option-icon">💖</span> Romantic & Heartfelt
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('mood', '27', this)">
+          <span class="taste-option-icon">👻</span> Dark & Spooky
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('mood', '16', this)">
+          <span class="taste-option-icon">⛩️</span> Anime & Animation
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Runtime -->
+    <div id="tasteStep2" class="taste-step" style="display:none;">
+      <div class="taste-step-desc">Step 2 of 3: How much time do you have tonight?</div>
+      <div class="taste-options-grid">
+        <button class="taste-option-btn" onclick="selectTasteOption('time', 'short', this)">
+          <span class="taste-option-icon">⚡</span> Quick Flick (< 90m)
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('time', 'standard', this)">
+          <span class="taste-option-icon">🎬</span> Standard Feature (~2 hrs)
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('time', 'epic', this)">
+          <span class="taste-option-icon">🏆</span> Epic Cinema (2.5+ hrs)
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 3: Audience -->
+    <div id="tasteStep3" class="taste-step" style="display:none;">
+      <div class="taste-step-desc">Step 3 of 3: Who are you watching with?</div>
+      <div class="taste-options-grid">
+        <button class="taste-option-btn" onclick="selectTasteOption('audience', 'solo', this)">
+          <span class="taste-option-icon">👤</span> Solo Movie Night
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('audience', 'date', this)">
+          <span class="taste-option-icon">💑</span> Date Night
+        </button>
+        <button class="taste-option-btn" onclick="selectTasteOption('audience', 'family', this)">
+          <span class="taste-option-icon">👨‍👩‍👧</span> Family & Kids
+        </button>
+      </div>
+    </div>
+
+    <!-- Step Results -->
+    <div id="tasteResults" class="taste-step" style="display:none;">
+      <div class="taste-step-desc" style="color:var(--accent-cyan);font-weight:800;">✨ Perfect Matches Found For Your Taste!</div>
+      <div id="tasteResultsGrid" style="display:flex;flex-direction:column;gap:12px;max-height:340px;overflow-y:auto;padding-right:4px;"></div>
+    </div>
+  </div>
+</div>
+
+<script src="src/theme.js"></script>
+<script src="src/comments.js"></script>
+<script src="src/pwa.js"></script>
 <script src="script.js"></script>
 <script>
 /* ── Premium Smooth Scroll Enhancement ── */

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineVerse — Watch Party Sync Room</title>
+  <link rel="icon" type="image/png" href="icon/favicon.png" />
+  <link rel="apple-touch-icon" href="icon/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #07070b; color: #f3f3f8; font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+    .party-page-header {
+      position: fixed; top: 0; left: 0; right: 0; height: 68px; z-index: 100;
+      background: rgba(10, 10, 15, 0.85); border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .party-title-wrap { display: flex; align-items: center; gap: 14px; }
+    .room-badge {
+      background: rgba(0, 210, 211, 0.15); border: 1px solid rgba(0, 210, 211, 0.3);
+      color: #00d2d3; padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 0.75rem;
+    }
+
+    .party-grid-layout {
+      margin-top: 68px; display: grid; grid-template-columns: 1fr 360px; height: calc(100vh - 68px);
+    }
+    .party-player-container { position: relative; background: #000; display: flex; flex-direction: column; justify-content: center; }
+    
+    .party-sidebar-chat {
+      background: rgba(14, 14, 20, 0.95); border-left: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex; flex-direction: column; height: 100%;
+    }
+    .chat-header {
+      padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .party-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .party-msg-item { display: flex; gap: 10px; font-size: 0.82rem; line-height: 1.4; }
+    .msg-avatar { font-size: 1.1rem; }
+    .msg-author { font-weight: 800; color: #00d2d3; font-size: 0.75rem; }
+    .msg-text { color: #f3f3f8; margin-top: 2px; }
+
+    .reaction-picker-bar { display: flex; gap: 8px; padding: 10px 16px; background: rgba(255, 255, 255, 0.03); border-top: 1px solid rgba(255, 255, 255, 0.06); }
+    .reaction-btn { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 6px 10px; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s; }
+    .reaction-btn:hover { transform: scale(1.2); }
+
+    .chat-input-bar { padding: 14px 16px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; gap: 10px; }
+    .chat-input { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 8px 16px; color: #fff; outline: none; font-family: inherit; font-size: 0.82rem; }
+    .send-btn { background: #e50914; color: #fff; border: none; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    @media (max-width: 900px) {
+      .party-grid-layout { grid-template-columns: 1fr; height: auto; }
+      .party-sidebar-chat { height: 450px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="party-page-header">
+    <div class="party-title-wrap">
+      <a href="index.html" style="color:#fff;text-decoration:none;font-weight:700;font-size:0.85rem;">← Leave Room</a>
+      <h2 style="font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:800;">🍿 Watch Party Sync Room</h2>
+      <span class="room-badge" id="roomCodeDisplay">PARTY-8F3K9A</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span style="font-size:0.8rem;color:#10b981;font-weight:800;display:flex;align-items:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;"></span>
+        <span id="presenceCount">3 Watching Now</span>
+      </span>
+      <button onclick="navigator.clipboard.writeText(window.location.href);alert('Room Link Copied!');" style="background:#e50914;color:#fff;border:none;padding:6px 16px;border-radius:20px;font-weight:800;font-size:0.75rem;cursor:pointer;">Copy Invite Link</button>
+    </div>
+  </div>
+
+  <!-- Main Sync Layout -->
+  <div class="party-grid-layout">
+    <!-- Synced Player -->
+    <div class="party-player-container" id="playerSection">
+      <div class="player-wrapper" style="position:relative;width:100%;padding-top:56.25%;">
+        <iframe id="embedIframe" src="https://viduki.net/1/movie/157336?color=%23e50914" allow="autoplay *; fullscreen *;" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:none;"></iframe>
+      </div>
+      <div id="floatingReactionContainer" class="floating-reaction-container"></div>
+    </div>
+
+    <!-- Realtime Chat & Reactions -->
+    <div class="party-sidebar-chat">
+      <div class="chat-header">
+        <span>💬 Room Chat Stream</span>
+        <span style="font-size:0.7rem;color:var(--muted);font-weight:600;">Live</span>
+      </div>
+
+      <div class="party-messages" id="partyMessages">
+        <div class="party-msg-item">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-content">
+            <div class="msg-author">CineBot</div>
+            <div class="msg-text">Welcome to the Watch Party room! Playhead is synced across participants.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reaction-picker-bar">
+        <button class="reaction-btn">👍</button>
+        <button class="reaction-btn">❤️</button>
+        <button class="reaction-btn">😂</button>
+        <button class="reaction-btn">😮</button>
+        <button class="reaction-btn">😢</button>
+        <button class="reaction-btn">🔥</button>
+      </div>
+
+      <div class="chat-input-bar">
+        <input type="text" class="chat-input" id="partyMsgInput" placeholder="Say something in room..." />
+        <button class="send-btn" id="sendPartyMsgBtn">➔</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="src/theme.js"></script>
+  <script src="src/party.js"></script>
+</body>
+</html>

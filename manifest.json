@@ -1,0 +1,18 @@
+{
+  "short_name": "CineVerse",
+  "name": "CineVerse — Premium Cinematic Experience",
+  "icons": [
+    {
+      "src": "icon/favicon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/index.html",
+  "background_color": "#07070b",
+  "theme_color": "#e50914",
+  "display": "standalone",
+  "orientation": "any",
+  "description": "Watch free movies and TV shows in HD with real watch parties and custom themes."
+}
