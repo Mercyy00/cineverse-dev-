@@ -824,11 +824,59 @@ document.addEventListener('DOMContentLoaded', () => {
   const validServer = SERVER_URLS[preferredServer] ? preferredServer : 'viduki1';
   renderEmbedServer(validServer);
 
+  // Initialize Scroll Progress & Animations
+  initWatchScrollAnimations();
+
   // Keyboard shortcut: Escape closes sidebar
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closePlayerSidebar();
   });
 });
+
+function initWatchScrollAnimations() {
+  // 1. Create Progress Bar if missing
+  if (!document.getElementById('scrollProgressBar')) {
+    const bar = document.createElement('div');
+    bar.id = 'scrollProgressBar';
+    document.body.prepend(bar);
+  }
+
+  const progressBar = document.getElementById('scrollProgressBar');
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    if (progressBar) progressBar.style.width = progress + '%';
+  }, { passive: true });
+
+  // 2. IntersectionObserver for Below-Player Sections
+  const revealTargets = document.querySelectorAll('.below-player, #movieDetailHeader, .reviews-section, #castSlider, #similarMoviesSection');
+  revealTargets.forEach(el => el.classList.add('reveal-on-scroll'));
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+
+  // 3. Spotlight effect
+  document.addEventListener('mousemove', (e) => {
+    const cards = document.querySelectorAll('.movie-card, .cast-card, .sidebar-server-btn');
+    cards.forEach(card => {
+      card.classList.add('spotlight-card');
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  }, { passive: true });
+}
 
 function triggerDownload() {
   closePlayerSidebar();

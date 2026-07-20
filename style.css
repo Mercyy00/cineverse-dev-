@@ -2148,3 +2148,169 @@ body.offline-active #mainApp {
   background: rgba(240, 240, 248, 0.85) !important;
   border-color: rgba(0, 0, 0, 0.12) !important;
 }
+
+/* ════════════════════════════════════════════════════════════
+   SCROLL ANIMATIONS & DYNAMIC ALIVE EFFECTS SYSTEM
+   ════════════════════════════════════════════════════════════ */
+
+/* TOP SCROLL PROGRESS BAR */
+#scrollProgressBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent-cyan));
+  z-index: 10000;
+  box-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent);
+  transition: width 0.1s cubic-bezier(0.1, 0.9, 0.2, 1);
+  pointer-events: none;
+}
+
+/* NAVBAR SCROLL ELEVATION */
+#navbar.scrolled {
+  background: rgba(7, 7, 10, 0.96) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+.light-theme #navbar.scrolled {
+  background: rgba(240, 240, 248, 0.96) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* SCROLL REVEAL UTILITIES */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(35px) scale(0.97);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+  filter: blur(4px);
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+/* REVEAL VARIATIONS */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-left.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-right.revealed {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-zoom {
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-zoom.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* STAGGER DELAYS FOR CHILD GRID ITEMS */
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.stagger-children.revealed > *:nth-child(1) { transition-delay: 0.04s; opacity: 1; transform: translateY(0); }
+.stagger-children.revealed > *:nth-child(2) { transition-delay: 0.08s; opacity: 1; transform: translateY(0); }
+.stagger-children.revealed > *:nth-child(3) { transition-delay: 0.12s; opacity: 1; transform: translateY(0); }
+.stagger-children.revealed > *:nth-child(4) { transition-delay: 0.16s; opacity: 1; transform: translateY(0); }
+.stagger-children.revealed > *:nth-child(5) { transition-delay: 0.20s; opacity: 1; transform: translateY(0); }
+.stagger-children.revealed > *:nth-child(6) { transition-delay: 0.24s; opacity: 1; transform: translateY(0); }
+.stagger-children.revealed > *:nth-child(7) { transition-delay: 0.28s; opacity: 1; transform: translateY(0); }
+.stagger-children.revealed > *:nth-child(8) { transition-delay: 0.32s; opacity: 1; transform: translateY(0); }
+.stagger-children.revealed > *:nth-child(n+9) { transition-delay: 0.36s; opacity: 1; transform: translateY(0); }
+
+/* SECTION TITLE GLOW UNDERLINE ANIMATION */
+.section-title {
+  position: relative;
+  display: inline-flex;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), transparent);
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+.section.revealed .section-title::after {
+  width: 60px;
+}
+
+/* CURSOR SPOTLIGHT SHIMMER & DYNAMIC 3D TILT ON CARDS */
+.movie-card, .brand-hub-card, .server-premium-card, .mood-btn, .cast-card {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hover Floating Lift with Glow */
+.movie-card:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 25px var(--accent-glow);
+  z-index: 10;
+}
+
+.brand-hub-card:hover {
+  transform: translateY(-6px) scale(1.04);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
+}
+
+.mood-btn:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4), 0 0 15px var(--accent-glow);
+}
+
+/* SPOTLIGHT OVERLAY */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+.spotlight-card::before {
+  content: '';
+  position: absolute;
+  top: var(--mouse-y, 50%);
+  left: var(--mouse-x, 50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 70%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 5;
+  border-radius: 50%;
+}
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+/* LIQUID BACKGROUND SCROLL FLOATING */
+.liquid-bg-container {
+  will-change: transform;
+  transition: transform 0.2s ease-out;
+}

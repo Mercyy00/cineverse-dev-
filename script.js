@@ -1554,18 +1554,85 @@ function scrollToSection(id, tabName) {
 }
 
 function setupScrollEvents() {
+  // 1. Create Top Scroll Progress Bar if missing
+  if (!document.getElementById('scrollProgressBar')) {
+    const bar = document.createElement('div');
+    bar.id = 'scrollProgressBar';
+    document.body.prepend(bar);
+  }
+
+  const progressBar = document.getElementById('scrollProgressBar');
   const scrollBtn = document.getElementById('scrollTopBtn');
+  const navbar = document.getElementById('navbar');
+  const liquidBg = document.getElementById('liquidBg');
+
+  // 2. Main Scroll Listener
   window.addEventListener('scroll', () => {
-    scrollBtn.classList.toggle('visible', window.scrollY > 400);
-    // Infinite scroll
-    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const progress = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    
+    if (progressBar) progressBar.style.width = progress + '%';
+    if (scrollBtn) scrollBtn.classList.toggle('visible', scrollTop > 400);
+    
+    if (navbar) {
+      if (scrollTop > 40) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    }
+
+    if (liquidBg) {
+      liquidBg.style.transform = `translateY(${scrollTop * 0.12}px)`;
+    }
+
+    // Infinite scroll trigger
+    if (window.innerHeight + scrollTop >= document.body.offsetHeight - 400) {
       const btn = document.getElementById('loadMoreBtn');
-      if(btn && !btn.dataset.loading) {
+      if (btn && !btn.dataset.loading) {
         btn.dataset.loading = '1';
         loadMorePopular().then(() => { delete btn.dataset.loading; });
       }
     }
+  }, { passive: true });
+
+  // 3. Scroll Reveal Observer System
+  const revealTargets = document.querySelectorAll('.section, .brand-hubs-grid, .quote-banner, #moodSection, .reviews-section, footer, .hero-content, .hero-rating-card, .popular-grid, #continueSection');
+  
+  revealTargets.forEach(el => {
+    el.classList.add('reveal-on-scroll');
+    if (el.classList.contains('brand-hubs-grid') || el.classList.contains('popular-grid')) {
+      el.classList.add('stagger-children');
+    }
   });
+
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -40px 0px',
+    threshold: 0.08
+  };
+
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.reveal-on-scroll').forEach(el => revealObserver.observe(el));
+
+  // 4. Spotlight & Interactive Tilt Hover Engine
+  document.addEventListener('mousemove', (e) => {
+    const cards = document.querySelectorAll('.movie-card, .brand-hub-card, .mood-btn, .server-premium-card');
+    cards.forEach(card => {
+      card.classList.add('spotlight-card');
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+    });
+  }, { passive: true });
 }
 
 // ---- KEYBOARD ----
