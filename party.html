@@ -74,7 +74,7 @@
         <span style="width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px #10b981;"></span>
         <span id="presenceCount">3 Watching Now</span>
       </span>
-      <button onclick="navigator.clipboard.writeText(window.location.href);alert('Room Link Copied!');" style="background:#e50914;color:#fff;border:none;padding:6px 16px;border-radius:20px;font-weight:800;font-size:0.75rem;cursor:pointer;">Copy Invite Link</button>
+      <button onclick="window.watchPartyRoom && window.watchPartyRoom.copyInviteLink()" style="background:#e50914;color:#fff;border:none;padding:6px 16px;border-radius:20px;font-weight:800;font-size:0.75rem;cursor:pointer;">Copy Invite Link</button>
     </div>
   </div>
 

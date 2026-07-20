@@ -23,6 +23,19 @@ class WatchPartyRoom {
   }
 
   initRoom() {
+    const movieId = this.urlParams.get('id') || '157336';
+    const mediaType = this.urlParams.get('type') === 'tv' ? 'tv' : 'movie';
+    const season = this.urlParams.get('season') || '1';
+    const episode = this.urlParams.get('episode') || '1';
+
+    const iframe = document.getElementById('embedIframe');
+    if (iframe) {
+      const streamUrl = mediaType === 'tv'
+        ? `https://viduki.net/1/tv/${movieId}/${season}/${episode}?color=%23e50914`
+        : `https://viduki.net/1/movie/${movieId}?color=%23e50914`;
+      iframe.src = streamUrl;
+    }
+
     const codeDisplay = document.getElementById('roomCodeDisplay');
     if (codeDisplay) codeDisplay.textContent = this.roomCode;
 
@@ -45,6 +58,21 @@ class WatchPartyRoom {
 
     this.initChat();
     this.initReactions();
+  }
+
+  copyInviteLink() {
+    const movieId = this.urlParams.get('id') || '157336';
+    const mediaType = this.urlParams.get('type') || 'movie';
+    const season = this.urlParams.get('season') || '1';
+    const episode = this.urlParams.get('episode') || '1';
+    const link = `${window.location.origin}${window.location.pathname}?room=${this.roomCode}&id=${movieId}&type=${mediaType}&season=${season}&episode=${episode}`;
+
+    try {
+      navigator.clipboard.writeText(link);
+      alert(`🍿 Watch Party Link Copied!\n\nRoom: ${this.roomCode}\nLink: ${link}`);
+    } catch (e) {
+      alert(`Room Code: ${this.roomCode}\nShare this page URL with your friend!`);
+    }
   }
 
   broadcast(messageObj) {

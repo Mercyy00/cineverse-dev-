@@ -898,21 +898,20 @@ function initWatchParty() {
 
 function handleSidebarWatchParty() {
   closePlayerSidebar();
-  const drawer = $('partyDrawer');
-  if (!drawer) return;
 
   const roomCode = 'PARTY-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  $('roomCodeDisplay').textContent = roomCode;
-  drawer.classList.remove('hidden');
-
-  startWatchPartyBotSimulation();
+  const partyUrl = `${window.location.origin}/party.html?room=${roomCode}&id=${movieId}&type=${mediaType}&title=${encodeURIComponent(initialTitle)}`;
 
   try {
-    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?id=${movieId}&party=${roomCode}`);
-    showToast(`Watch Party Created! Link copied. Code: ${roomCode}`, '🍿');
+    navigator.clipboard.writeText(partyUrl);
+    showToast(`Watch Party Room Created! Share link copied to clipboard. Redirecting...`, '🍿');
   } catch (e) {
-    showToast(`Watch Party Created! Code: ${roomCode}`, '🍿');
+    showToast(`Watch Party Created! Room Code: ${roomCode}`, '🍿');
   }
+
+  setTimeout(() => {
+    window.location.href = partyUrl;
+  }, 1000);
 }
 
 function sendPartyReaction(emoji) {
