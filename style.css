@@ -10,7 +10,20 @@
 
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;scroll-padding-top:80px;-webkit-overflow-scrolling:touch;}
-body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;transition:background .3s,color .3s;overscroll-behavior-y:none;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  overflow-x:hidden;
+  transition:background .3s,color .3s;
+  overscroll-behavior-y:none;
+  user-select:none !important;
+  -webkit-user-select:none !important;
+  -moz-user-select:none !important;
+  -ms-user-select:none !important;
+  -webkit-touch-callout:none !important;
+  transform:translateZ(0);
+}
 
 /* SCROLLBAR — Premium thin */
 ::-webkit-scrollbar{width:5px;height:5px;}

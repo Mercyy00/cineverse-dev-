@@ -25,7 +25,10 @@ function initThemeEngine() {
 
   applyTheme(savedTheme, false);
   applyMode(savedMode);
-  initCustomCursor();
+}
+
+function setTheme(themeKey) {
+  applyTheme(themeKey, false);
 }
 
 function applyTheme(themeKey, isTemporary = false) {
