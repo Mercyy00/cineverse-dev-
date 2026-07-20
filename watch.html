@@ -3,58 +3,315 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CineVerse — Premium Cinematic Experience</title>
+  <title>CineVerse — Cinema Player</title>
   <link rel="icon" type="image/png" href="icon/favicon.png" />
   <link rel="apple-touch-icon" href="icon/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; min-height: 100vh; transition: background 0.3s, color 0.3s; overscroll-behavior-y: none; }
-    .watch-topbar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      background: var(--card); border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(20px);
-      padding: 0 32px; height: 74px; display: flex; align-items: center; gap: 16px;
+    /* ════════════════════════════════════════════════════════════════
+       CINEMA PLAYER ENGINE — DESIGN SYSTEM & GLASSMORPHISM
+    ════════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg: #07070b;
+      --card: rgba(18, 18, 26, 0.75);
+      --card2: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f3f3f8;
+      --muted: #8e8ea8;
+      --accent: #e50914;
+      --accent2: #ff3b47;
+      --accent-glow: rgba(229, 9, 20, 0.4);
+      --accent-cyan: #00d2d3;
+      --font: 'Plus Jakarta Sans', sans-serif;
+      --font-heading: 'Outfit', sans-serif;
     }
-    .back-btn {
-      display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; font-weight: 600;
-      background: var(--card2); backdrop-filter: blur(12px); border: 1px solid var(--border);
-      padding: 8px 18px; border-radius: 50px; text-decoration: none; transition: all 0.3s;
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.5s ease, color 0.3s ease;
+      overscroll-behavior-y: none;
     }
-    .back-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .watch-title { font-size: 16px; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
-    .watch-logo { font-size: 24px; font-weight: 800; font-family: 'Outfit', sans-serif; color: var(--text); }
 
-    .player-section { position: relative; background: #000; margin-top: 74px; }
-    .player-wrapper { position: relative; width: 100%; padding-top: 56.25%; background: #000; }
-    .player-wrapper iframe { position: absolute; top:0; left:0; width:100%; height:100%; border:none; }
-
-    .below-player { max-width: 1200px; margin: 0 auto; padding: 30px 24px 60px; }
-    .reviews-section { margin-top: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; color: var(--text); }
-    .review-form { display: flex; flex-direction: column; gap: 12px; margin: 20px 0; }
-    .star-rating-select { display: flex; gap: 8px; font-size: 20px; color: #ffb800; cursor: pointer; }
-    .review-input { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 12px; font-size: 13px; min-height: 80px; outline: none; }
-    .btn-submit-review { background: var(--accent); color: #fff; border: none; border-radius: 50px; padding: 10px 24px; font-weight: 700; font-size: 13px; align-self: flex-start; cursor: pointer; }
-    .review-card { background: var(--card2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 12px; color: var(--text); }
+    /* ── Theater Lights Backdrop Overlay ── */
+    #theaterOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 3, 5, 0.95);
+      z-index: 50;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    body.theater-mode #theaterOverlay {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    body.theater-mode .watch-topbar,
+    body.theater-mode .below-player {
+      opacity: 0.2;
+      filter: blur(4px);
+      transition: all 0.5s ease;
+      pointer-events: none;
+    }
+    body.theater-mode .watch-topbar:hover {
+      opacity: 1;
+      filter: blur(0);
+      pointer-events: auto;
+    }
 
     /* ═══════════════════════════════════════════
-       FLOATING SIDEBAR MENU BUTTON
+       TOP NAVIGATION BAR
+    ═══════════════════════════════════════════ */
+    .watch-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(24px) saturate(1.8);
+      -webkit-backdrop-filter: blur(24px) saturate(1.8);
+      padding: 0 28px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.4s ease;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 8px 18px;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .back-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      transform: translateX(-3px);
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .watch-title-wrap {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .watch-title {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+    .quality-badge {
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, rgba(229,9,20,0.2), rgba(0,0,0,0.4));
+      border: 1px solid rgba(229,9,20,0.4);
+      color: var(--accent-cyan);
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .watch-topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .icon-action-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    .icon-action-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .watch-logo {
+      font-size: 1.35rem;
+      font-weight: 900;
+      font-family: var(--font-heading);
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+      margin-left: 8px;
+    }
+
+    /* ═══════════════════════════════════════════
+       CINEMA PLAYER CONTAINER & AMBIENT GLOW
+    ═══════════════════════════════════════════ */
+    .player-section {
+      position: relative;
+      background: #000;
+      margin-top: 72px;
+    }
+
+    /* Dynamic Backlight Aura */
+    .cinema-ambient-glow {
+      position: absolute;
+      inset: -20px;
+      z-index: -1;
+      filter: blur(60px) saturate(2);
+      opacity: 0.45;
+      background: radial-gradient(circle at 50% 50%, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .player-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+      background: #000;
+      overflow: hidden;
+    }
+    .player-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Floating Player Overlay Controls */
+    .player-top-controls {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    .player-section:hover .player-top-controls {
+      opacity: 1;
+    }
+    .player-top-controls button,
+    .player-top-controls div {
+      pointer-events: auto;
+    }
+
+    .player-ctrl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 20px;
+      background: rgba(10, 10, 15, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      user-select: none;
+    }
+    .player-ctrl-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+    .player-ctrl-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .player-active-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 20px;
+      background: rgba(10, 10, 15, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.85);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+    .player-active-status .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: status-glow-green 2s infinite;
+    }
+
+    /* ═══════════════════════════════════════════
+       FLOATING SIDEBAR TRIGGER BUTTON
     ═══════════════════════════════════════════ */
     .sidebar-menu-btn {
       position: fixed;
-      left: 12px;
+      left: 14px;
       top: 50%;
       transform: translateY(-50%);
       z-index: 200;
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       border-radius: 14px;
-      background: rgba(18, 18, 26, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(14, 14, 20, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       color: var(--text);
       font-size: 18px;
       cursor: pointer;
@@ -62,7 +319,7 @@
       align-items: center;
       justify-content: center;
       transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     }
     .sidebar-menu-btn:hover {
       background: var(--accent);
@@ -77,14 +334,14 @@
     }
 
     /* ═══════════════════════════════════════════
-       SIDEBAR OVERLAY
+       SIDEBAR DRAWER & OVERLAY
     ═══════════════════════════════════════════ */
     .sidebar-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       z-index: 300;
       opacity: 0;
       visibility: hidden;
@@ -95,23 +352,20 @@
       visibility: visible;
     }
 
-    /* ═══════════════════════════════════════════
-       PLAYER SIDEBAR DRAWER
-    ═══════════════════════════════════════════ */
     .player-sidebar {
       position: fixed;
       top: 0;
       left: 0;
       bottom: 0;
-      width: 380px;
+      width: 390px;
       max-width: 90vw;
       z-index: 400;
-      background: rgba(12, 12, 18, 0.92);
+      background: rgba(10, 10, 16, 0.94);
       backdrop-filter: blur(40px) saturate(1.8);
       -webkit-backdrop-filter: blur(40px) saturate(1.8);
       border-right: 1px solid rgba(255, 255, 255, 0.08);
       transform: translateX(-110%);
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -124,22 +378,22 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 20px 20px 16px;
+      padding: 22px 20px 18px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       flex-shrink: 0;
     }
     .sidebar-header-title {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-heading);
       font-weight: 800;
       font-size: 1.1rem;
       color: var(--text);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .sidebar-close-btn {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -148,10 +402,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
     }
     .sidebar-close-btn:hover {
-      background: rgba(229, 9, 20, 0.15);
+      background: rgba(229, 9, 20, 0.2);
       color: var(--accent);
       border-color: var(--accent);
     }
@@ -164,7 +418,7 @@
       overscroll-behavior-y: contain;
     }
 
-    /* ── Now Playing Card ── */
+    /* Sidebar Cards & Controls */
     .sidebar-now-playing {
       padding: 20px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -175,11 +429,11 @@
       align-items: flex-start;
     }
     .sidebar-np-poster {
-      width: 80px;
-      min-width: 80px;
+      width: 82px;
+      min-width: 82px;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
       aspect-ratio: 2/3;
       background: var(--card2);
     }
@@ -214,9 +468,9 @@
       animation: status-glow 2s infinite;
     }
     .sidebar-np-title {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-heading);
       font-weight: 800;
-      font-size: 1rem;
+      font-size: 1.05rem;
       color: var(--text);
       line-height: 1.3;
       display: -webkit-box;
@@ -227,16 +481,13 @@
     .sidebar-np-episode {
       font-size: 0.78rem;
       font-weight: 700;
-      color: var(--accent);
+      color: var(--accent-cyan);
       margin-top: 4px;
     }
     .sidebar-np-meta {
       font-size: 0.72rem;
       color: var(--muted);
       margin-top: 6px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
     }
     .sidebar-np-overview {
       font-size: 0.73rem;
@@ -249,7 +500,6 @@
       overflow: hidden;
     }
 
-    /* ── Episode Navigation ── */
     .sidebar-ep-nav {
       display: flex;
       gap: 8px;
@@ -283,7 +533,6 @@
       cursor: not-allowed;
     }
 
-    /* ── Collapsible Sections ── */
     .sidebar-section {
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
@@ -300,9 +549,9 @@
       background: rgba(255, 255, 255, 0.03);
     }
     .sidebar-section-title {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-heading);
       font-weight: 800;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       color: var(--text);
       display: flex;
       align-items: center;
@@ -326,7 +575,6 @@
       max-height: 2000px;
     }
 
-    /* ── Compact Server Buttons ── */
     .sidebar-servers-grid {
       display: flex;
       flex-direction: column;
@@ -346,14 +594,14 @@
       color: var(--text);
     }
     .sidebar-server-btn:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.14);
       transform: translateX(4px);
     }
     .sidebar-server-btn.active {
-      background: linear-gradient(135deg, rgba(229, 9, 20, 0.12) 0%, rgba(0, 0, 0, 0.2) 100%);
+      background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(0, 0, 0, 0.25) 100%);
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px var(--accent), inset 0 0 20px rgba(229, 9, 20, 0.05);
+      box-shadow: 0 0 0 1px var(--accent), inset 0 0 20px rgba(229, 9, 20, 0.08);
     }
     .sidebar-server-icon {
       width: 32px;
@@ -362,7 +610,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       flex-shrink: 0;
     }
     .sidebar-server-info {
@@ -383,27 +631,22 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.12);
       flex-shrink: 0;
     }
     .sidebar-server-btn.active .sidebar-server-status {
       background: #10B981;
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
       animation: status-glow-green 2s infinite;
     }
-    @keyframes status-glow-green {
-      0%, 100% { box-shadow: 0 0 4px rgba(16, 185, 129, 0.6); }
-      50% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.8); }
-    }
 
-    /* ── Episodes Grid in Sidebar ── */
     .sidebar-season-select {
       width: calc(100% - 40px);
       margin: 0 20px 10px;
       background: var(--card2);
       color: var(--text);
       border: 1px solid var(--border);
-      padding: 8px 14px;
+      padding: 9px 14px;
       border-radius: 10px;
       font-family: var(--font);
       font-weight: 700;
@@ -414,7 +657,7 @@
     .sidebar-ep-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-      gap: 5px;
+      gap: 6px;
       padding: 0 20px 16px;
     }
     .sidebar-ep-btn {
@@ -431,7 +674,7 @@
     }
     .sidebar-ep-btn:hover {
       background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.14);
     }
     .sidebar-ep-btn.active {
       background: linear-gradient(135deg, var(--accent2), var(--accent));
@@ -440,7 +683,6 @@
       box-shadow: 0 4px 15px var(--accent-glow);
     }
 
-    /* ── Sidebar Action Buttons ── */
     .sidebar-action-btns {
       display: flex;
       flex-direction: column;
@@ -466,172 +708,113 @@
       border-color: rgba(255, 255, 255, 0.12);
       transform: translateX(4px);
     }
-    .sidebar-action-btn.party-btn {
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(229, 9, 20, 0.08));
-      border-color: rgba(168, 85, 247, 0.2);
-    }
-    .sidebar-action-btn.party-btn:hover {
-      background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(229, 9, 20, 0.15));
-    }
-    .sidebar-action-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+
+    /* ═══════════════════════════════════════════
+       KEYBOARD SHORTCUTS MODAL OVERLAY
+    ═══════════════════════════════════════════ */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 9000;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
-      flex-shrink: 0;
-    }
-
-    /* ── Active Server Status & Player Controls Overlay ── */
-    .player-top-controls {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      pointer-events: none; /* Let mouse events pass through to the iframe below */
       opacity: 0;
-      transition: opacity 0.3s ease;
+      visibility: hidden;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    /* Show controls on hover over the player section */
-    .player-section:hover .player-top-controls {
+    .modal-backdrop.open {
       opacity: 1;
+      visibility: visible;
     }
-    /* Restore pointer-events on actual interactive elements */
-    .player-top-controls button,
-    .player-top-controls a {
-      pointer-events: auto;
+    .modal-card {
+      background: rgba(14, 14, 20, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 28px;
+      width: 460px;
+      max-width: 92vw;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      transform: scale(0.9);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .player-fullscreen-btn {
+    .modal-backdrop.open .modal-card {
+      transform: scale(1);
+    }
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: #fff;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-      user-select: none;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
-    .player-fullscreen-btn:hover {
-      background: var(--accent);
-      border-color: var(--accent);
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px var(--accent-glow);
+    .shortcuts-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
-    .player-fullscreen-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .player-active-status {
-      position: relative;
-      top: 0;
-      right: 0;
-      z-index: 10;
+    .shortcut-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(12px);
-      font-size: 0.68rem;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .shortcut-key {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       font-weight: 800;
-      color: rgba(255, 255, 255, 0.7);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-    .player-active-status.visible {
-      opacity: 1;
-    }
-    .player-active-status .status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #10B981;
-      box-shadow: 0 0 6px #10B981;
+      font-size: 0.75rem;
+      color: var(--accent-cyan);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
     /* ═══════════════════════════════════════════
-       FULLSCREEN PLAYER STYLES
+       FULLSCREEN STYLES
     ═══════════════════════════════════════════ */
     #playerSection:fullscreen {
       position: fixed !important;
       inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
       z-index: 999999 !important;
-      margin: 0 !important;
-      padding: 0 !important;
       background: #000 !important;
     }
     #playerSection:-webkit-full-screen {
       position: fixed !important;
       inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
       z-index: 999999 !important;
-      margin: 0 !important;
-      padding: 0 !important;
       background: #000 !important;
     }
     #playerSection:-moz-full-screen {
       position: fixed !important;
       inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
       z-index: 999999 !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      background: #000 !important;
-    }
-    #playerSection:-ms-fullscreen {
-      position: fixed !important;
-      inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 999999 !important;
-      margin: 0 !important;
-      padding: 0 !important;
       background: #000 !important;
     }
     #playerSection.is-pseudo-fullscreen {
       position: fixed !important;
       inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
       z-index: 999999 !important;
-      margin: 0 !important;
-      padding: 0 !important;
       background: #000 !important;
     }
 
-    /* ── Hide all fixed overlays when in pseudo-fullscreen ── */
     body:has(#playerSection.is-pseudo-fullscreen) .watch-topbar,
     body:has(#playerSection.is-pseudo-fullscreen) .sidebar-menu-btn,
     body:has(#playerSection.is-pseudo-fullscreen) .sidebar-overlay,
@@ -640,96 +823,115 @@
       display: none !important;
     }
 
-    #playerSection:fullscreen .player-wrapper {
-      position: absolute !important;
-      inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      padding-top: 0 !important;
-      margin: 0 !important;
-    }
-    #playerSection:-webkit-full-screen .player-wrapper {
-      position: absolute !important;
-      inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      padding-top: 0 !important;
-      margin: 0 !important;
-    }
-    #playerSection:-moz-full-screen .player-wrapper {
-      position: absolute !important;
-      inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      padding-top: 0 !important;
-      margin: 0 !important;
-    }
-    #playerSection:-ms-fullscreen .player-wrapper {
-      position: absolute !important;
-      inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      padding-top: 0 !important;
-      margin: 0 !important;
-    }
+    #playerSection:fullscreen .player-wrapper,
+    #playerSection:-webkit-full-screen .player-wrapper,
+    #playerSection:-moz-full-screen .player-wrapper,
     #playerSection.is-pseudo-fullscreen .player-wrapper {
       position: absolute !important;
       inset: 0 !important;
-      top: 0 !important;
-      left: 0 !important;
       width: 100% !important;
       height: 100% !important;
       padding-top: 0 !important;
-      margin: 0 !important;
     }
 
-    #playerSection:fullscreen iframe {
-      width: 100% !important;
-      height: 100% !important;
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      border: none !important;
-    }
-    #playerSection:-webkit-full-screen iframe {
-      width: 100% !important;
-      height: 100% !important;
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      border: none !important;
-    }
-    #playerSection:-moz-full-screen iframe {
-      width: 100% !important;
-      height: 100% !important;
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      border: none !important;
-    }
-    #playerSection:-ms-fullscreen iframe {
-      width: 100% !important;
-      height: 100% !important;
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      border: none !important;
-    }
+    #playerSection:fullscreen iframe,
+    #playerSection:-webkit-full-screen iframe,
+    #playerSection:-moz-full-screen iframe,
     #playerSection.is-pseudo-fullscreen iframe {
       width: 100% !important;
       height: 100% !important;
       position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
+      inset: 0 !important;
       border: none !important;
+    }
+
+    /* ═══════════════════════════════════════════
+       BELOW PLAYER LAYOUT & REVIEWS
+    ═══════════════════════════════════════════ */
+    .below-player {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 36px 28px 70px;
+      transition: opacity 0.5s ease, filter 0.5s ease;
+    }
+
+    .movie-detail-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      display: flex;
+      gap: 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .detail-poster-img {
+      width: 140px;
+      border-radius: 14px;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .reviews-section {
+      margin-top: 40px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(20px);
+    }
+    .review-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 20px 0 28px;
+    }
+    .star-rating-select {
+      display: flex;
+      gap: 8px;
+      font-size: 22px;
+      color: #ffb800;
+      cursor: pointer;
+    }
+    .review-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.88rem;
+      min-height: 90px;
+      outline: none;
+      font-family: var(--font);
+      transition: border 0.3s;
+    }
+    .review-input:focus {
+      border-color: var(--accent);
+    }
+    .btn-submit-review {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      align-self: flex-start;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .btn-submit-review:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px var(--accent-glow);
+    }
+    .review-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
     }
 
     /* ═══════════════════════════════════════════
@@ -737,77 +939,82 @@
     ═══════════════════════════════════════════ */
     @media (max-width: 768px) {
       .watch-topbar {
-        padding: 0 12px;
-        height: 60px;
+        padding: 0 14px;
+        height: 62px;
         gap: 8px;
       }
-      .back-btn {
-        padding: 6px 12px;
-        font-size: 12px;
-      }
       .watch-title {
-        font-size: 13px;
+        font-size: 0.88rem;
       }
       .watch-logo {
         display: none;
       }
       .player-section {
-        margin-top: 60px;
+        margin-top: 62px;
       }
       .sidebar-menu-btn {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        font-size: 16px;
-        left: 8px;
+        width: 40px;
+        height: 40px;
+        left: 10px;
       }
-      .player-sidebar {
-        width: 100%;
-        max-width: 100vw;
-      }
-      #movieDetailHeader {
+      .movie-detail-card {
         flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 16px;
+        padding: 20px;
       }
-      #detailPoster {
-        width: 110px !important;
+      .detail-poster-img {
+        width: 110px;
       }
       .below-player {
-        padding: 16px 12px 60px;
-      }
-      .reviews-section {
-        padding: 16px;
-        margin-top: 24px;
+        padding: 20px 14px 60px;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Top Bar -->
+
+  <!-- Theater Lights Backdrop Overlay -->
+  <div id="theaterOverlay"></div>
+
+  <!-- Top Navigation Bar -->
   <div class="watch-topbar" id="watchTopbar">
     <a href="index.html" class="back-btn">← Back to Browse</a>
-    <div class="watch-title" id="watchTitleBar">Loading…</div>
+    
+    <div class="watch-title-wrap">
+      <div class="watch-title" id="watchTitleBar">Loading stream…</div>
+      <span class="quality-badge">4K ULTRA HD</span>
+    </div>
 
-    <!-- Mode & Accent Swatch Switcher -->
-    <div style="display:flex;align-items:center;gap:10px;margin-right:12px;">
-      <button class="btn-theme" id="watchModeToggle" onclick="toggleWatchMode()" style="padding:6px 14px;border-radius:24px;font-size:12px;font-weight:700;">
-        🌙 Theme
+    <div class="watch-topbar-actions">
+      <!-- Theater Mode Toggle -->
+      <button class="icon-action-btn" id="theaterToggleBtn" onclick="toggleTheaterMode()" title="Toggle Theater Mode (Press T)">
+        💡 <span class="action-txt">Theater</span>
       </button>
+
+      <!-- Keyboard Shortcuts Modal Trigger -->
+      <button class="icon-action-btn" id="shortcutsBtn" onclick="toggleShortcutsModal()" title="Keyboard Shortcuts (Press ?)">
+        ⌨️ <span class="action-txt">Keys</span>
+      </button>
+
+      <!-- Theme & Swatch Switcher -->
+      <button class="icon-action-btn" id="watchModeToggle" onclick="toggleWatchMode()">
+        🌙 Mode
+      </button>
+
       <div class="accent-swatch-picker" style="display:flex;gap:6px;">
-        <button class="swatch-btn crimson active" data-accent="crimson"></button>
-        <button class="swatch-btn cyan" data-accent="cyan"></button>
-        <button class="swatch-btn gold" data-accent="gold"></button>
-        <button class="swatch-btn purple" data-accent="purple"></button>
+        <button class="swatch-btn crimson active" data-accent="crimson" title="Crimson Theme"></button>
+        <button class="swatch-btn cyan" data-accent="cyan" title="Cyan Theme"></button>
+        <button class="swatch-btn gold" data-accent="gold" title="Gold Theme"></button>
+        <button class="swatch-btn purple" data-accent="purple" title="Purple Theme"></button>
       </div>
     </div>
 
-    <div class="watch-logo">Cine<span style="color:var(--accent)">Verse</span></div>
+    <a href="index.html" class="watch-logo">Cine<span style="color:var(--accent)">Verse</span></a>
   </div>
 
-  <!-- Floating Sidebar Menu Button -->
-  <button class="sidebar-menu-btn" id="sidebarMenuBtn" onclick="openPlayerSidebar()" title="Open Menu">
+  <!-- Floating Sidebar Menu Trigger Button -->
+  <button class="sidebar-menu-btn" id="sidebarMenuBtn" onclick="openPlayerSidebar()" title="Open Player Controls (Press M)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
       <line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>
     </svg>
@@ -821,7 +1028,7 @@
     <div class="sidebar-header">
       <div class="sidebar-header-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 21V3M16 3v18"/></svg>
-        Player Controls
+        Player Control Center
       </div>
       <button class="sidebar-close-btn" onclick="closePlayerSidebar()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -836,7 +1043,7 @@
             <img id="sidebarPoster" src="" alt="" onerror="this.style.background='var(--card2)'"/>
           </div>
           <div class="sidebar-np-info">
-            <div class="sidebar-np-label">Now Playing</div>
+            <div class="sidebar-np-label">Now Streaming</div>
             <div class="sidebar-np-title" id="sidebarNpTitle">Loading…</div>
             <div class="sidebar-np-episode" id="sidebarNpEpisode" style="display:none;"></div>
             <div class="sidebar-np-meta" id="sidebarNpMeta"></div>
@@ -845,7 +1052,7 @@
         </div>
       </div>
 
-      <!-- Prev / Next Episode (TV Only) -->
+      <!-- Prev / Next Episode (TV Shows) -->
       <div class="sidebar-ep-nav" id="sidebarEpNav" style="display:none;">
         <button class="sidebar-ep-nav-btn" id="prevEpBtn" onclick="goToPrevEpisode()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
@@ -857,49 +1064,52 @@
         </button>
       </div>
 
-      <!-- 🎬 Video Servers (Collapsible) -->
+      <!-- 🎬 Video Server Nodes (Collapsible) -->
       <div class="sidebar-section open" id="sidebarServersSection">
         <div class="sidebar-section-header" onclick="toggleSidebarSection('sidebarServersSection')">
           <div class="sidebar-section-title">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
-            Video Servers
+            Streaming Server Nodes
           </div>
           <svg class="sidebar-section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
         </div>
         <div class="sidebar-section-content">
           <div class="sidebar-servers-grid" id="sidebarServersGrid">
-            <!-- Populated by JS -->
+            <!-- Populated dynamically by JS -->
           </div>
         </div>
       </div>
 
-      <!-- 📺 All Episodes (Collapsible — TV only) -->
+      <!-- 📺 All Episodes (Collapsible — TV Shows) -->
       <div class="sidebar-section" id="sidebarEpisodesSection" style="display:none;">
         <div class="sidebar-section-header" onclick="toggleSidebarSection('sidebarEpisodesSection')">
           <div class="sidebar-section-title">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17,2 12,7 7,2"/></svg>
-            All Episodes
+            Episodes Selector
           </div>
           <svg class="sidebar-section-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
         </div>
         <div class="sidebar-section-content">
           <select class="sidebar-season-select" id="sidebarSeasonSelect"></select>
           <div class="sidebar-ep-grid" id="sidebarEpGrid">
-            <!-- Populated by JS -->
+            <!-- Populated dynamically by JS -->
           </div>
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Action Hub -->
       <div class="sidebar-action-btns">
         <button class="sidebar-action-btn" id="sidebarFullscreenBtn" onclick="toggleFullscreen()">
           <div class="sidebar-action-icon" style="background:rgba(255,255,255,0.06);border-radius:8px;">⛶</div>
           Toggle Fullscreen
         </button>
+        <button class="sidebar-action-btn" id="sidebarTheaterBtn" onclick="toggleTheaterMode()">
+          <div class="sidebar-action-icon" style="background:rgba(255,255,255,0.06);border-radius:8px;">💡</div>
+          Theater Lights Mode
+        </button>
         <button class="sidebar-action-btn party-btn" id="sidebarPartyBtn" onclick="handleSidebarWatchParty()">
           <div class="sidebar-action-icon" style="background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(229,9,20,0.2));border-radius:8px;">🍿</div>
-          Watch Party
-          <span style="margin-left:auto;font-size:0.6rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Coming Soon</span>
+          Watch Party Sync Room
         </button>
         <button class="sidebar-action-btn" id="sidebarDownloadBtn" onclick="triggerDownload()">
           <div class="sidebar-action-icon" style="background:rgba(255,255,255,0.06);border-radius:8px;">📥</div>
@@ -909,13 +1119,14 @@
     </div>
   </div>
 
-  <!-- Player Section -->
+  <!-- Main Cinema Player Container -->
   <div class="player-section" id="playerSection">
+    <div class="cinema-ambient-glow" id="cinemaGlow"></div>
     <div class="player-wrapper" id="playerWrapper"></div>
     
     <!-- Top Player Controls Bar -->
     <div class="player-top-controls" id="playerTopControls">
-      <button class="player-fullscreen-btn" id="playerFullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen (Press F)">
+      <button class="player-ctrl-btn" id="playerFullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen (Press F)">
         <svg class="icon-expand" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
         </svg>
@@ -925,14 +1136,14 @@
         <span class="fs-text">Fullscreen</span>
       </button>
 
-      <!-- Active Server Status Badge (on player) -->
-      <div class="player-active-status visible" id="playerActiveStatus">
+      <!-- Active Server Status Badge -->
+      <div class="player-active-status" id="playerActiveStatus">
         <span class="status-dot"></span>
-        <span id="currentActiveServerName">Viduki</span>
+        <span id="currentActiveServerName">Viduki Multi</span>
       </div>
     </div>
 
-    <!-- Download Progress Overlay -->
+    <!-- Download Progress Ring Overlay -->
     <div class="download-progress-overlay" id="downloadProgressOverlay">
       <div class="download-progress-ring"></div>
       <div class="download-percentage" id="downloadPercent">0%</div>
@@ -943,17 +1154,17 @@
     <div class="floating-reaction-container" id="floatingReactionContainer"></div>
   </div>
 
-  <!-- Floating Watch Party Drawer (Hidden by default) -->
+  <!-- Floating Watch Party Drawer -->
   <div class="party-drawer hidden" id="partyDrawer">
     <div class="party-drawer-header">
       <span>🍿 Watch Party Sync Room</span>
-      <button id="closePartyBtn" style="color:#fff;background:none;border:none;cursor:pointer;">✕</button>
+      <button id="closePartyBtn" style="color:#fff;background:none;border:none;cursor:pointer;font-size:16px;">✕</button>
     </div>
     <div style="padding:8px 12px;background:rgba(0,210,211,0.15);color:var(--accent-cyan);font-size:11px;font-weight:700;">
       Room Code: <span id="roomCodeDisplay">PARTY-8F3K9A</span>
     </div>
     <div class="party-messages" id="partyMessages">
-      <div class="party-msg">System: Room created! Share code with friends to sync playback.</div>
+      <div class="party-msg">System: Sync room created! Share room link with friends.</div>
     </div>
     <!-- Reaction Picker Bar -->
     <div class="reaction-picker-bar">
@@ -965,30 +1176,67 @@
       <button class="reaction-btn" onclick="sendPartyReaction('🔥')">🔥</button>
     </div>
     <div class="party-input-box">
-      <input type="text" class="party-input" id="partyMsgInput" placeholder="Chat with room..." />
+      <input type="text" class="party-input" id="partyMsgInput" placeholder="Chat in room..." />
       <button id="sendPartyMsgBtn" style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;border:none;cursor:pointer;">➔</button>
     </div>
   </div>
 
-  <!-- Below Player Content -->
+  <!-- Keyboard Shortcuts Cheat Sheet Modal -->
+  <div class="modal-backdrop" id="shortcutsModal" onclick="closeShortcutsModalIfBackdrop(event)">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>⌨️ Keyboard Shortcuts</span>
+        <button onclick="toggleShortcutsModal()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <div class="shortcuts-grid">
+        <div class="shortcut-row">
+          <span>Toggle Fullscreen</span>
+          <span class="shortcut-key">F</span>
+        </div>
+        <div class="shortcut-row">
+          <span>Theater Lights Mode</span>
+          <span class="shortcut-key">T</span>
+        </div>
+        <div class="shortcut-row">
+          <span>Toggle Player Command Menu</span>
+          <span class="shortcut-key">M</span>
+        </div>
+        <div class="shortcut-row">
+          <span>Next Episode (TV)</span>
+          <span class="shortcut-key">N</span>
+        </div>
+        <div class="shortcut-row">
+          <span>Previous Episode (TV)</span>
+          <span class="shortcut-key">P</span>
+        </div>
+        <div class="shortcut-row">
+          <span>Close Modals / Exit Fullscreen</span>
+          <span class="shortcut-key">Esc</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Below Player Content Layout -->
   <div class="below-player">
-    <div id="movieDetailHeader" style="display:flex;gap:20px;">
-      <img id="detailPoster" style="width:130px;border-radius:12px;display:none;" />
+    <!-- Movie Details Header Card -->
+    <div class="movie-detail-card" id="movieDetailHeader">
+      <img id="detailPoster" class="detail-poster-img" style="display:none;" />
       <div>
-        <h1 id="detailTitle" style="font-size:24px;font-weight:800;">Loading…</h1>
-        <div id="detailMeta" style="color:var(--muted);font-size:13px;margin:8px 0;"></div>
-        <p id="detailOverview" style="color:var(--text);font-size:14px;max-width:700px;opacity:0.8;"></p>
+        <h1 id="detailTitle" style="font-family:var(--font-heading);font-size:1.6rem;font-weight:800;">Loading details…</h1>
+        <div id="detailMeta" style="color:var(--muted);font-size:0.82rem;margin:8px 0;display:flex;gap:12px;align-items:center;"></div>
+        <p id="detailOverview" style="color:var(--text);font-size:0.9rem;max-width:760px;opacity:0.85;line-height:1.6;margin-top:12px;"></p>
       </div>
     </div>
 
     <!-- Cast Slider Section -->
-    <div class="watch-section-title" id="castSectionTitle" style="display:none;font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;margin-top:40px;">👥 Starring Cast</div>
+    <div class="watch-section-title" id="castSectionTitle" style="display:none;font-size:1.15rem;font-weight:800;font-family:var(--font-heading);margin-top:40px;">👥 Starring Cast</div>
     <div class="cast-slider-wrap" id="castSlider" style="display:none;"></div>
 
-    <!-- Similar Recommendations Slider Section -->
-    <div class="watch-section-title" id="similarSectionTitle" style="display:none;font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;margin-top:30px;">🔥 More Like This</div>
+    <!-- Recommendations Slider Section -->
+    <div class="watch-section-title" id="similarSectionTitle" style="display:none;font-size:1.15rem;font-weight:800;font-family:var(--font-heading);margin-top:36px;">🔥 More Like This</div>
     <div class="similar-slider-wrap" id="similarMoviesSection" style="display:none;margin-bottom:40px;position:relative;">
-      <div class="slider-wrap" style="margin: 0; position:relative;">
+      <div class="slider-wrap" style="margin:0;position:relative;">
         <button class="slider-arrow left" onclick="scrollWatchSlider('similarMoviesTrack',-1)" style="top:50%;transform:translateY(-50%);position:absolute;left:-16px;z-index:5;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
         </button>
@@ -1001,37 +1249,40 @@
 
     <!-- Community Reviews Section -->
     <div class="reviews-section">
-      <h3 style="font-size:18px;font-weight:800;font-family:'Outfit',sans-serif;">💬 Community Reviews & Ratings</h3>
+      <h3 style="font-size:1.15rem;font-weight:800;font-family:var(--font-heading);">💬 Community Reviews & Ratings</h3>
       <div class="review-form">
         <div class="star-rating-select" id="starRatingSelect">
           <span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5" class="selected">★</span>
         </div>
-        <textarea id="reviewTextInput" class="review-input" placeholder="Write your review here..."></textarea>
+        <textarea id="reviewTextInput" class="review-input" placeholder="Share your thoughts on this title..."></textarea>
         <button class="btn-submit-review" id="submitReviewBtn">Post Review</button>
       </div>
       <div class="reviews-list" id="reviewsList"></div>
     </div>
   </div>
 
-  <!-- ACTOR MODAL FOR WATCH PAGE -->
-  <div id="watchActorModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(20px);z-index:9000;align-items:center;justify-content:center;" onclick="closeWatchActorIfBackdrop(event)">
-    <div class="watch-actor-modal-box" style="position:relative;" onclick="event.stopPropagation()">
-      <div class="modal-close-btn" onclick="closeWatchActor()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </div>
-      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
-        <img id="watchActorPhoto" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid var(--border);" src="" onerror="this.style.background='var(--card2)'"/>
-        <div>
-          <h2 id="watchActorName" style="font-family:var(--font-heading);font-weight:900;font-size:1.4rem;color:var(--text);">Actor Name</h2>
-          <div id="watchActorKnownFor" style="font-size:0.75rem;color:var(--accent);font-weight:800;text-transform:uppercase;margin-top:4px;">Acting</div>
-          <div id="watchActorBirthday" style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Born: —</div>
+  <!-- Actor Bio Modal -->
+  <div id="watchActorModal" class="modal-backdrop" onclick="closeWatchActorIfBackdrop(event)">
+    <div class="modal-card" style="width:520px;" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div style="display:flex;gap:18px;align-items:center;">
+          <img id="watchActorPhoto" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" src="" onerror="this.style.background='var(--card2)'"/>
+          <div>
+            <h2 id="watchActorName" style="font-family:var(--font-heading);font-weight:900;font-size:1.3rem;color:var(--text);">Actor Name</h2>
+            <div id="watchActorKnownFor" style="font-size:0.75rem;color:var(--accent-cyan);font-weight:800;text-transform:uppercase;margin-top:4px;">Acting</div>
+            <div id="watchActorBirthday" style="font-size:0.75rem;color:var(--muted);margin-top:2px;">Born: —</div>
+          </div>
         </div>
+        <button class="sidebar-close-btn" onclick="closeWatchActor()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
-      <p id="watchActorBio" style="margin-top:16px;font-size:0.8rem;color:var(--text);opacity:0.8;line-height:1.5;max-height:180px;overflow-y:auto;text-align:left;"></p>
+      <p id="watchActorBio" style="margin-top:18px;font-size:0.82rem;color:var(--text);opacity:0.85;line-height:1.6;max-height:200px;overflow-y:auto;text-align:left;"></p>
     </div>
   </div>
 
+  <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Cinema Engine Logic -->
   <script src="player.js"></script>
 </body>
 </html>
