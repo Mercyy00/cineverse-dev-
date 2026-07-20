@@ -1,6 +1,7 @@
 /**
  * CineStream – player.js
  * Multi-Server Embed Engine, Progress Tracking & Watch Party Sync Room
+ * Updated: Viduki (4 APIs) + ZXCStream as priority servers, Floating Sidebar UI
  */
 
 'use strict';
@@ -15,15 +16,69 @@ const mediaType = urlParams.get('type') === 'tv' ? 'tv' : 'movie';
 const initialTitle = decodeURIComponent(urlParams.get('title') || 'Interstellar');
 const startTime = parseInt(urlParams.get('startTime') || '0', 10) || 0;
 
-let currentServer = 'rivestream';
+let currentServer = 'viduki1';
 let currentSeason = parseInt(urlParams.get('season') || '1', 10) || 1;
 let currentEpisode = parseInt(urlParams.get('episode') || '1', 10) || 1;
 let movieDetailsData = null;
 let selectedStarRating = 5;
 let watchTimer = null;
 let watchedSeconds = startTime;
+let totalEpisodesInSeason = 10;
+let totalSeasons = 1;
 
+/* ================================================
+   ACCENT HEX HELPER — returns hex without #
+================================================ */
+function getAccentHex() {
+  const accent = localStorage.getItem('cs_accent_theme') || 'crimson';
+  const hexMap = { crimson: 'e50914', cyan: '00d2d3', gold: 'ffb800', purple: 'a855f7' };
+  return hexMap[accent] || 'e50914';
+}
+
+function getAccentHexWithHash() {
+  return '%23' + getAccentHex();
+}
+
+/* ================================================
+   SERVER URL BUILDERS — Priority Order
+================================================ */
 const SERVER_URLS = {
+  // ─── PRIORITY 1: Viduki (4 API tiers) ───
+  viduki1: (id, type, s, e, st) => {
+    const color = getAccentHexWithHash();
+    return type === 'tv'
+      ? `https://viduki.net/1/tv/${id}/${s}/${e}?color=${color}`
+      : `https://viduki.net/1/movie/${id}?color=${color}`;
+  },
+  viduki2: (id, type, s, e, st) => {
+    const color = getAccentHexWithHash();
+    return type === 'tv'
+      ? `https://viduki.net/2/tv/${id}/${s}/${e}?color=${color}`
+      : `https://viduki.net/2/movie/${id}?color=${color}`;
+  },
+  viduki3: (id, type, s, e, st) => {
+    const color = getAccentHexWithHash();
+    return type === 'tv'
+      ? `https://viduki.net/3/tv/${id}/${s}/${e}?color=${color}`
+      : `https://viduki.net/3/movie/${id}?color=${color}`;
+  },
+  viduki4: (id, type, s, e, st) => {
+    const color = getAccentHexWithHash();
+    return type === 'tv'
+      ? `https://viduki.net/4/tv/${id}/${s}/${e}?color=${color}`
+      : `https://viduki.net/4/movie/${id}?color=${color}`;
+  },
+
+  // ─── PRIORITY 2: ZXCStream ───
+  zxcstream: (id, type, s, e, st) => {
+    const color = getAccentHex();
+    const base = type === 'tv'
+      ? `https://zxcstream.xyz/player/tv/${id}/${s}/${e}`
+      : `https://zxcstream.xyz/player/movie/${id}`;
+    return `${base}?color=${color}&autoplay=true&back=true`;
+  },
+
+  // ─── PRIORITY 3+: Legacy Servers ───
   rivestream: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed?type=movie&id=${id}`,
   vidcodin: (id, type, s, e, st) => type === 'tv' ? `https://vidcodin.net/embed/tv/${id}/${s}/${e}` : `https://vidcodin.net/embed/movie/${id}`,
   oneembed: (id, type, s, e, st) => type === 'tv' ? `https://1embed.cc/embed/tv/${id}/${s}/${e}` : `https://1embed.cc/embed/movie/${id}`,
@@ -52,6 +107,26 @@ const SERVER_URLS = {
     return url;
   },
 };
+
+/* Server display info for sidebar */
+const SERVER_INFO = [
+  { key: 'viduki1', name: 'Viduki Multi Server', desc: 'Primary • auto-cascading servers', icon: '⚡', gradient: 'linear-gradient(135deg,#ff6b35,#e50914)' },
+  { key: 'viduki2', name: 'Viduki Multi Language', desc: 'Multi-language audio support', icon: '🌐', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+  { key: 'viduki3', name: 'Viduki Multi Embeds', desc: 'Multiple embed sources', icon: '🔮', gradient: 'linear-gradient(135deg,#a855f7,#7c3aed)' },
+  { key: 'viduki4', name: 'Viduki Premium', desc: 'Premium quality streams', icon: '👑', gradient: 'linear-gradient(135deg,#ffb800,#f59e0b)' },
+  { key: 'zxcstream', name: 'ZXC Stream', desc: 'Multi-dub • HD quality', icon: '🚀', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
+  { key: 'rivestream', name: 'RiveStream', desc: 'Auto-aggregator • fastest CDN', icon: '⚡', gradient: 'linear-gradient(135deg,#ff6b35,#e50914)' },
+  { key: 'vidcodin', name: 'VidCodin', desc: 'High-speed decoding', icon: '🛸', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
+  { key: 'oneembed', name: '1embed', desc: 'Multi-quality • zero ads', icon: '🔮', gradient: 'linear-gradient(135deg,#a855f7,#7c3aed)' },
+  { key: 'mapple', name: 'Mapple HD', desc: 'HD streaming', icon: '🍁', gradient: 'linear-gradient(135deg,#f43f5e,#be123c)' },
+  { key: 'vidsync', name: 'VidSync Cloud', desc: 'HLS streaming', icon: '🚀', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+  { key: 'cinesrc', name: 'CineSrc Premium', desc: 'Theme sync • FHD', icon: '🎬', gradient: 'linear-gradient(135deg,#ffb800,#f59e0b)' },
+  { key: 'vidnest', name: 'VidNest Anime', desc: 'Anime • sub & dub', icon: '⛩️', gradient: 'linear-gradient(135deg,#ef4444,#dc2626)' },
+];
+
+/* Viduki auto-fallback cascade order */
+const VIDUKI_FALLBACK_ORDER = ['viduki1', 'viduki2', 'viduki3', 'viduki4', 'zxcstream', 'rivestream'];
+let vidukiFallbackIndex = 0;
 
 const $ = (id) => document.getElementById(id);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
@@ -84,6 +159,8 @@ function initAccentThemes() {
       const accent = btn.dataset.accent;
       applyAccentTheme(accent);
       localStorage.setItem('cs_accent_theme', accent);
+      // Re-render embed to update player theme color
+      renderEmbedServer(currentServer);
     };
   });
 }
@@ -120,24 +197,25 @@ function applyAccentTheme(accentName) {
 /* ================================================
    EMBED SERVER ENGINE & PROGRESS SAVER
 ================================================ */
-function renderEmbedServer(serverKey = 'rivestream') {
+function renderEmbedServer(serverKey = 'viduki1') {
   currentServer = serverKey;
   const wrapper = $('playerWrapper');
   if (!wrapper) return;
 
-  $$('.server-premium-card').forEach(card => {
-    card.classList.toggle('active', card.dataset.server === serverKey);
-  });
+  // Update sidebar server highlighting
+  updateSidebarServerHighlight(serverKey);
 
-  const activeCard = Array.from(document.querySelectorAll('.server-premium-card')).find(c => c.dataset.server === serverKey);
-  if (activeCard) {
-    const titleEl = activeCard.querySelector('.server-card-title');
-    if (titleEl && $('currentActiveServerName')) {
-      $('currentActiveServerName').textContent = titleEl.textContent;
-    }
+  // Update active server status badge on player
+  const serverInfo = SERVER_INFO.find(s => s.key === serverKey);
+  if (serverInfo && $('currentActiveServerName')) {
+    $('currentActiveServerName').textContent = serverInfo.name;
   }
 
-  const builder = SERVER_URLS[serverKey] || SERVER_URLS.vidsync;
+  // Track fallback index
+  const fallbackIdx = VIDUKI_FALLBACK_ORDER.indexOf(serverKey);
+  if (fallbackIdx !== -1) vidukiFallbackIndex = fallbackIdx;
+
+  const builder = SERVER_URLS[serverKey] || SERVER_URLS.viduki1;
   const embedUrl = builder(movieId, mediaType, currentSeason, currentEpisode, watchedSeconds);
 
   wrapper.innerHTML = `
@@ -153,6 +231,8 @@ function renderEmbedServer(serverKey = 'rivestream') {
     ></iframe>
   `;
 
+  // Save preferred server
+  localStorage.setItem('cs_preferred_player', serverKey);
   startProgressTracker();
 }
 
@@ -187,61 +267,38 @@ function saveWatchProgress(secs) {
 }
 
 /* ================================================
+   VIDUKI SERVER FALLBACK CASCADE
+================================================ */
+function switchToFallbackApi(mediaInfo) {
+  vidukiFallbackIndex++;
+  if (vidukiFallbackIndex < VIDUKI_FALLBACK_ORDER.length) {
+    const nextServer = VIDUKI_FALLBACK_ORDER[vidukiFallbackIndex];
+    console.log(`Viduki fallback: switching to ${nextServer}`);
+    showToast(`Server unavailable. Switching to ${SERVER_INFO.find(s => s.key === nextServer)?.name || nextServer}...`, '🔄');
+    renderEmbedServer(nextServer);
+  } else {
+    showToast('All priority servers unavailable. Try a different server from the menu.', '⚠️');
+  }
+}
+
+/* ================================================
    WATCH PARTY SYNC ROOM ENGINE
 ================================================ */
 function initWatchParty() {
-  const btn = $('createPartyBtn');
   const drawer = $('partyDrawer');
   const closeBtn = $('closePartyBtn');
   const msgInput = $('partyMsgInput');
   const sendBtn = $('sendPartyMsgBtn');
 
-  if (!btn || !drawer) return;
+  if (!drawer) return;
 
-  btn.onclick = () => {
-    const roomCode = 'PARTY-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-    $('roomCodeDisplay').textContent = roomCode;
-    drawer.classList.remove('hidden');
-    
-    // Start bot chat and reaction simulation
-    startWatchPartyBotSimulation();
-
-    // Unlock 'social' achievement
-    try {
-      const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
-      const profileId = activeProfile.id || 'default';
-      const unlockedKey = `cs_unlocked_achievements_${profileId}`;
-      const unlocked = JSON.parse(localStorage.getItem(unlockedKey) || '[]');
-      if (!unlocked.includes('social')) {
-        unlocked.push('social');
-        localStorage.setItem(unlockedKey, JSON.stringify(unlocked));
-        
-        // Show local toast
-        const toast = document.createElement('div');
-        toast.style.cssText = 'position:fixed;bottom:24px;left:24px;background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);font-size:0.85rem;display:flex;align-items:center;gap:8px;';
-        toast.innerHTML = '<span>🏆</span> Achievement Unlocked: Social Streamer! 🤝';
-        document.body.appendChild(toast);
-        setTimeout(() => {
-          toast.style.opacity = '0';
-          toast.style.transition = 'opacity 0.5s';
-          setTimeout(() => toast.remove(), 500);
-        }, 4000);
-      }
-    } catch (e) {}
-
-    try {
-      navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?id=${movieId}&party=${roomCode}`);
-      showToast(`Watch Party Created! Link copied. Code: ${roomCode}`, '🍿');
-    } catch (e) {
-      showToast(`Watch Party Created! Code: ${roomCode}`, '🍿');
-    }
-  };
-
-  closeBtn.onclick = () => {
-    drawer.classList.add('hidden');
-    clearInterval(botInterval);
-    clearInterval(reactionInterval);
-  };
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      drawer.classList.add('hidden');
+      clearInterval(botInterval);
+      clearInterval(reactionInterval);
+    };
+  }
 
   const sendMessage = () => {
     const text = msgInput.value.trim();
@@ -260,8 +317,50 @@ function initWatchParty() {
     msgInput.value = '';
   };
 
-  sendBtn.onclick = sendMessage;
-  msgInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+  if (sendBtn) sendBtn.onclick = sendMessage;
+  if (msgInput) msgInput.onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+}
+
+function handleSidebarWatchParty() {
+  closePlayerSidebar();
+  const drawer = $('partyDrawer');
+  if (!drawer) return;
+
+  const roomCode = 'PARTY-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+  $('roomCodeDisplay').textContent = roomCode;
+  drawer.classList.remove('hidden');
+  
+  // Start bot chat and reaction simulation
+  startWatchPartyBotSimulation();
+
+  // Unlock 'social' achievement
+  try {
+    const activeProfile = JSON.parse(localStorage.getItem('cs_active_profile') || '{}');
+    const profileId = activeProfile.id || 'default';
+    const unlockedKey = `cs_unlocked_achievements_${profileId}`;
+    const unlocked = JSON.parse(localStorage.getItem(unlockedKey) || '[]');
+    if (!unlocked.includes('social')) {
+      unlocked.push('social');
+      localStorage.setItem(unlockedKey, JSON.stringify(unlocked));
+      
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;bottom:24px;left:24px;background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);font-size:0.85rem;display:flex;align-items:center;gap:8px;';
+      toast.innerHTML = '<span>🏆</span> Achievement Unlocked: Social Streamer! 🤝';
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.5s';
+        setTimeout(() => toast.remove(), 500);
+      }, 4000);
+    }
+  } catch (e) {}
+
+  try {
+    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?id=${movieId}&party=${roomCode}`);
+    showToast(`Watch Party Created! Link copied. Code: ${roomCode}`, '🍿');
+  } catch (e) {
+    showToast(`Watch Party Created! Code: ${roomCode}`, '🍿');
+  }
 }
 
 /* ================================================
@@ -311,7 +410,6 @@ function initCommunityReviews() {
           unlocked.push('reviewer');
           localStorage.setItem(unlockedKey, JSON.stringify(unlocked));
           
-          // Show local toast
           const toast = document.createElement('div');
           toast.style.cssText = 'position:fixed;bottom:24px;left:24px;background:var(--accent);color:#fff;padding:12px 24px;border-radius:12px;font-weight:700;z-index:9999;box-shadow:0 10px 30px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);font-size:0.85rem;display:flex;align-items:center;gap:8px;';
           toast.innerHTML = '<span>🏆</span> Achievement Unlocked: Critic! ✍️';
@@ -371,6 +469,7 @@ async function loadContentDetails() {
   const details = await apiFetch(`/${mediaType}/${movieId}`);
   if (!details) {
     $('watchTitleBar').textContent = initialTitle;
+    populateSidebarNowPlaying(null);
     return;
   }
 
@@ -393,31 +492,133 @@ async function loadContentDetails() {
   const overviewEl = $('detailOverview');
   if (overviewEl) overviewEl.textContent = details.overview || 'Streaming content available in HD quality.';
 
+  // TV Show handling
   if (mediaType === 'tv') {
-    const tvPicker = $('tvPickerContainer');
-    if (tvPicker) tvPicker.style.display = 'block';
+    totalSeasons = details.number_of_seasons || 1;
     
-    const seasons = details.number_of_seasons || 1;
-    const seasonSelect = $('seasonSelect');
-    if (seasonSelect) {
-      seasonSelect.className = 'season-select';
-      seasonSelect.style.cssText = 'background:var(--card2);color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:10px;font-family:var(--font);font-weight:700;outline:none;cursor:pointer;';
-      seasonSelect.innerHTML = Array.from({length: seasons}, (_, i) => `<option value="${i+1}">Season ${i+1}</option>`).join('');
-      seasonSelect.value = currentSeason;
-      seasonSelect.onchange = (e) => {
+    // Populate sidebar season select
+    const sidebarSeasonSelect = $('sidebarSeasonSelect');
+    if (sidebarSeasonSelect) {
+      sidebarSeasonSelect.innerHTML = Array.from({length: totalSeasons}, (_, i) => `<option value="${i+1}">Season ${i+1}</option>`).join('');
+      sidebarSeasonSelect.value = currentSeason;
+      sidebarSeasonSelect.onchange = (e) => {
         currentSeason = parseInt(e.target.value, 10);
-        loadWatchEpisodes(currentSeason);
+        loadSidebarEpisodes(currentSeason);
       };
     }
-    loadWatchEpisodes(currentSeason);
+
+    // Show episode sections in sidebar
+    const epNav = $('sidebarEpNav');
+    if (epNav) epNav.style.display = 'flex';
+    const epSection = $('sidebarEpisodesSection');
+    if (epSection) epSection.style.display = 'block';
+
+    loadSidebarEpisodes(currentSeason);
   }
+
+  // Populate sidebar Now Playing
+  populateSidebarNowPlaying(details);
+
   loadWatchCastAndSimilar();
 }
 
-async function loadWatchEpisodes(seasonNum) {
-  const grid = $('episodesGrid');
+/* ================================================
+   SIDEBAR — Now Playing
+================================================ */
+function populateSidebarNowPlaying(details) {
+  const posterEl = $('sidebarPoster');
+  const titleEl = $('sidebarNpTitle');
+  const episodeEl = $('sidebarNpEpisode');
+  const metaEl = $('sidebarNpMeta');
+  const overviewEl = $('sidebarNpOverview');
+
+  if (!details) {
+    if (titleEl) titleEl.textContent = initialTitle;
+    return;
+  }
+
+  const title = details.title || details.name || initialTitle;
+  if (posterEl) posterEl.src = details.poster_path ? `${IMG_BASE}w185${details.poster_path}` : '';
+  if (titleEl) titleEl.textContent = title;
+
+  if (mediaType === 'tv') {
+    if (episodeEl) {
+      episodeEl.textContent = `Season ${currentSeason} • Episode ${currentEpisode}`;
+      episodeEl.style.display = 'block';
+    }
+  }
+
+  if (metaEl) {
+    const year = (details.release_date || details.first_air_date || '2025').slice(0, 4);
+    const rating = details.vote_average ? `⭐ ${details.vote_average.toFixed(1)}` : '';
+    metaEl.textContent = `${year} ${rating ? '• ' + rating : ''}`;
+  }
+
+  if (overviewEl) {
+    overviewEl.textContent = details.overview || '';
+  }
+}
+
+function updateSidebarNowPlayingEpisode() {
+  const episodeEl = $('sidebarNpEpisode');
+  if (episodeEl && mediaType === 'tv') {
+    episodeEl.textContent = `Season ${currentSeason} • Episode ${currentEpisode}`;
+    episodeEl.style.display = 'block';
+  }
+}
+
+/* ================================================
+   SIDEBAR — Episode Navigation (Prev/Next)
+================================================ */
+function goToPrevEpisode() {
+  if (currentEpisode > 1) {
+    currentEpisode--;
+  } else if (currentSeason > 1) {
+    currentSeason--;
+    currentEpisode = 1; // Will be updated when episodes load
+    const seasonSelect = $('sidebarSeasonSelect');
+    if (seasonSelect) seasonSelect.value = currentSeason;
+    loadSidebarEpisodes(currentSeason);
+  }
+  watchedSeconds = 0;
+  updateSidebarNowPlayingEpisode();
+  renderEmbedServer(currentServer);
+  updateEpNavButtons();
+  highlightSidebarEpisode();
+}
+
+function goToNextEpisode() {
+  if (currentEpisode < totalEpisodesInSeason) {
+    currentEpisode++;
+  } else if (currentSeason < totalSeasons) {
+    currentSeason++;
+    currentEpisode = 1;
+    const seasonSelect = $('sidebarSeasonSelect');
+    if (seasonSelect) seasonSelect.value = currentSeason;
+    loadSidebarEpisodes(currentSeason);
+  }
+  watchedSeconds = 0;
+  updateSidebarNowPlayingEpisode();
+  renderEmbedServer(currentServer);
+  updateEpNavButtons();
+  highlightSidebarEpisode();
+}
+
+function updateEpNavButtons() {
+  const prevBtn = $('prevEpBtn');
+  const nextBtn = $('nextEpBtn');
+  if (prevBtn) prevBtn.disabled = (currentSeason === 1 && currentEpisode === 1);
+  if (nextBtn) nextBtn.disabled = (currentSeason === totalSeasons && currentEpisode >= totalEpisodesInSeason);
+}
+
+/* ================================================
+   SIDEBAR — Episodes Grid
+================================================ */
+async function loadSidebarEpisodes(seasonNum) {
+  const grid = $('sidebarEpGrid');
   if (!grid) return;
-  grid.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:10px;">Loading episodes...</div>';
+  grid.innerHTML = '<div style="color:var(--muted);font-size:0.72rem;padding:4px 0;">Loading...</div>';
+
   try {
     const seasonData = await apiFetch(`/tv/${movieId}/season/${seasonNum}`);
     const eps = seasonData?.episodes || [];
@@ -425,38 +626,137 @@ async function loadWatchEpisodes(seasonNum) {
     if (!eps.length) {
       for (let i = 1; i <= 10; i++) eps.push({ episode_number: i, name: `Episode ${i}` });
     }
+    totalEpisodesInSeason = eps.length;
+
     eps.forEach(ep => {
       const btn = document.createElement('button');
-      btn.className = `ep-btn ${ep.episode_number === currentEpisode ? 'active' : ''}`;
-      btn.style.cssText = `padding:8px 14px;border-radius:12px;background:${ep.episode_number === currentEpisode ? 'linear-gradient(135deg,var(--accent2),var(--accent))' : 'var(--card2)'};border:1px solid var(--border);color:${ep.episode_number === currentEpisode ? '#fff' : 'var(--text)'};font-weight:800;font-size:13px;cursor:pointer;transition:all .3s;text-align:center;min-width:64px;`;
-      btn.innerHTML = `E${ep.episode_number}`;
+      btn.className = `sidebar-ep-btn ${ep.episode_number === currentEpisode && seasonNum === currentSeason ? 'active' : ''}`;
+      btn.textContent = `E${ep.episode_number}`;
       btn.title = ep.name || `Episode ${ep.episode_number}`;
       btn.onclick = () => {
         currentEpisode = ep.episode_number;
-        $$('.ep-btn').forEach(b => {
-          b.style.background = 'var(--card2)';
-          b.style.color = 'var(--text)';
-        });
-        btn.style.background = 'linear-gradient(135deg,var(--accent2),var(--accent))';
-        btn.style.color = '#fff';
+        currentSeason = seasonNum;
+        watchedSeconds = 0;
+        highlightSidebarEpisode();
+        updateSidebarNowPlayingEpisode();
         renderEmbedServer(currentServer);
+        updateEpNavButtons();
       };
       grid.appendChild(btn);
     });
+
+    updateEpNavButtons();
   } catch (e) {
-    grid.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:10px;">Could not load episode list.</div>';
+    grid.innerHTML = '<div style="color:var(--muted);font-size:0.72rem;padding:4px 0;">Could not load episodes.</div>';
   }
 }
 
+function highlightSidebarEpisode() {
+  $$('.sidebar-ep-btn').forEach(btn => {
+    const epNum = parseInt(btn.textContent.replace('E', ''), 10);
+    btn.classList.toggle('active', epNum === currentEpisode);
+  });
+}
+
 /* ================================================
-   CINERC PLAYER POSTMESSAGE LISTENER
+   SIDEBAR — Server Buttons
+================================================ */
+function renderSidebarServers() {
+  const grid = $('sidebarServersGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  SERVER_INFO.forEach(server => {
+    const btn = document.createElement('div');
+    btn.className = `sidebar-server-btn ${server.key === currentServer ? 'active' : ''}`;
+    btn.dataset.server = server.key;
+    btn.innerHTML = `
+      <div class="sidebar-server-icon" style="background:${server.gradient}">${server.icon}</div>
+      <div class="sidebar-server-info">
+        <div class="sidebar-server-name">${server.name}</div>
+        <div class="sidebar-server-desc">${server.desc}</div>
+      </div>
+      <div class="sidebar-server-status"></div>
+    `;
+    btn.onclick = () => {
+      currentServer = server.key;
+      vidukiFallbackIndex = VIDUKI_FALLBACK_ORDER.indexOf(server.key);
+      if (vidukiFallbackIndex === -1) vidukiFallbackIndex = VIDUKI_FALLBACK_ORDER.length;
+      renderEmbedServer(server.key);
+      updateSidebarServerHighlight(server.key);
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function updateSidebarServerHighlight(serverKey) {
+  $$('.sidebar-server-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.server === serverKey);
+  });
+}
+
+/* ================================================
+   SIDEBAR — Toggle Open/Close
+================================================ */
+function openPlayerSidebar() {
+  const sidebar = $('playerSidebar');
+  const overlay = $('sidebarOverlay');
+  const menuBtn = $('sidebarMenuBtn');
+  if (sidebar) sidebar.classList.add('open');
+  if (overlay) overlay.classList.add('open');
+  if (menuBtn) menuBtn.classList.add('hidden');
+}
+
+function closePlayerSidebar() {
+  const sidebar = $('playerSidebar');
+  const overlay = $('sidebarOverlay');
+  const menuBtn = $('sidebarMenuBtn');
+  if (sidebar) sidebar.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
+  if (menuBtn) menuBtn.classList.remove('hidden');
+}
+
+function toggleSidebarSection(sectionId) {
+  const section = $(sectionId);
+  if (section) section.classList.toggle('open');
+}
+
+/* ================================================
+   POSTMESSAGE LISTENERS — Viduki + Legacy
 ================================================ */
 window.addEventListener('message', (event) => {
   const data = event.data || {};
   const { type } = data;
   if (!type) return;
 
-  // 1embed events
+  // ─── Viduki: Server Fallback ───
+  if (event.origin === 'https://www.viduki.net' || event.origin === 'https://viduki.net') {
+    if (type === 'viduki:all-servers-failed') {
+      console.log('Viduki fallback triggered:', data);
+      switchToFallbackApi(data.media);
+      return;
+    }
+  }
+
+  // ─── Viduki: Watch Progress ───
+  if (type === 'MEDIA_DATA') {
+    try {
+      const mediaData = data.data;
+      if (mediaData) {
+        localStorage.setItem('vidukinet-Progress', JSON.stringify(mediaData));
+        // Also sync with our own progress tracking
+        if (mediaData[movieId] && mediaData[movieId].progress) {
+          watchedSeconds = Math.floor(mediaData[movieId].progress.watched || 0);
+          saveWatchProgress(watchedSeconds);
+        }
+      }
+    } catch (e) {
+      console.warn('Error processing Viduki progress data:', e);
+    }
+    return;
+  }
+
+  // ─── 1embed events ───
   switch (type) {
     case "VIDEO_PLAY":
       console.log("1embed: Playing");
@@ -476,7 +776,7 @@ window.addEventListener('message', (event) => {
       break;
   }
 
-  // CineSrc events
+  // ─── CineSrc events ───
   if (event.origin === 'https://cinesrc.st') {
     switch (type) {
       case 'cinesrc:ready':
@@ -504,22 +804,34 @@ window.addEventListener('message', (event) => {
   }
 });
 
+/* ================================================
+   INIT
+================================================ */
 document.addEventListener('DOMContentLoaded', () => {
   initAccentThemes();
   initWatchParty();
   initCommunityReviews();
 
-  $$('.server-premium-card').forEach(card => {
-    card.onclick = () => renderEmbedServer(card.dataset.server);
-  });
+  // Render sidebar servers
+  renderSidebarServers();
 
+  // Load content details (populates sidebar + below-player)
   loadContentDetails();
   
-  const preferredServer = localStorage.getItem('cs_preferred_player') || 'rivestream';
-  renderEmbedServer(preferredServer);
+  // Auto-play on first server (Viduki API 1) — or preferred
+  const preferredServer = localStorage.getItem('cs_preferred_player') || 'viduki1';
+  // If preferred is a legacy server that we still support, use it; otherwise default to viduki1
+  const validServer = SERVER_URLS[preferredServer] ? preferredServer : 'viduki1';
+  renderEmbedServer(validServer);
+
+  // Keyboard shortcut: Escape closes sidebar
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePlayerSidebar();
+  });
 });
 
 function triggerDownload() {
+  closePlayerSidebar();
   const overlay = $('downloadProgressOverlay');
   const percentEl = $('downloadPercent');
   const statusEl = $('downloadStatusText');
@@ -736,8 +1048,6 @@ async function loadWatchCastAndSimilar() {
             <div class="card-meta" style="font-size:0.7rem;color:var(--muted);margin-top:2px;text-align:left;">${(m.release_date || m.first_air_date || '2026').slice(0, 4)} • ${isTV ? 'TV Series' : 'Movie'}</div>
           </div>
         `;
-        // Hover effects in JS style
-        const posterEl = card.querySelector('.movie-card-poster');
         const overlayEl = card.querySelector('.play-overlay');
         card.onmouseenter = () => { overlayEl.style.opacity = '1'; };
         card.onmouseleave = () => { overlayEl.style.opacity = '0'; };

@@ -9,14 +9,15 @@
 .theme-purple{--accent:#A855F7;--accent2:#8B33F5;--accent-glow:rgba(168,85,247,0.35);}
 
 *{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;transition:background .3s,color .3s;}
+html{scroll-behavior:smooth;scroll-padding-top:80px;-webkit-overflow-scrolling:touch;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;transition:background .3s,color .3s;overscroll-behavior-y:none;}
 
-/* SCROLLBAR */
-::-webkit-scrollbar{width:6px;height:6px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+/* SCROLLBAR — Premium thin */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px;transition:background .3s;}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2);}
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent;}
 
 /* CINEMATIC INTRO */
 #loadingSplash{position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.6s ease, visibility 0.6s ease;overflow:hidden;}
