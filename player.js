@@ -1009,15 +1009,12 @@ function triggerDownload() {
     }
   } catch (e) {}
 
-  if (typeof openDownloadModal === 'function') {
-    openDownloadModal(mediaType, movieId, title);
-  } else {
-    const zxcUrl = mediaType === 'tv'
-      ? `https://zxcstream.xyz/download/tv/${movieId}/${currentSeason}/${currentEpisode}`
-      : `https://zxcstream.xyz/download/movie/${movieId}`;
-    window.open(zxcUrl, '_blank');
-    showToast(`⚡ Opening ZXCStream Direct HD Download...`, '📥');
-  }
+  // Directly open ZXCStream player — it has a built-in download button
+  const zxcUrl = mediaType === 'tv'
+    ? `https://zxcstream.xyz/player/tv/${movieId}/${currentSeason}/${currentEpisode}`
+    : `https://zxcstream.xyz/player/movie/${movieId}`;
+  window.open(zxcUrl, '_blank');
+  showToast(`⚡ Opening ZXCStream — use the download button in the player`, '📥');
 }
 
 function showToast(msg, icon = 'ℹ️') {

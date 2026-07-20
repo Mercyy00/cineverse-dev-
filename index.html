@@ -129,14 +129,14 @@
       <div class="theme-dropdown" id="themeDropdown">
         <div class="theme-dropdown-title">8 Cinematic Palettes</div>
         <div class="theme-swatches" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          <div class="theme-swatch active" data-theme="crimson"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
-          <div class="theme-swatch" data-theme="cyan"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
-          <div class="theme-swatch" data-theme="gold"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
-          <div class="theme-swatch" data-theme="violet"><div class="swatch-circle" style="background:#A855F7;"></div>Violet</div>
-          <div class="theme-swatch" data-theme="emerald"><div class="swatch-circle" style="background:#10B981;"></div>Emerald</div>
-          <div class="theme-swatch" data-theme="rose"><div class="swatch-circle" style="background:#FB7185;"></div>Rose</div>
-          <div class="theme-swatch" data-theme="sunset"><div class="swatch-circle" style="background:linear-gradient(135deg,#FF7A45,#FFC53D);"></div>Sunset</div>
-          <div class="theme-swatch" data-theme="monochrome"><div class="swatch-circle" style="background:#F3F3F8;"></div>Mono</div>
+          <div class="theme-swatch active" id="sw-crimson" data-theme="crimson" onclick="setTheme('crimson')"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
+          <div class="theme-swatch" id="sw-cyan" data-theme="cyan" onclick="setTheme('cyan')"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
+          <div class="theme-swatch" id="sw-gold" data-theme="gold" onclick="setTheme('gold')"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
+          <div class="theme-swatch" id="sw-violet" data-theme="violet" onclick="setTheme('violet')"><div class="swatch-circle" style="background:#A855F7;"></div>Violet</div>
+          <div class="theme-swatch" id="sw-emerald" data-theme="emerald" onclick="setTheme('emerald')"><div class="swatch-circle" style="background:#10B981;"></div>Emerald</div>
+          <div class="theme-swatch" id="sw-rose" data-theme="rose" onclick="setTheme('rose')"><div class="swatch-circle" style="background:#FB7185;"></div>Rose</div>
+          <div class="theme-swatch" id="sw-sunset" data-theme="sunset" onclick="setTheme('sunset')"><div class="swatch-circle" style="background:linear-gradient(135deg,#FF7A45,#FFC53D);"></div>Sunset</div>
+          <div class="theme-swatch" id="sw-monochrome" data-theme="monochrome" onclick="setTheme('monochrome')"><div class="swatch-circle" style="background:#F3F3F8;"></div>Mono</div>
         </div>
         <div class="theme-divider"></div>
         <button class="mode-toggle-btn" id="modeToggleBtn" onclick="toggleMode()">
@@ -888,11 +888,16 @@
               <div class="setting-item-desc">Select the glowing color palette for neon highlights across the app.</div>
             </div>
           </div>
-          <div class="settings-accent-swatches">
-            <div class="theme-swatch" id="set-sw-crimson" onclick="setTheme('crimson')"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
-            <div class="theme-swatch" id="set-sw-cyan" onclick="setTheme('cyan')"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
-            <div class="theme-swatch" id="set-sw-gold" onclick="setTheme('gold')"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
-            <div class="theme-swatch" id="set-sw-purple" onclick="setTheme('purple')"><div class="swatch-circle" style="background:#A855F7;"></div>Purple</div>
+          <div class="settings-accent-swatches" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+            <div class="theme-swatch" id="set-sw-crimson" data-theme="crimson" onclick="setTheme('crimson')"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
+            <div class="theme-swatch" id="set-sw-cyan" data-theme="cyan" onclick="setTheme('cyan')"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
+            <div class="theme-swatch" id="set-sw-gold" data-theme="gold" onclick="setTheme('gold')"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
+            <div class="theme-swatch" id="set-sw-purple" data-theme="purple" onclick="setTheme('purple')"><div class="swatch-circle" style="background:#A855F7;"></div>Purple</div>
+            <div class="theme-swatch" id="set-sw-violet" data-theme="violet" onclick="setTheme('violet')"><div class="swatch-circle" style="background:#A855F7;"></div>Violet</div>
+            <div class="theme-swatch" id="set-sw-emerald" data-theme="emerald" onclick="setTheme('emerald')"><div class="swatch-circle" style="background:#10B981;"></div>Emerald</div>
+            <div class="theme-swatch" id="set-sw-rose" data-theme="rose" onclick="setTheme('rose')"><div class="swatch-circle" style="background:#FB7185;"></div>Rose</div>
+            <div class="theme-swatch" id="set-sw-sunset" data-theme="sunset" onclick="setTheme('sunset')"><div class="swatch-circle" style="background:linear-gradient(135deg,#FF7A45,#FFC53D);"></div>Sunset</div>
+            <div class="theme-swatch" id="set-sw-monochrome" data-theme="monochrome" onclick="setTheme('monochrome')"><div class="swatch-circle" style="background:#F3F3F8;"></div>Mono</div>
           </div>
 
           <div class="setting-item-row border-top">

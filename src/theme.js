@@ -20,7 +20,11 @@ let hoverPreviewTimeout = null;
 
 // Initialize Theme System
 function initThemeEngine() {
-  const savedTheme = localStorage.getItem('cs_theme_name') || 'crimson';
+  // Read from cs_accent_theme (primary key used by script.js)
+  // Fall back to cs_theme_name for backward compatibility
+  const savedTheme = localStorage.getItem('cs_accent_theme')
+    || localStorage.getItem('cs_theme_name')
+    || 'crimson';
   const savedMode = localStorage.getItem('cs_mode') || 'dark';
 
   applyTheme(savedTheme, false);
@@ -36,7 +40,16 @@ function applyTheme(themeKey, isTemporary = false) {
   const root = document.documentElement;
 
   root.setAttribute('data-theme', themeKey);
-  
+
+  // Class-based approach — aligned with script.js applyAccent()
+  const allClasses = [
+    'theme-cyan','theme-gold','theme-purple',
+    'theme-violet','theme-emerald','theme-rose','theme-sunset','theme-monochrome'
+  ];
+  document.body.classList.remove(...allClasses);
+  if (themeKey !== 'crimson') document.body.classList.add(`theme-${themeKey}`);
+
+  // Also set CSS vars directly for immediate effect (hover previews)
   if (themeKey === 'sunset') {
     root.style.setProperty('--accent', '#FF7A45');
     root.style.setProperty('--accent2', '#FFC53D');
@@ -47,7 +60,8 @@ function applyTheme(themeKey, isTemporary = false) {
   root.style.setProperty('--accent-glow', theme.glow);
 
   if (!isTemporary) {
-    localStorage.setItem('cs_theme_name', themeKey);
+    localStorage.setItem('cs_accent_theme', themeKey); // primary key
+    localStorage.setItem('cs_theme_name', themeKey);   // sync with legacy
     updateActiveSwatchUI(themeKey);
   }
 }

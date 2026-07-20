@@ -356,11 +356,17 @@ function loadTheme() {
 }
 function setTheme(t) {
   localStorage.setItem('cs_accent_theme', t);
+  localStorage.setItem('cs_theme_name', t); // keep in sync with theme.js
   applyAccent(t, true);
-  document.getElementById('themeDropdown').classList.remove('open');
+  const dropdown = document.getElementById('themeDropdown');
+  if (dropdown) dropdown.classList.remove('open');
 }
 function applyAccent(t, toast=false) {
-  document.body.classList.remove('theme-cyan','theme-gold','theme-purple');
+  // Remove ALL possible theme classes, including the 5 new ones
+  document.body.classList.remove(
+    'theme-cyan','theme-gold','theme-purple',
+    'theme-violet','theme-emerald','theme-rose','theme-sunset','theme-monochrome'
+  );
   if(t !== 'crimson') document.body.classList.add(`theme-${t}`);
   document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
   const sw = document.getElementById(`sw-${t}`);
@@ -1881,73 +1887,16 @@ function openDownloadModal(type, id, title) {
     season = document.getElementById('seasonSelect')?.value || 1;
     episode = document.getElementById('episodeSelect')?.value || 1;
   }
-  
+
+  // Directly open ZXCStream — their player has a built-in download button
   const zxcUrl = type === 'tv'
-    ? `https://zxcstream.xyz/download/tv/${id}/${season}/${episode}`
-    : `https://zxcstream.xyz/download/movie/${id}`;
+    ? `https://zxcstream.xyz/player/tv/${id}/${season}/${episode}`
+    : `https://zxcstream.xyz/player/movie/${id}`;
 
-  const vidukiUrl = type === 'tv'
-    ? `https://vidsrc.net/download/tv/${id}/${season}/${episode}`
-    : `https://vidsrc.net/download/movie/${id}`;
-
-  const riveUrl = type === 'tv' 
-    ? `https://www.rivestream.app/download?type=tv&id=${id}&season=${season}&episode=${episode}`
-    : `https://www.rivestream.app/download?type=movie&id=${id}`;
-    
-  const oneembedUrl = type === 'tv'
-    ? `https://1embed.cc/download/tv/${id}/${season}/${episode}`
-    : `https://1embed.cc/download/movie/${id}`;
-
-  let modal = document.getElementById('downloadChoiceModal');
-  if (modal) modal.remove();
-  
-  modal = document.createElement('div');
-  modal.id = 'downloadChoiceModal';
-  modal.className = 'download-modal';
-  modal.innerHTML = `
-    <div class="download-modal-box" style="max-width:480px;">
-      <div class="modal-close-btn" onclick="closeDownloadChoiceModal()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </div>
-      <div class="download-modal-title">Download "${title}"</div>
-      <div class="download-modal-subtitle">Choose High-Speed Server Download Node:</div>
-      <div class="download-options-list" style="display:flex;flex-direction:column;gap:10px;margin-top:14px;">
-        <a href="${zxcUrl}" target="_blank" onclick="closeDownloadChoiceModal()" class="download-option-btn" style="background:linear-gradient(135deg,rgba(0,210,211,0.2),rgba(229,9,20,0.2));border:1px solid var(--accent-cyan);padding:12px;border-radius:12px;text-decoration:none;display:flex;align-items:center;gap:12px;color:var(--text);">
-          <span class="option-icon" style="font-size:1.5rem;">⚡</span>
-          <div class="option-details">
-            <div class="option-name" style="font-weight:800;font-size:0.95rem;color:var(--accent-cyan);">ZXCStream Direct HD Download (Recommended)</div>
-            <div class="option-desc" style="font-size:0.75rem;color:var(--muted);">Multi-Dub & 1080p Ultra HD Direct Download</div>
-          </div>
-        </a>
-
-        <a href="${vidukiUrl}" target="_blank" onclick="closeDownloadChoiceModal()" class="download-option-btn" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:12px;border-radius:12px;text-decoration:none;display:flex;align-items:center;gap:12px;color:var(--text);">
-          <span class="option-icon" style="font-size:1.5rem;">🌐</span>
-          <div class="option-details">
-            <div class="option-name" style="font-weight:800;font-size:0.9rem;">Viduki Server Download</div>
-            <div class="option-desc" style="font-size:0.75rem;color:var(--muted);">High speed multi-language server link</div>
-          </div>
-        </a>
-
-        <a href="${riveUrl}" target="_blank" onclick="closeDownloadChoiceModal()" class="download-option-btn" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:12px;border-radius:12px;text-decoration:none;display:flex;align-items:center;gap:12px;color:var(--text);">
-          <span class="option-icon" style="font-size:1.5rem;">🚀</span>
-          <div class="option-details">
-            <div class="option-name" style="font-weight:800;font-size:0.9rem;">RiveStream Mirror</div>
-            <div class="option-desc" style="font-size:0.75rem;color:var(--muted);">Aggregator mirror node</div>
-          </div>
-        </a>
-
-        <a href="${oneembedUrl}" target="_blank" onclick="closeDownloadChoiceModal()" class="download-option-btn" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:12px;border-radius:12px;text-decoration:none;display:flex;align-items:center;gap:12px;color:var(--text);">
-          <span class="option-icon" style="font-size:1.5rem;">🔮</span>
-          <div class="option-details">
-            <div class="option-name" style="font-weight:800;font-size:0.9rem;">1embed MP4 Download</div>
-            <div class="option-desc" style="font-size:0.75rem;color:var(--muted);">Selectable resolutions (360p to 1080p)</div>
-          </div>
-        </a>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  setTimeout(() => modal.classList.add('open'), 10);
+  window.open(zxcUrl, '_blank');
+  if (typeof showToast === 'function') {
+    showToast('⚡ Opening ZXCStream — use the download button in the player', '📥');
+  }
 }
 
 function closeDownloadChoiceModal() {
