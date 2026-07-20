@@ -672,31 +672,56 @@ function renderWatchlist() {
   wl.forEach(m => track.appendChild(createMovieCard(m)));
 }
 
-// ---- CONTINUE WATCHING ----
+// ---- CONTINUE WATCHING & WATCH HISTORY ----
 function renderContinueWatching() {
-  if(!activeProfile) return;
-  const progress = JSON.parse(localStorage.getItem(`cs_progress_${activeProfile.id}`) || '{}');
-  const ids = Object.keys(progress).filter(id => progress[id].percent > 0 && progress[id].percent < 95);
+  const profileId = activeProfile?.id || 'default';
+  let progress = JSON.parse(localStorage.getItem(`cs_progress_${profileId}`) || '{}');
+  
+  // Fallback to default key if active profile key is empty
+  if (!Object.keys(progress).length) {
+    progress = JSON.parse(localStorage.getItem('cs_progress_default') || '{}');
+  }
+
+  const ids = Object.keys(progress).filter(id => progress[id] && progress[id].movie);
   const section = document.getElementById('continueSection');
   const track = document.getElementById('continueTrack');
-  if(!ids.length) { section.classList.remove('visible'); return; }
+  if (!section || !track) return;
+
+  if (!ids.length) {
+    section.classList.remove('visible');
+    return;
+  }
+
   section.classList.add('visible');
   track.innerHTML = '';
+
+  // Sort by latest watched timestamp
+  ids.sort((a, b) => (progress[b].timestamp || 0) - (progress[a].timestamp || 0));
+
   ids.forEach(id => {
     const p = progress[id];
-    if(p.movie) {
+    if (p && p.movie) {
       const card = createMovieCard(p.movie);
+      const posterContainer = card.querySelector('.movie-card-poster') || card;
+      if (p.percent > 0) {
+        const pBar = document.createElement('div');
+        pBar.className = 'card-progress-bar';
+        pBar.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:4px;background:rgba(255,255,255,0.2);z-index:4;border-radius:0 0 12px 12px;overflow:hidden;';
+        pBar.innerHTML = `<div style="height:100%;width:${p.percent}%;background:var(--accent);"></div>`;
+        posterContainer.appendChild(pBar);
+      }
       track.appendChild(card);
     }
   });
 }
 
 function saveProgress(movieId, movie, seconds, percent) {
-  if(!activeProfile) return;
-  const key = `cs_progress_${activeProfile.id}`;
+  const profileId = activeProfile?.id || 'default';
+  const key = `cs_progress_${profileId}`;
   const progress = JSON.parse(localStorage.getItem(key) || '{}');
-  progress[movieId] = {seconds, percent, movie};
+  progress[movieId] = { seconds, percent, timestamp: Date.now(), movie };
   localStorage.setItem(key, JSON.stringify(progress));
+  localStorage.setItem('cs_progress_default', JSON.stringify(progress));
 }
 
 // ---- MOVIE DETAIL TRAY ----

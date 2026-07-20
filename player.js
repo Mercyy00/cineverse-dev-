@@ -309,6 +309,7 @@ function saveWatchProgress(secs) {
     };
 
     localStorage.setItem(key, JSON.stringify(allProgress));
+    localStorage.setItem('cs_progress_default', JSON.stringify(allProgress));
   } catch (e) {
     console.warn('Progress save failed:', e);
   }
