@@ -1,0 +1,352 @@
+/**
+ * CineVerse Blueprint Export Utility
+ * Generates an ultra-premium printable HTML blueprint document for PDF conversion.
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CineVerse — Complete Master Website Blueprint & AI System Prompt</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@600;800;900&display=swap');
+    
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #09090e;
+      color: #e2e2ec;
+      line-height: 1.6;
+      padding: 50px 40px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    @media print {
+      body { background: #fff; color: #111; padding: 20px; }
+      .no-print { display: none !important; }
+      .card { border: 1px solid #ccc !important; background: #fafafa !important; color: #111 !important; }
+      th { background: #333 !important; color: #fff !important; }
+    }
+
+    header {
+      border-bottom: 2px solid rgba(229, 9, 20, 0.4);
+      padding-bottom: 20px;
+      margin-bottom: 40px;
+    }
+
+    .brand {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+    .brand span { color: #e50914; }
+
+    .tagline {
+      font-size: 0.95rem;
+      color: #00d2d3;
+      font-weight: 700;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    h1, h2, h3 { font-family: 'Outfit', sans-serif; font-weight: 800; color: #fff; margin-top: 36px; margin-bottom: 16px; }
+    h1 { font-size: 2rem; color: #e50914; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+    h2 { font-size: 1.4rem; color: #00d2d3; border-left: 4px solid #e50914; padding-left: 12px; }
+    h3 { font-size: 1.1rem; color: #ffb800; }
+
+    p { margin-bottom: 14px; font-size: 0.95rem; opacity: 0.9; }
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+
+    pre, code {
+      font-family: 'Consolas', 'Courier New', monospace;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 0.85rem;
+      color: #a855f7;
+      overflow-x: auto;
+      display: block;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 0.88rem;
+    }
+    th, td {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 14px;
+      text-align: left;
+    }
+    th {
+      background: rgba(229, 9, 20, 0.2);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+    }
+    tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #e50914;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .print-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #e50914;
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(229, 9, 20, 0.5);
+      transition: all 0.3s;
+    }
+    .print-btn:hover { transform: scale(1.05); }
+  </style>
+</head>
+<body>
+
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Print / Export to PDF</button>
+
+  <header>
+    <div class="brand">Cine<span>Verse</span></div>
+    <div class="tagline">Master Website Specification & AI Blueprint</div>
+  </header>
+
+  <h1>🎨 PART 1: MASTER RECREATION PROMPT</h1>
+  <div class="card">
+    <p>Copy & paste this master system prompt into any AI model to recreate CineVerse from scratch with complete creative liberty:</p>
+    <pre>Act as a Principal UI/UX Architect and Full-Stack Web Engineer. Build "CineVerse", an ultra-premium, cinema-grade movie and TV streaming web application. The application must feature state-of-the-art liquid glassmorphism, dynamic ambient lighting, multi-server video routing, watch party rooms, and offline library simulations.
+
+### DESIGN AESTHETICS & THEMING
+1. Core Aesthetics: Liquid Glassmorphic theme using CSS backdrop-filter (blur 40px, saturate 1.8), glowing accent tokens, dark mode (#07070b), light mode support, and lens-flare intro splash.
+2. Color Palettes & Accent Swatches:
+   - Crimson Theme (Default): Accent #E50914, Glow rgba(229, 9, 20, 0.4)
+   - Cyan Theme: Accent #00D2D3, Glow rgba(0, 210, 211, 0.4)
+   - Gold Theme: Accent #FFB800, Glow rgba(255, 184, 0, 0.4)
+   - Purple Theme: Accent #A855F7, Glow rgba(168, 85, 247, 0.4)
+3. Typography: Google Fonts 'Outfit' (Headings, 800/900 weight) and 'Plus Jakarta Sans' (Body text, 500/600/700 weight).
+
+### FEATURE REQUIREMENTS
+- Intro Splash Screen: Animated lettermark 'C', lens flare sweep, full logo type reveal, radial burst, and audio intro effect.
+- Multi-Profile Management: Profile switcher with 6 emoji avatars (🍿, ⚡, ⛩️, 🦁, 🚀, 🎬), Kids Mode toggle, and profile management drawer.
+- Navigation Header: Sticky navbar with search auto-complete dropdown (Cmd+K shortcut), Surprise Me spinner wheel, accent swatch dropdown, light/dark mode toggle, settings modal, and profile pill.
+- Hero Carousel: High-impact hero slider with backdrop imagery, TMDB ratings, genre pills, overview snippet, "Watch Now" trigger, trailer modal trigger, and autoplay timer.
+- Media Collections & Categories: Genre filter pills (All, Action, Comedy, Drama, Sci-Fi, Horror, Romance, Animation), Hollywood, Bollywood, Anime, K-Drama, TV Shows, Trending 20, Top Rated 20, and "My List" Watchlist.
+- Card Interactions: 3D tilt interaction on cursor hover, Spotlight mouse tracking glow (--mouse-x, --mouse-y), quick-add watchlist bookmark button, rating badge, and play overlay.
+
+### STREAMING PLAYER ENGINE (watch.html & player.js)
+1. Multi-Server Routing Engine (12 Priority Servers):
+   - Priority 1: Viduki API Tiers 1-4 (Auto-cascading multi-language & multi-embed)
+   - Priority 2: ZXC Stream (Multi-dub HD with URL accent sync)
+   - Priority 3+: RiveStream, VidCodin, 1embed, Mapple HD, VidSync Cloud, CineSrc Premium, VidNest Anime
+2. Automatic Fallback Cascade: If a primary server fails, automatically route to the next priority server in sequence with a toast notification.
+3. Player Features & Lighting:
+   - Cinema Ambient Glow: Blurred backlight aura behind video container synchronized with active accent theme.
+   - Theater Lights Mode ('T' key): Page dimming overlay (#theaterOverlay) for pitch-dark cinema focus.
+   - Command Center Sidebar ('M' key): Glassmorphic drawer housing server nodes grid with active green heartbeat status indicators, episode selection grid, prev/next buttons, and quick actions.
+   - Keyboard Shortcuts Modal ('?' key): Visual cheat sheet overlay (F for Fullscreen, T for Theater Mode, M for Menu, N/P for Episodes, Esc for Close).
+   - Watch Party Sync Room: Room code generator, sync link clipboard copy, simulated chat bot room, and floating emoji reaction picker.
+   - Download Simulation: Multi-node progress ring overlay and offline library saving.
+   - Below-Player Details: Movie metadata header, Starring Cast slider, Actor Bio modal (TMDB /person endpoint), Similar Recommendations track, and 5-star Community Reviews system.
+
+### DATA & APIS
+- Primary API: TheMovieDatabase (TMDB v3 API) for movies, TV series, credits, similar content, person details, and search.
+- Storage Persistence: LocalStorage for profile states, watch progress tracking (5s interval), watchlist array, custom reviews, downloaded offline content, theme preferences, and achievement unlocks.</pre>
+  </div>
+
+  <h2>🎬 PART 2: 12 VIDEO SERVER SPECIFICATION</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Server Key</th>
+        <th>Server Name</th>
+        <th>Priority Tier</th>
+        <th>Features & Audio Specs</th>
+        <th>URL Pattern</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>viduki1</code></td>
+        <td>Viduki Multi 1</td>
+        <td><span class="badge">Priority 1</span></td>
+        <td>Auto-cascading fallback, theme hex color sync</td>
+        <td><code>https://viduki.net/1/{type}/{id}/{s}/{e}?color={color}</code></td>
+      </tr>
+      <tr>
+        <td><code>viduki2</code></td>
+        <td>Viduki Multi Language</td>
+        <td><span class="badge">Priority 1</span></td>
+        <td>Multi-language audio tracks & subtitles</td>
+        <td><code>https://viduki.net/2/{type}/{id}/{s}/{e}?color={color}</code></td>
+      </tr>
+      <tr>
+        <td><code>viduki3</code></td>
+        <td>Viduki Multi Embeds</td>
+        <td><span class="badge">Priority 1</span></td>
+        <td>Multiple mirror CDN sources</td>
+        <td><code>https://viduki.net/3/{type}/{id}/{s}/{e}?color={color}</code></td>
+      </tr>
+      <tr>
+        <td><code>viduki4</code></td>
+        <td>Viduki Premium</td>
+        <td><span class="badge">Priority 1</span></td>
+        <td>Ultra HD bitrate streams</td>
+        <td><code>https://viduki.net/4/{type}/{id}/{s}/{e}?color={color}</code></td>
+      </tr>
+      <tr>
+        <td><code>zxcstream</code></td>
+        <td>ZXC Stream</td>
+        <td><span class="badge">Priority 2</span></td>
+        <td>Multi-dub, HD quality, color theme sync</td>
+        <td><code>https://zxcstream.xyz/player/{type}/{id}/{s}/{e}?color={color}</code></td>
+      </tr>
+      <tr>
+        <td><code>rivestream</code></td>
+        <td>RiveStream</td>
+        <td>Priority 3</td>
+        <td>Fastest CDN aggregator</td>
+        <td><code>https://www.rivestream.app/embed?type={type}&id={id}</code></td>
+      </tr>
+      <tr>
+        <td><code>vidcodin</code></td>
+        <td>VidCodin</td>
+        <td>Priority 3</td>
+        <td>High-speed decoding</td>
+        <td><code>https://vidcodin.net/embed/{type}/{id}/{s}/{e}</code></td>
+      </tr>
+      <tr>
+        <td><code>oneembed</code></td>
+        <td>1embed</td>
+        <td>Priority 3</td>
+        <td>Zero-ads multi-quality</td>
+        <td><code>https://1embed.cc/embed/{type}/{id}/{s}/{e}</code></td>
+      </tr>
+      <tr>
+        <td><code>mapple</code></td>
+        <td>Mapple HD</td>
+        <td>Priority 3</td>
+        <td>HD streaming</td>
+        <td><code>https://mapple.uk/watch/{type}/{id}-{s}-{e}</code></td>
+      </tr>
+      <tr>
+        <td><code>vidsync</code></td>
+        <td>VidSync Cloud</td>
+        <td>Priority 3</td>
+        <td>HLS cloud streaming with start time</td>
+        <td><code>https://vidsync.live/embed/{type}/{id}/{s}/{e}?startTime={st}</code></td>
+      </tr>
+      <tr>
+        <td><code>cinesrc</code></td>
+        <td>CineSrc Premium</td>
+        <td>Priority 3</td>
+        <td>Theme color sync & FHD</td>
+        <td><code>https://cinesrc.st/embed/{type}/{id}?s={s}&e={e}&color={color}</code></td>
+      </tr>
+      <tr>
+        <td><code>vidnest</code></td>
+        <td>VidNest Anime</td>
+        <td>Priority 3</td>
+        <td>Anime sub & dub specialist</td>
+        <td><code>https://vidnest.fun/{type}/{id}/{s}/{e}</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>⌨️ PART 3: KEYBOARD SHORTCUTS SPECIFICATION</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Key Shortcut</th>
+        <th>Trigger Action</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge">F</span></td>
+        <td>Toggle Fullscreen</td>
+        <td>Toggles native or pseudo-fullscreen mode on the player container</td>
+      </tr>
+      <tr>
+        <td><span class="badge">T</span></td>
+        <td>Theater Lights Mode</td>
+        <td>Dims the background page into darkness with pitch-dark overlay</td>
+      </tr>
+      <tr>
+        <td><span class="badge">M</span></td>
+        <td>Toggle Command Sidebar</td>
+        <td>Opens/closes the glassmorphic player controls drawer</td>
+      </tr>
+      <tr>
+        <td><span class="badge">N</span></td>
+        <td>Next Episode</td>
+        <td>Navigates to the next TV show episode in sequence</td>
+      </tr>
+      <tr>
+        <td><span class="badge">P</span></td>
+        <td>Previous Episode</td>
+        <td>Navigates to the previous TV show episode in sequence</td>
+      </tr>
+      <tr>
+        <td><span class="badge">?</span> / <span class="badge">Shift + /</span></td>
+        <td>Keyboard Shortcuts Modal</td>
+        <td>Opens the interactive keyboard shortcuts cheat sheet overlay</td>
+      </tr>
+      <tr>
+        <td><span class="badge">Esc</span></td>
+        <td>Dismiss Overlay</td>
+        <td>Closes active modals, drawers, or exits fullscreen mode</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>💾 PART 4: DATA PERSISTENCE SCHEMAS</h2>
+  <div class="card">
+    <h3>LocalStorage Key Mapping</h3>
+    <ul>
+      <li><code>cs_mode</code>: Stores 'dark' or 'light' mode preference.</li>
+      <li><code>cs_accent_theme</code>: Stores 'crimson', 'cyan', 'gold', or 'purple'.</li>
+      <li><code>cs_active_profile</code>: Stores active user profile object (id, name, avatar, isKids).</li>
+      <li><code>cs_progress_{profileId}</code>: Maps movieId -> { seconds, percent, timestamp, movie }.</li>
+      <li><code>cs_watchlist_{profileId}</code>: Array of bookmarked movie objects.</li>
+      <li><code>cs_reviews_{movieId}</code>: Array of custom user review objects.</li>
+      <li><code>cs_downloads_{profileId}</code>: Array of downloaded offline library items.</li>
+    </ul>
+  </div>
+
+</body>
+</html>`;
+
+const outputPath = path.join(__dirname, 'cineverse_blueprint.html');
+fs.writeFileSync(outputPath, htmlContent);
+console.log(`Successfully generated printable blueprint HTML at: ${outputPath}`);

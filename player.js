@@ -270,10 +270,11 @@ function renderEmbedServer(serverKey = 'viduki1') {
       width="100%"
       height="100%"
       frameborder="0"
-      allow="autoplay; fullscreen; picture-in-picture; encrypted-media; accelerometer; gyroscope"
+      allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *; accelerometer *; gyroscope *; display-capture *; screen-wake-lock *"
       allowfullscreen
-      webkitallowfullscreen
-      mozallowfullscreen
+      allowfullscreen="true"
+      webkitallowfullscreen="true"
+      mozallowfullscreen="true"
       style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
       title="Stream Player"
     ></iframe>
@@ -1040,20 +1041,42 @@ function showToast(msg, icon = 'ℹ️') {
    POSTMESSAGE LISTENERS (Embed Interop & Fallback)
 ================================================ */
 window.addEventListener('message', (event) => {
-  const data = event.data;
-  if (!data || typeof data !== 'object') return;
+  let data = event.data;
+  if (!data) return;
 
-  const type = data.type || '';
-  const evtName = typeof data.event === 'string' ? data.event : '';
-  const action = typeof data.action === 'string' ? data.action : '';
+  // Handle string messages or stringified JSON messages sent by embed players
+  if (typeof data === 'string') {
+    const rawLower = data.toLowerCase();
+    if (
+      rawLower === 'fullscreen' ||
+      rawLower.includes('requestfullscreen') ||
+      rawLower.includes('togglefullscreen') ||
+      rawLower.includes('enterfullscreen') ||
+      rawLower.includes('jwplayer-fullscreen')
+    ) {
+      toggleFullscreen();
+      return;
+    }
+    try {
+      data = JSON.parse(data);
+    } catch (e) {
+      // not JSON string
+    }
+  }
+
+  if (typeof data !== 'object' || data === null) return;
+
+  const type = String(data.type || data.event || data.action || data.msg || '').toLowerCase();
+  const evtName = String(data.event || '').toLowerCase();
+  const action = String(data.action || '').toLowerCase();
 
   if (
-    type === 'requestFullscreen' || 
-    type === 'toggleFullscreen' || 
-    type === 'FULLSCREEN' || 
-    type === 'zxcstream:fullscreen' ||
-    evtName === 'fullscreen' ||
-    action === 'fullscreen'
+    type.includes('fullscreen') || 
+    evtName.includes('fullscreen') || 
+    action.includes('fullscreen') ||
+    data.fullscreen === true ||
+    data.isFullscreen === true ||
+    data.isFullScreen === true
   ) {
     toggleFullscreen();
     return;

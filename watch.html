@@ -837,12 +837,17 @@
     #playerSection:fullscreen iframe,
     #playerSection:-webkit-full-screen iframe,
     #playerSection:-moz-full-screen iframe,
-    #playerSection.is-pseudo-fullscreen iframe {
-      width: 100% !important;
-      height: 100% !important;
-      position: absolute !important;
+    #playerSection.is-pseudo-fullscreen iframe,
+    iframe:fullscreen,
+    iframe:-webkit-full-screen,
+    iframe:-moz-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      position: fixed !important;
       inset: 0 !important;
       border: none !important;
+      z-index: 999999 !important;
+      background: #000 !important;
     }
 
     /* ═══════════════════════════════════════════
