@@ -1361,10 +1361,19 @@ function updateFullscreenUI(isFullscreen) {
 ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(evt => {
   document.addEventListener(evt, () => {
     const section = document.getElementById('playerSection');
-    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    const iframe = document.getElementById('embedIframe');
+
+    // isFs is true whether the iframe OR the playerSection went fullscreen
+    const fullEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+    const isFs = !!fullEl;
+
+    // If native fullscreen exited, clean up pseudo-fullscreen class too
     if (section && !isFs) {
       section.classList.remove('is-pseudo-fullscreen');
     }
+
+    // If the embed iframe went fullscreen via its own player button,
+    // we still need to hide our overlapping UI elements
     updateFullscreenUI(isFs);
   });
 });
