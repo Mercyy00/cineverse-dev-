@@ -2327,41 +2327,6 @@ body.offline-active #mainApp {
 [data-theme="sunset"] { --accent:#FF7A45; --accent2:#FFC53D; --accent-glow:rgba(255,122,69,0.35); }
 [data-theme="monochrome"] { --accent:#F3F3F8; --accent2:#D1D1DF; --accent-glow:rgba(255,255,255,0.2); }
 
-/* CUSTOM CURSOR */
-.custom-cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 999999;
-  transform: translate3d(-50%, -50%, 0);
-  box-shadow: 0 0 10px var(--accent-glow);
-  transition: opacity 0.3s ease;
-}
-.custom-cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 999998;
-  opacity: 0.5;
-  transition: width 0.3s ease, height 0.3s ease, background 0.3s ease, border-color 0.3s ease;
-}
-.custom-cursor-ring.hovering {
-  width: 48px;
-  height: 48px;
-  background: var(--accent-glow);
-  border-color: var(--accent);
-}
-
 /* ═══════════════════════════════════════════
    TASTE FINDER WIZARD MODAL
 ═══════════════════════════════════════════ */

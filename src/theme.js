@@ -143,54 +143,6 @@ function samplePosterColor(imgUrl, callback) {
   };
 }
 
-/* ================================================
-   CUSTOM DESKTOP CURSOR
-================================================ */
-function initCustomCursor() {
-  if (window.innerWidth < 768) return; // Desktop only
-
-  let dot = document.querySelector('.custom-cursor-dot');
-  let ring = document.querySelector('.custom-cursor-ring');
-
-  if (!dot) {
-    dot = document.createElement('div');
-    dot.className = 'custom-cursor-dot';
-    document.body.appendChild(dot);
-  }
-  if (!ring) {
-    ring = document.createElement('div');
-    ring.className = 'custom-cursor-ring';
-    document.body.appendChild(ring);
-  }
-
-  let mouseX = 0, mouseY = 0;
-  let ringX = 0, ringY = 0;
-
-  window.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-
-    dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
-  });
-
-  function renderRing() {
-    ringX += (mouseX - ringX) * 0.15;
-    ringY += (mouseY - ringY) * 0.15;
-
-    ring.style.transform = `translate3d(${ringX - 16}px, ${ringY - 16}px, 0)`;
-    requestAnimationFrame(renderRing);
-  }
-  requestAnimationFrame(renderRing);
-
-  document.addEventListener('mouseover', (e) => {
-    if (e.target.closest('a, button, input, select, textarea, .movie-card, .swatch-btn')) {
-      ring.classList.add('hovering');
-    } else {
-      ring.classList.remove('hovering');
-    }
-  });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   initThemeEngine();
   setupThemeHoverPreviews();

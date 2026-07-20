@@ -79,7 +79,6 @@ window.onload = async function() {
   const isOffline = localStorage.getItem('cs_offline_mode') === '1';
   if (isOffline) {
     toggleOfflineMode(true, false);
-    setupCursorTrail();
     setupScrollEvents();
     setupKeyboard();
     renderProfiles();
@@ -90,7 +89,6 @@ window.onload = async function() {
     loadSliders();
     renderGenreChips();
     setRandomQuote();
-    setupCursorTrail();
     setupScrollEvents();
     setupKeyboard();
     renderProfiles();
@@ -1850,19 +1848,6 @@ function setupKeyboard() {
 }
 
 function closeShortcuts() { document.getElementById('shortcutsPanel').classList.remove('open'); }
-
-// ---- CURSOR TRAIL ----
-function setupCursorTrail() {
-  if(window.innerWidth < 768) return;
-  document.addEventListener('mousemove', e => {
-    const trail = document.createElement('div');
-    trail.className = 'cursor-trail';
-    trail.style.left = (e.clientX - 4) + 'px';
-    trail.style.top = (e.clientY - 4) + 'px';
-    document.body.appendChild(trail);
-    setTimeout(() => { trail.style.opacity = '0'; setTimeout(() => trail.remove(), 500); }, 200);
-  });
-}
 
 // ---- TOAST ----
 function showToast(msg, icon='ℹ️') {
