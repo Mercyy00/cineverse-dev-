@@ -188,40 +188,55 @@
     </div>
   </main>
 
-  <!-- ANIME SERIES EPISODE MODAL -->
-  <div id="animeModal" class="modal-backdrop" onclick="closeAnimeModalIfBackdrop(event)">
-    <div class="taste-box" style="width:820px;max-width:94vw;position:relative;max-height:90vh;overflow-y:auto;">
-      <button onclick="closeAnimeModal()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:800;z-index:10;">✕</button>
+  <!-- ANIME SERIES OVERLAY (Matches TV Series Tray Layout & Mechanics) -->
+  <div id="animeSeriesOverlay" class="tv-series-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:var(--bg);overflow-y:auto;">
+    <button class="tv-back-btn" onclick="closeAnimeSeriesOverlay()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+      Back to Anime Browse
+    </button>
+    <div class="tv-hero" id="animeHeroContainer">
+      <div class="tv-hero-bg"><img id="animeTrayHeroBg" src="" alt=""/></div>
+      <div class="tv-hero-gradient" style="background:linear-gradient(to right,rgba(7,7,10,0.95) 35%,transparent 70%),linear-gradient(to top,rgba(7,7,10,0.9) 0%,transparent 50%);"></div>
+      <div class="tv-hero-content">
+        <div id="animeTrayBadges">
+          <span class="tv-badge" style="background:rgba(255,117,160,0.2);color:var(--anime-pink);border-color:rgba(255,117,160,0.4);">⛩️ JAPANESE ANIME</span>
+          <span class="tv-badge" id="animeTrayRatingBadge">★ 9.0</span>
+          <span class="tv-badge">4K ULTRA HD</span>
+          <span class="tv-badge" style="color:var(--anime-cyan);">SUB | DUB</span>
+        </div>
+        <div class="tv-hero-title" id="animeTrayTitle">Anime Title</div>
+        <div class="tv-hero-meta" id="animeTrayMeta">2026 • Loading...</div>
+        <div class="genre-pills" id="animeTrayGenres" style="margin-bottom:14px;"></div>
+        <div class="tv-hero-overview" id="animeTrayOverview">Anime overview goes here...</div>
+        
+        <!-- Japanese Seiyuu Cast Slider -->
+        <div style="font-size:0.8rem;font-weight:800;color:var(--anime-pink);text-transform:uppercase;letter-spacing:1px;margin-top:16px;margin-bottom:8px;">🎙️ Starring Japanese Voice Cast (Seiyuu)</div>
+        <div id="animeTrayCastTrack" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px;"></div>
 
-      <div style="display:flex;gap:24px;margin-bottom:20px;" id="animeModalHeader">
-        <img id="animeModalPoster" src="" alt="" style="width:140px;height:210px;border-radius:16px;object-fit:cover;box-shadow:0 8px 25px rgba(0,0,0,0.6);flex-shrink:0;"/>
-        <div style="flex:1;min-width:0;">
-          <div id="animeModalTitle" style="font-family:var(--font-heading);font-size:1.7rem;font-weight:900;color:var(--text);margin-bottom:6px;">Anime Title</div>
-          <div id="animeModalMeta" style="font-size:0.85rem;color:var(--anime-pink);font-weight:700;margin-bottom:10px;">2026 • Rating: ★ 9.0 • Anikoto Stream</div>
-          <div id="animeModalOverview" style="font-size:0.85rem;color:var(--text);line-height:1.6;max-height:80px;overflow-y:auto;margin-bottom:12px;opacity:0.9;">Anime overview goes here...</div>
+        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;align-items:center;">
+          <button class="btn-play" style="background:linear-gradient(135deg,var(--anime-pink),var(--anime-purple));" onclick="playAnimeTrayEpisode(1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+            Play Episode 1
+          </button>
+          <button class="btn-list" id="animeTrayWatchlistBtn" onclick="toggleAnimeTrayWatchlist()">
+            <span id="animeTrayWatchlistText">+ Add to My List</span>
+          </button>
 
-          <!-- Japanese Voice Cast (Seiyuu) -->
-          <div style="font-size:0.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">🎙️ Voice Cast (Seiyuu)</div>
-          <div id="animeModalCast" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
+          <!-- Sub / Dub Quick Switch Pills -->
+          <div class="sub-dub-toggle-group" style="margin-left:auto;">
+            <button class="sub-dub-pill active" id="animeTraySubBtn" onclick="setAnimeTrayAudio('sub')">🇯🇵 SUB</button>
+            <button class="sub-dub-pill" id="animeTrayDubBtn" onclick="setAnimeTrayAudio('dub')">🎙️ DUB</button>
+          </div>
         </div>
       </div>
+    </div>
 
-      <!-- Season / Arc Selector Chips -->
-      <div style="margin-bottom:16px;">
-        <div style="font-size:0.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⛩️ Select Story Arc / Season</div>
-        <div id="animeArcChips" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    <div class="tv-episodes-section">
+      <div class="tv-section-header">
+        <div class="tv-section-title" style="font-family:var(--font-heading);font-weight:800;font-size:1.4rem;">Seasons & Story Arcs Selector</div>
+        <select class="season-select" id="animeSeasonSelect" onchange="changeAnimeTraySeason(this.value)" style="border-color:rgba(255,117,160,0.3);min-width:220px;"></select>
       </div>
-
-      <!-- Sub / Dub & Episode Grid Header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;margin-bottom:16px;">
-        <div style="font-family:var(--font-heading);font-weight:800;font-size:1.05rem;">Select Episode to Watch</div>
-        <div class="sub-dub-toggle-group">
-          <button class="sub-dub-pill active" id="modalSubBtn" onclick="setAnimeAudio('sub')">🇯🇵 SUB</button>
-          <button class="sub-dub-pill" id="modalDubBtn" onclick="setAnimeAudio('dub')">🎙️ DUB</button>
-        </div>
-      </div>
-
-      <div id="animeEpisodesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:8px;max-height:240px;overflow-y:auto;padding-right:6px;"></div>
+      <div class="episodes-grid" id="animeEpisodesGrid"></div>
     </div>
   </div>
 

@@ -652,6 +652,7 @@ function createMovieCard(m, badge) {
   const div = document.createElement('div');
   div.className = 'movie-card';
   const isTV = m.media_type === 'tv' || m.first_air_date !== undefined;
+  const isAnime = m.isAnime || (m.genre_ids || []).includes(16) || m.original_language === 'ja' || badge === 'Anime';
   const prog = getProgressBar(m.id);
   div.innerHTML = `<div class="movie-card-poster">
     <img src="${m.poster_path ? IMG+'w342'+m.poster_path : ''}" alt="${m.title||m.name}" loading="lazy" onerror="this.style.display='none'"/>
@@ -663,9 +664,17 @@ function createMovieCard(m, badge) {
   </div>
   <div class="card-info">
     <div class="card-title">${m.title || m.name || 'Unknown'}</div>
-    <div class="card-meta">${(m.release_date||m.first_air_date||'').slice(0,4)} • ${isTV ? 'TV Series' : 'Movie'}</div>
+    <div class="card-meta">${(m.release_date||m.first_air_date||'').slice(0,4)} • ${isAnime ? 'Anime' : (isTV ? 'TV Series' : 'Movie')}</div>
   </div>`;
-  div.onclick = () => { if(isTV) openTVSeries(m); else openMovieTray(m); };
+  div.onclick = () => {
+    if (isAnime && typeof openAnimeDetails === 'function') {
+      openAnimeDetails(m);
+    } else if (isTV) {
+      openTVSeries(m);
+    } else {
+      openMovieTray(m);
+    }
+  };
   return div;
 }
 

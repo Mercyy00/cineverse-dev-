@@ -445,102 +445,131 @@ const ANIME_CAST_MAP = {
   ]
 };
 
-// ─── ANIME DETAILS & EPISODE MODAL ───
+// ─── ANIME DETAILS & TV-STYLE TRAY OVERLAY ───
 async function openAnimeDetails(m) {
   currentSelectedAnime = m;
-  const modal = document.getElementById('animeModal');
-  if (!modal) return;
 
-  const poster = document.getElementById('animeModalPoster');
-  if (poster) poster.src = getAnimePoster(m);
+  // 1. Sliding detail tray overlay (#animeSeriesOverlay)
+  const overlay = document.getElementById('animeSeriesOverlay');
+  if (overlay) {
+    const bg = document.getElementById('animeTrayHeroBg');
+    if (bg) bg.src = getAnimeBackdrop(m);
 
-  const title = document.getElementById('animeModalTitle');
-  if (title) title.textContent = m.name || m.title || 'Anime Series';
+    const title = document.getElementById('animeTrayTitle');
+    if (title) title.textContent = m.name || m.title || 'Anime Series';
 
-  const meta = document.getElementById('animeModalMeta');
-  if (meta) {
-    const year = (m.first_air_date || m.release_date || '2026').slice(0, 4);
-    meta.textContent = `${year} • Rating: ★ ${m.vote_average ? m.vote_average.toFixed(1) : '9.0'} • Anikoto Video Stream`;
-  }
+    const ratingBadge = document.getElementById('animeTrayRatingBadge');
+    if (ratingBadge) ratingBadge.textContent = `★ ${m.vote_average ? m.vote_average.toFixed(1) : '9.0'}`;
 
-  const overview = document.getElementById('animeModalOverview');
-  if (overview) overview.textContent = m.overview || 'Enjoy watching this high-definition anime series with multi-language server choices.';
+    const meta = document.getElementById('animeTrayMeta');
+    if (meta) {
+      const year = (m.first_air_date || m.release_date || '2026').slice(0, 4);
+      meta.textContent = `${year} • Anikoto Streaming Engine • Japanese Animation`;
+    }
 
-  // Render Seiyuu Voice Cast
-  const castContainer = document.getElementById('animeModalCast');
-  if (castContainer) {
-    const castList = ANIME_CAST_MAP[m.id] || [
-      { name: 'Main Character', actor: 'Japanese Seiyuu' },
-      { name: 'Supporting Hero', actor: 'Japanese Voice Actor' }
+    const overview = document.getElementById('animeTrayOverview');
+    if (overview) overview.textContent = m.overview || 'Stream this high-definition Japanese anime series with multi-language servers.';
+
+    // Seiyuu Cast Track
+    const castTrack = document.getElementById('animeTrayCastTrack');
+    if (castTrack) {
+      const castList = ANIME_CAST_MAP[m.id] || [
+        { name: 'Main Protagonist', actor: 'Mayumi Tanaka / Voice Actor' },
+        { name: 'Deuteragonist', actor: 'Kazuya Nakai / Voice Actor' },
+        { name: 'Heroine', actor: 'Akemi Okamura / Voice Actor' }
+      ];
+      castTrack.innerHTML = castList.map(c => `
+        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:24px;white-space:nowrap;font-size:0.78rem;flex-shrink:0;">
+          <span style="color:var(--anime-pink);font-weight:800;">${c.name}</span> <span style="color:var(--muted);">• ${c.actor}</span>
+        </div>
+      `).join('');
+    }
+
+    // Seasons / Story Arcs Dropdown (<select id="animeSeasonSelect">)
+    const seasonSelect = document.getElementById('animeSeasonSelect');
+    const sagas = ANIME_SAGA_MAP[m.id] || [
+      { saga: 'Season 1: Original Arc', start: 1, end: 24 },
+      { saga: 'Season 2: Sequel Arc', start: 25, end: 48 }
     ];
-    castContainer.innerHTML = castList.map(c => `
-      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:6px 12px;border-radius:20px;font-size:0.75rem;">
-        <strong style="color:var(--anime-pink);">${c.name}</strong> • ${c.actor}
-      </div>
-    `).join('');
+
+    if (seasonSelect) {
+      seasonSelect.innerHTML = sagas.map((s, i) => `<option value="${s.start}-${s.end}">Season ${i + 1}: ${s.saga} (${s.start}-${s.end})</option>`).join('');
+    }
+
+    // Render Episode Cards Grid for first saga
+    renderAnimeTrayEpCards(sagas[0].start, sagas[0].end);
+
+    overlay.style.display = 'block';
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return;
   }
-
-  // Render Sagas / Seasons Chips
-  const arcChips = document.getElementById('animeArcChips');
-  const sagas = ANIME_SAGA_MAP[m.id] || [
-    { saga: 'Season 1', start: 1, end: 24 },
-    { saga: 'Season 2', start: 25, end: 48 }
-  ];
-
-  if (arcChips) {
-    arcChips.innerHTML = sagas.map((s, idx) => `
-      <button class="genre-chip ${idx === 0 ? 'active' : ''}" onclick="selectAnimeArc(${s.start}, ${s.end}, this)">
-        ${s.saga} (${s.start}-${s.end})
-      </button>
-    `).join('');
-  }
-
-  // Render Episode Grid for first saga
-  renderAnimeModalEpGrid(sagas[0].start, sagas[0].end);
-
-  modal.classList.add('open');
 }
 
-function selectAnimeArc(start, end, btnEl) {
-  if (btnEl) {
-    document.querySelectorAll('#animeArcChips .genre-chip').forEach(c => c.classList.remove('active'));
-    btnEl.classList.add('active');
+function closeAnimeSeriesOverlay() {
+  const overlay = document.getElementById('animeSeriesOverlay');
+  if (overlay) {
+    overlay.classList.remove('open');
+    overlay.style.display = 'none';
   }
-  renderAnimeModalEpGrid(start, end);
+  document.body.style.overflow = '';
 }
 
-function renderAnimeModalEpGrid(start, end) {
-  const epGrid = document.getElementById('animeEpisodesGrid');
-  if (!epGrid) return;
-  epGrid.innerHTML = '';
+function changeAnimeTraySeason(val) {
+  if (!val) return;
+  const [start, end] = val.split('-').map(n => parseInt(n, 10));
+  renderAnimeTrayEpCards(start, end);
+}
+
+function renderAnimeTrayEpCards(start, end) {
+  const grid = document.getElementById('animeEpisodesGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const backdrop = currentSelectedAnime ? getAnimeBackdrop(currentSelectedAnime) : '';
+
   for (let i = start; i <= end; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'sidebar-ep-btn';
-    btn.style.cssText = 'padding:10px;font-weight:800;border-color:rgba(255,117,160,0.3);cursor:pointer;';
-    btn.textContent = `E${i}`;
-    btn.onclick = () => playAnimeEpisode(i);
-    epGrid.appendChild(btn);
+    const card = document.createElement('div');
+    card.className = 'episode-card';
+    card.onclick = () => playAnimeTrayEpisode(i);
+
+    card.innerHTML = `
+      <div class="episode-thumb" style="background:var(--card2);">
+        <img src="${backdrop}" alt="Episode ${i}" loading="lazy"/>
+        <div class="episode-badge">S1 : E${i}</div>
+        <div class="ep-play-overlay">
+          <div class="play-circle" style="background:linear-gradient(135deg,var(--anime-pink),var(--anime-purple));">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="episode-info">
+        <div class="episode-title">Episode ${i}</div>
+        <div class="episode-desc">Stream Episode ${i} in HD with Anikoto Stream Engine</div>
+      </div>
+    `;
+    grid.appendChild(card);
   }
 }
 
-function closeAnimeModal() {
-  const modal = document.getElementById('animeModal');
-  if (modal) modal.classList.remove('open');
-}
-
-function closeAnimeModalIfBackdrop(e) {
-  if (e.target === document.getElementById('animeModal')) {
-    closeAnimeModal();
+function setAnimeTrayAudio(lang) {
+  currentAnimeAudio = lang;
+  localStorage.setItem('cs_anime_audio', lang);
+  const subBtn = document.getElementById('animeTraySubBtn');
+  const dubBtn = document.getElementById('animeTrayDubBtn');
+  if (subBtn) subBtn.classList.toggle('active', lang === 'sub');
+  if (dubBtn) dubBtn.classList.toggle('active', lang === 'dub');
+  if (typeof showToast === 'function') {
+    showToast(`Audio set to ${lang === 'sub' ? 'Japanese Sub' : 'English Dub'}`, '⛩️');
   }
 }
 
-function playAnimeEpisode(epNum) {
+function playAnimeTrayEpisode(epNum) {
   if (!currentSelectedAnime) return;
-  closeAnimeModal();
+  closeAnimeSeriesOverlay();
 
   const id = currentSelectedAnime.id || 0;
   const title = currentSelectedAnime.name || currentSelectedAnime.title || 'Anime Series';
 
-  // Redirect to standalone watch.html with Anikoto Stream parameters
   window.location.href = `watch.html?id=${id}&type=tv&season=1&episode=${epNum}&title=${encodeURIComponent(title)}&isAnime=1&audio=${currentAnimeAudio}`;
 }
