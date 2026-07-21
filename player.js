@@ -313,7 +313,7 @@ function renderEmbedServer(serverKey = 'viduki1') {
   const wrapper = $('playerWrapper');
   if (!wrapper) return;
 
-  // Highlight server in sidebar
+  // Update active server highlight in sidebar
   updateSidebarServerHighlight(serverKey);
 
   // Update server status badge
@@ -321,10 +321,6 @@ function renderEmbedServer(serverKey = 'viduki1') {
   if (serverInfo && $('currentActiveServerName')) {
     $('currentActiveServerName').textContent = serverInfo.name;
   }
-
-  // Update Viduki fallback index
-  const fallbackIdx = VIDUKI_FALLBACK_ORDER.indexOf(serverKey);
-  if (fallbackIdx !== -1) vidukiFallbackIndex = fallbackIdx;
 
   const builder = SERVER_URLS[serverKey] || SERVER_URLS.viduki1;
   const embedUrl = builder(movieId, mediaType, currentSeason, currentEpisode, watchedSeconds, {
