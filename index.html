@@ -117,7 +117,7 @@
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
     <!-- Taste Finder Trigger -->
-    <button class="random-btn" onclick="openTasteFinderModal()" title="Taste Finder Matchmaker" style="background:linear-gradient(135deg,rgba(0,210,211,0.2),rgba(229,9,20,0.2));border-color:var(--accent-cyan);">
+    <button class="random-btn" onclick="scrollToTasteDeck()" title="Taste Finder Matchmaker" style="background:linear-gradient(135deg,rgba(0,210,211,0.2),rgba(229,9,20,0.2));border-color:var(--accent-cyan);">
       🎯 <span class="hide-sm">Taste Finder</span>
     </button>
     <!-- Surprise Roulette Wheel -->
@@ -460,6 +460,59 @@
   </div>
   <div class="popular-grid" id="popularGrid"></div>
   <button class="load-more-btn" id="loadMoreBtn" onclick="loadMorePopular()">Load More Content ↓</button>
+</div>
+
+<!-- 🎴 20-CARD DECK TASTE CALCULATOR SECTION -->
+<div class="section" id="tasteDeckSection" style="padding: 50px 5% 70px; background: linear-gradient(180deg, transparent 0%, rgba(18,18,26,0.6) 100%); border-top: 1px solid rgba(255,255,255,0.06);">
+  <div class="section-header" style="flex-direction:column; align-items:center; text-align:center; margin-bottom:30px;">
+    <div class="hero-badge" style="margin-bottom:10px; background:rgba(0,210,211,0.15); color:var(--accent-cyan); border-color:rgba(0,210,211,0.3);">
+      🎯 CINEMATIC TASTE MATCHMAKER
+    </div>
+    <div class="section-title" style="font-family:var(--font-heading); font-size:2rem; font-weight:900; letter-spacing:-0.5px;">
+      20-Card Interactive Taste Calculator
+    </div>
+    <div style="font-size:0.9rem; color:var(--muted); max-width:600px; margin-top:6px;">
+      Swipe or click through cards to tune your cinematic vibe. Each answer narrows down your ultimate watch choice!
+    </div>
+  </div>
+
+  <!-- CARD DECK WRAPPER -->
+  <div class="deck-container" style="max-width: 520px; margin: 0 auto; position: relative; min-height: 380px;">
+    <!-- Progress Indicator -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:0.8rem; font-weight:800; color:var(--muted);">
+      <span id="deckStepTxt">Card 1 of 20</span>
+      <span id="deckPercentTxt" style="color:var(--accent-cyan);">5% Calibrated</span>
+    </div>
+    <div style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:10px; overflow:hidden; margin-bottom:24px;">
+      <div id="deckProgressBar" style="width:5%; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-cyan)); transition:width 0.4s ease;"></div>
+    </div>
+
+    <!-- THE SWIPE CARD -->
+    <div class="deck-card" id="deckCard" style="background:rgba(18,18,26,0.92); border:1px solid rgba(255,255,255,0.12); border-radius:24px; padding:32px; backdrop-filter:blur(30px); box-shadow:0 20px 60px rgba(0,0,0,0.8); text-align:center; position:relative; transition:all 0.4s cubic-bezier(0.16,1,0.3,1);">
+      <div id="cardEmoji" style="font-size:3.5rem; margin-bottom:16px; display:inline-block; animation:pulse 2s infinite;">🎬</div>
+      <div id="cardQuestion" style="font-family:var(--font-heading); font-size:1.35rem; font-weight:800; margin-bottom:24px; line-height:1.3; color:var(--text);">
+        Loading Question...
+      </div>
+      <div class="card-options-grid" id="cardOptionsGrid" style="display:flex; flex-direction:column; gap:10px;">
+        <!-- Dynamic option buttons -->
+      </div>
+    </div>
+
+    <!-- CALIBRATION RESULTS CARD (HIDDEN INITIALLY) -->
+    <div class="deck-results-card" id="deckResultsCard" style="display:none; background:rgba(18,18,26,0.95); border:1px solid var(--accent-cyan); border-radius:24px; padding:32px; backdrop-filter:blur(30px); box-shadow:0 20px 60px rgba(0,210,211,0.25); text-align:center;">
+      <div style="font-size:3rem; margin-bottom:10px;">✨ 🎯</div>
+      <div style="font-family:var(--font-heading); font-size:1.5rem; font-weight:900; color:var(--accent-cyan); margin-bottom:6px;">
+        Taste Calibration Complete!
+      </div>
+      <div style="font-size:0.85rem; color:var(--muted); margin-bottom:20px;">
+        We calculated your cinematic DNA profile. Here are your top 3 matches:
+      </div>
+      <div id="deckResultsGrid" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; max-height:280px; overflow-y:auto;"></div>
+      <button onclick="restartDeckCalculator()" class="auth-submit" style="width:auto; padding:10px 24px; border-radius:50px; background:rgba(255,255,255,0.08); border:1px solid var(--border);">
+        ↺ Recalibrate Taste
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- FOOTER -->

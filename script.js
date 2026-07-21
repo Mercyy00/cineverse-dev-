@@ -1650,19 +1650,148 @@ function clearMood() {
   document.getElementById('moodResultsSection').classList.remove('visible');
 }
 
-// ---- TASTE FINDER MATCHMAKER WIZARD ----
-let tasteSelections = { mood: '28', time: 'standard', audience: 'solo' };
+// ---- 20-CARD DECK TASTE CALCULATOR ENGINE ----
+const TASTE_DECK_QUESTIONS = [
+  { id: 1, emoji: '🔥', question: 'What level of energy are you craving right now?', options: [{ txt: '⚡ High Octane & Adrenaline', weight: { genre: 28, score: 98 } }, { txt: '🧘 Relaxed & Atmospheric', weight: { genre: 18, score: 92 } }, { txt: '🧠 Mind-Bending & Complex', weight: { genre: 878, score: 96 } }] },
+  { id: 2, emoji: '🍿', question: 'Preferred story pace for tonight?', options: [{ txt: '🚀 Fast & Non-Stop Action', weight: { genre: 28, score: 95 } }, { txt: '📖 Deep Slow-Burn Narrative', weight: { genre: 18, score: 94 } }, { txt: '⚡ Punchy Short Feature (<90m)', weight: { genre: 35, score: 90 } }] },
+  { id: 3, emoji: '🌌', question: 'Which setting calls to you?', options: [{ txt: '🌃 Cyberpunk & Futuristic Cities', weight: { genre: 878, score: 98 } }, { txt: '🏰 Medieval & Dark Fantasy', weight: { genre: 14, score: 96 } }, { txt: '🏙️ Gritty Modern Realism', weight: { genre: 80, score: 92 } }] },
+  { id: 4, emoji: '🎭', question: 'How much emotional weight do you want?', options: [{ txt: '😂 Pure Comedy & Good Vibes', weight: { genre: 35, score: 99 } }, { txt: '💧 Heart-Wrenching & Deep Drama', weight: { genre: 18, score: 93 } }, { txt: '😱 Edge-of-your-seat Fear', weight: { genre: 27, score: 97 } }] },
+  { id: 5, emoji: '⏱️', question: 'Ideal release era preference?', options: [{ txt: '✨ Fresh 2024–2026 Modern Cinema', weight: { score: 98 } }, { txt: '🏆 Golden 2010s Blockbusters', weight: { score: 95 } }, { txt: '🎞️ 90s/2000s Classic Nostalgia', weight: { score: 92 } }] },
+  { id: 6, emoji: '⚔️', question: 'Which hero archetype appeals most?', options: [{ txt: '🛡️ Honorable & Relentless Defender', weight: { genre: 28, score: 95 } }, { txt: '😈 Anti-Hero / morally gray lead', weight: { genre: 80, score: 97 } }, { txt: '🧩 Brilliant Detective or Genius', weight: { genre: 53, score: 96 } }] },
+  { id: 7, emoji: '🔮', question: 'Is supernatural magic involved?', options: [{ txt: '✨ Heavy Spells & Sorcery', weight: { genre: 14, score: 98 } }, { txt: '🤖 Hard Science & Space Tech', weight: { genre: 878, score: 97 } }, { txt: '🚫 100% Grounded in Reality', weight: { genre: 18, score: 91 } }] },
+  { id: 8, emoji: '💥', question: 'How do you like your climaxes?', options: [{ txt: '💣 Massive Explosive Showdown', weight: { genre: 28, score: 96 } }, { txt: '🤯 Unexpected Plot Twist Twist', weight: { genre: 53, score: 99 } }, { txt: '❤️ Warm Satisfying Resolution', weight: { genre: 10749, score: 94 } }] },
+  { id: 9, emoji: '🎙️', question: 'Preferred audio / dub language style?', options: [{ txt: '🇯🇵 Japanese Audio + Subs (Anime Style)', weight: { genre: 16, score: 98 } }, { txt: '🌐 Original English Dub', weight: { score: 95 } }, { txt: '🌏 International Cinema (Korean / Hindi / Euro)', weight: { score: 94 } }] },
+  { id: 10, emoji: '🩸', question: 'Darkness and mystery level?', options: [{ txt: '🌑 Dark, Shadowy & Mysterious', weight: { genre: 27, score: 97 } }, { txt: '☀️ Bright, Vibrant & Colorful', weight: { genre: 35, score: 95 } }, { txt: '⚖️ Balanced Suspense', weight: { genre: 53, score: 93 } }] },
+  { id: 11, emoji: '🕵️', question: 'Unraveling puzzles vs instant satisfaction?', options: [{ txt: '🔍 Complex Detective Mystery', weight: { genre: 9648, score: 96 } }, { txt: '⚡ Fast Thrills & Instant Climax', weight: { genre: 28, score: 94 } }, { txt: '🎒 Escapist Fun & Exploration', weight: { genre: 12, score: 95 } }] },
+  { id: 12, emoji: '🏎️', question: 'Vehicle chases or martial arts combat?', options: [{ txt: '🏎️ High-Speed Car Chases & Heists', weight: { genre: 28, score: 95 } }, { txt: '🥋 Hand-to-Hand Martial Arts', weight: { genre: 28, score: 97 } }, { txt: '🌌 Space Dogfights & Laser Battles', weight: { genre: 878, score: 98 } }] },
+  { id: 13, emoji: '💘', question: 'Should romance play a key role?', options: [{ txt: '💕 Central Focus / Love Story', weight: { genre: 10749, score: 99 } }, { txt: '✨ Subtle Subplot', weight: { genre: 18, score: 92 } }, { txt: '🚫 Zero Romance Please', weight: { genre: 28, score: 90 } }] },
+  { id: 14, emoji: '🧟', question: 'Monsters, Zombies, or Cyber Punks?', options: [{ txt: '🧟 Apocalypse & Zombie Survival', weight: { genre: 27, score: 96 } }, { txt: '🐉 Ancient Mythical Beasts', weight: { genre: 14, score: 97 } }, { txt: '🤖 AI Robots & Synthetic Humans', weight: { genre: 878, score: 98 } }] },
+  { id: 15, emoji: '🎶', question: 'How important is the soundtrack?', options: [{ txt: '🎧 Legendary Epic Orchestral Score', weight: { score: 99 } }, { txt: '🎷 Retro 80s Synthwave Vibes', weight: { score: 96 } }, { txt: '🤫 Quiet Ambient Immersion', weight: { score: 91 } }] },
+  { id: 16, emoji: '🏝️', question: 'Isolated location vs Megacity?', options: [{ txt: '🏝️ Island / Cabin Isolation', weight: { genre: 27, score: 95 } }, { txt: '🏙️ Densely Populated Metropolis', weight: { genre: 80, score: 94 } }, { txt: '🚀 Deep Space Station', weight: { genre: 878, score: 97 } }] },
+  { id: 17, emoji: '🧠', question: 'Psychological mind games preference?', options: [{ txt: '🌀 Trippy Mindf**k Cinema', weight: { genre: 53, score: 99 } }, { txt: '🎯 Straightforward Good vs Evil', weight: { genre: 28, score: 93 } }, { txt: '🤝 Heartwarming Friendship Focus', weight: { genre: 35, score: 95 } }] },
+  { id: 18, emoji: '👨‍👩‍👧', question: 'Who are you watching this with tonight?', options: [{ txt: '👤 Solo Me Time', weight: { score: 96 } }, { txt: '💑 Romantic Date Night', weight: { genre: 10749, score: 98 } }, { txt: '👨‍👩‍👧 Family & Friends Group', weight: { genre: 10751, score: 95 } }] },
+  { id: 19, emoji: '⌛', question: 'Maximum runtime tolerance?', options: [{ txt: '⏱️ Under 90 Minutes', weight: { score: 92 } }, { txt: '🎬 2 Hours Sweet Spot', weight: { score: 96 } }, { txt: '🏆 3-Hour Cinema Epic', weight: { score: 99 } }] },
+  { id: 20, emoji: '🚀', question: 'Final touch: What feeling do you want when credits roll?', options: [{ txt: '🤩 Awe-Inspired & Energized', weight: { genre: 28, score: 99 } }, { txt: '🥹 Warm Hearted & Satisfied', weight: { genre: 35, score: 97 } }, { txt: '🤯 Mind Blown & Shocked', weight: { genre: 878, score: 100 } }] }
+];
 
-function openTasteFinderModal() {
-  const modal = document.getElementById('tasteFinderModal');
-  if (!modal) return;
-  modal.classList.add('open');
-  
-  // Reset steps to step 1
-  document.getElementById('tasteStep1').style.display = 'block';
-  document.getElementById('tasteStep2').style.display = 'none';
-  document.getElementById('tasteStep3').style.display = 'none';
-  document.getElementById('tasteResults').style.display = 'none';
+let deckCurrentStep = 0;
+let deckUserGenreScores = {};
+
+function scrollToTasteDeck() {
+  const sec = document.getElementById('tasteDeckSection');
+  if (sec) {
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    initTasteDeckCard();
+  }
+}
+
+function initTasteDeckCard() {
+  const card = document.getElementById('deckCard');
+  const resultsCard = document.getElementById('deckResultsCard');
+  if (!card || !resultsCard) return;
+
+  if (deckCurrentStep >= TASTE_DECK_QUESTIONS.length) {
+    card.style.display = 'none';
+    resultsCard.style.display = 'block';
+    renderDeckResults();
+    return;
+  }
+
+  card.style.display = 'block';
+  resultsCard.style.display = 'none';
+
+  const qData = TASTE_DECK_QUESTIONS[deckCurrentStep];
+  const stepNum = deckCurrentStep + 1;
+  const totalSteps = TASTE_DECK_QUESTIONS.length;
+  const pct = Math.round((stepNum / totalSteps) * 100);
+
+  const stepTxt = document.getElementById('deckStepTxt');
+  const percentTxt = document.getElementById('deckPercentTxt');
+  const progressBar = document.getElementById('deckProgressBar');
+  const emoji = document.getElementById('cardEmoji');
+  const question = document.getElementById('cardQuestion');
+  const grid = document.getElementById('cardOptionsGrid');
+
+  if (stepTxt) stepTxt.textContent = `Card ${stepNum} of ${totalSteps}`;
+  if (percentTxt) percentTxt.textContent = `${pct}% Calibrated`;
+  if (progressBar) progressBar.style.width = `${pct}%`;
+  if (emoji) emoji.textContent = qData.emoji;
+  if (question) question.textContent = qData.question;
+
+  if (grid) {
+    grid.innerHTML = qData.options.map((opt, i) => `
+      <button onclick="handleDeckAnswer(${i})" class="taste-option-btn" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); padding:14px 18px; border-radius:14px; color:var(--text); font-weight:700; font-size:0.9rem; text-align:left; cursor:pointer; transition:all 0.25s ease; display:flex; align-items:center; justify-content:space-between;">
+        <span>${sanitizeHTML(opt.txt)}</span>
+        <span style="color:var(--accent-cyan); font-size:0.8rem;">➔</span>
+      </button>
+    `).join('');
+  }
+}
+
+function handleDeckAnswer(optIdx) {
+  const qData = TASTE_DECK_QUESTIONS[deckCurrentStep];
+  const chosenOpt = qData.options[optIdx];
+  if (chosenOpt && chosenOpt.weight && chosenOpt.weight.genre) {
+    const gid = chosenOpt.weight.genre;
+    deckUserGenreScores[gid] = (deckUserGenreScores[gid] || 0) + (chosenOpt.weight.score || 10);
+  }
+
+  const card = document.getElementById('deckCard');
+  if (card) {
+    card.style.transform = 'translateX(-60px) rotate(-4deg)';
+    card.style.opacity = '0.4';
+    setTimeout(() => {
+      deckCurrentStep++;
+      card.style.transform = 'none';
+      card.style.opacity = '1';
+      initTasteDeckCard();
+    }, 220);
+  } else {
+    deckCurrentStep++;
+    initTasteDeckCard();
+  }
+}
+
+async function renderDeckResults() {
+  const container = document.getElementById('deckResultsGrid');
+  if (!container) return;
+  container.innerHTML = '<div style="color:var(--muted);padding:15px;text-align:center;">Calculating movie matches...</div>';
+
+  let topGenreId = 28;
+  const sortedGenres = Object.entries(deckUserGenreScores).sort((a, b) => b[1] - a[1]);
+  if (sortedGenres.length > 0) topGenreId = sortedGenres[0][0];
+
+  try {
+    const data = await api(`/discover/movie?with_genres=${topGenreId}&sort_by=popularity.desc`);
+    const movies = (data.results || []).slice(0, 3);
+    const matchPcts = [99, 96, 93];
+
+    container.innerHTML = movies.map((m, idx) => {
+      const cleanTitle = sanitizeHTML(m.title || m.name || 'Movie');
+      const posterUrl = m.poster_path ? `${IMG}w185${m.poster_path}` : 'https://images.pexels.com/photos/1790556/pexels-photo-1790556.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=300&w=200';
+      return `
+        <div style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:10px 14px; display:flex; align-items:center; gap:12px; text-align:left;">
+          <img src="${posterUrl}" style="width:45px; height:65px; border-radius:8px; object-fit:cover; flex-shrink:0;"/>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div style="font-weight:800; font-size:0.88rem; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${cleanTitle}</div>
+              <span style="background:var(--accent-cyan); color:#000; font-size:0.6rem; font-weight:900; padding:1px 5px; border-radius:4px;">${matchPcts[idx]}%</span>
+            </div>
+            <div style="font-size:0.72rem; color:var(--muted); margin-top:2px;">⭐ ${m.vote_average ? m.vote_average.toFixed(1) : '8.5'} • ${(m.release_date||'2026').slice(0,4)}</div>
+          </div>
+          <button onclick="watchMovie('${m.id}','movie','${encodeURIComponent(m.title||m.name)}')" style="background:var(--accent); color:#fff; border:none; border-radius:50px; padding:6px 14px; font-weight:800; font-size:0.72rem; cursor:pointer; flex-shrink:0;">Watch</button>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    container.innerHTML = '<div style="color:var(--muted);padding:15px;text-align:center;">Matches ready! Explore the popular grid.</div>';
+  }
+}
+
+function restartDeckCalculator() {
+  deckCurrentStep = 0;
+  deckUserGenreScores = {};
+  initTasteDeckCard();
 }
 
 function closeTasteFinderModal() {
