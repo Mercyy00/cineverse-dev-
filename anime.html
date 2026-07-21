@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineVerse アニメ — Dedicated Japanese Anime Hub</title>
+  <meta name="description" content="Watch thousands of free anime series and movies in HD with original Japanese Subbed audio or English Dubbed on CineVerse Anime Hub."/>
+  <link rel="icon" type="image/png" href="icon/favicon.png"/>
+  <link rel="apple-touch-icon" href="icon/favicon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css?v=5.0"/>
+</head>
+<body class="dark-theme anime-mode">
+
+  <!-- JAPANESE SAKURA FLOATING PETALS CONTAINER -->
+  <div id="sakuraContainer"></div>
+
+  <!-- TOP NAVIGATION BAR -->
+  <nav id="navbar" class="scrolled">
+    <a href="index.html" class="nav-logo">
+      <div class="play-icon" style="background:linear-gradient(135deg,var(--anime-pink),var(--anime-purple));">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+      </div>
+      Cine<span class="accent" style="color:var(--anime-pink);">Verse</span>
+      <span class="anime-jp-tag" style="margin-left:6px;">アニメ HUB</span>
+    </a>
+
+    <div class="nav-tabs" id="navTabs">
+      <a href="index.html" class="nav-tab">← Home</a>
+      <button class="nav-tab active" onclick="scrollToAnimeSec('animeHero')">Spotlight</button>
+      <button class="nav-tab" onclick="scrollToAnimeSec('top10Section')">Top 10</button>
+      <button class="nav-tab" onclick="scrollToAnimeSec('catalogSection')">Live Catalog</button>
+      <button class="nav-tab" onclick="scrollToAnimeSec('genreSection')">Genres</button>
+    </div>
+
+    <div class="nav-right">
+      <!-- SUB / DUB GLOBAL SWITCH -->
+      <div class="sub-dub-toggle-group">
+        <button class="sub-dub-pill active" id="subBtn" onclick="setAnimeAudio('sub')">
+          🇯🇵 SUB
+        </button>
+        <button class="sub-dub-pill" id="dubBtn" onclick="setAnimeAudio('dub')">
+          🎙️ DUB
+        </button>
+      </div>
+
+      <!-- SEARCH INPUT -->
+      <div class="nav-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="animeSearchInput" placeholder="Search anime..." autocomplete="off" oninput="handleAnimeSearch(this.value)"/>
+        <div class="search-dropdown" id="animeSearchDropdown"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN ANIME HUB CONTAINER -->
+  <main style="padding-top:80px;min-height:100vh;">
+
+    <!-- ANIME HERO SPOTLIGHT CAROUSEL -->
+    <section class="anime-hero-section" id="animeHero">
+      <div class="anime-hero-bg">
+        <img id="animeHeroBackdrop" src="" alt="Anime Backdrop"/>
+        <div class="anime-hero-overlay"></div>
+      </div>
+
+      <div class="anime-hero-content">
+        <div class="anime-badge-row">
+          <span class="anime-jp-tag">🔥 FEATURED SPOTLIGHT</span>
+          <span class="quality-badge" style="color:var(--anime-cyan);border-color:rgba(0,210,211,0.4);background:rgba(0,210,211,0.15);">ANIKOTO ENGINE</span>
+          <span class="quality-badge">SUB | DUB</span>
+        </div>
+
+        <h1 class="anime-hero-title" id="animeHeroTitle">Loading Japanese Anime Spotlight...</h1>
+        
+        <div class="anime-hero-meta" id="animeHeroMeta">
+          <span>★ 9.2</span> • <span>2026</span> • <span>Shonen, Dark Fantasy</span> • <span>24 Episodes</span>
+        </div>
+
+        <p class="anime-hero-desc" id="animeHeroDesc">
+          Loading anime description and series details from Anikoto API...
+        </p>
+
+        <div class="anime-hero-actions">
+          <button class="btn-play" id="animeHeroPlayBtn" style="background:linear-gradient(135deg,var(--anime-pink),var(--anime-purple));box-shadow:0 6px 20px rgba(255,117,160,0.4);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+            Watch Stream Now
+          </button>
+          <button class="btn-list" id="animeHeroListBtn" onclick="toggleHeroWatchlist()">
+            + Add to My List
+          </button>
+        </div>
+
+        <!-- HERO CAROUSEL DOTS -->
+        <div class="hero-dots" id="animeHeroDots" style="margin-top:28px;"></div>
+      </div>
+    </section>
+
+    <div style="max-width:1400px;margin:0 auto;padding:0 28px;">
+
+      <!-- ANIME HEADER BANNER -->
+      <div class="anime-header-banner" style="margin-top:32px;">
+        <div>
+          <div class="anime-banner-title">
+            ⛩️ Anime Universe Hub
+            <span class="anime-jp-tag">Anikoto & MegaPlay Active</span>
+          </div>
+          <div style="font-size:0.9rem;color:var(--muted);margin-top:6px;max-width:650px;">
+            Full HiAnime archive and Anikoto library hosted with high-speed CDN video nodes. Stream your favorite series with Japanese Subtitles or Multi-Dubbed Audio.
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="text-align:right;">
+            <div style="font-size:0.78rem;color:var(--muted);font-weight:700;">DEFAULT AUDIO MODE</div>
+            <div style="font-size:0.95rem;color:var(--anime-pink);font-weight:900;" id="currentAudioLabel">🇯🇵 JAPANESE SUB</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP 10 WEEKLY ANIME LEADERBOARD -->
+      <section class="section" id="top10Section" style="margin-top:40px;">
+        <div class="section-header">
+          <div class="section-title" style="color:var(--text);font-size:1.4rem;">
+            🔥 Top 10 Trending Anime This Week
+          </div>
+        </div>
+        <div class="slider-wrap">
+          <button class="slider-arrow left" onclick="scrollAnimeTrack('top10Track',-1)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
+          </button>
+          <div class="slider-track" id="top10Track"></div>
+          <button class="slider-arrow right" onclick="scrollAnimeTrack('top10Track',1)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9,18 15,12 9,6"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- GENRES FILTER SECTION -->
+      <section class="section" id="genreSection" style="margin-top:36px;">
+        <div class="section-header">
+          <div class="section-title" style="font-size:1.2rem;">🏷️ Explore by Anime Genre</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;" id="animeGenreChips">
+          <button class="genre-chip active" onclick="filterAnimeCategory('all', this)">⚡ All Anime</button>
+          <button class="genre-chip" onclick="filterAnimeCategory('shonen', this)">⚔️ Shonen</button>
+          <button class="genre-chip" onclick="filterAnimeCategory('isekai', this)">🌀 Isekai</button>
+          <button class="genre-chip" onclick="filterAnimeCategory('action', this)">💥 Action & Fights</button>
+          <button class="genre-chip" onclick="filterAnimeCategory('fantasy', this)">✨ Dark Fantasy</button>
+          <button class="genre-chip" onclick="filterAnimeCategory('romance', this)">💕 Romance</button>
+          <button class="genre-chip" onclick="filterAnimeCategory('mecha', this)">🤖 Mecha & Sci-Fi</button>
+          <button class="genre-chip" onclick="filterAnimeCategory('slice', this)">🍵 Slice of Life</button>
+        </div>
+      </section>
+
+      <!-- LIVE ANIME CATALOG GRID -->
+      <section class="section" id="catalogSection" style="margin-top:40px;">
+        <div class="section-header" style="flex-wrap:wrap;gap:16px;">
+          <div>
+            <div class="section-title" style="font-size:1.4rem;">
+              🌸 Anikoto Live Anime Catalog
+            </div>
+            <div style="font-size:0.82rem;color:var(--muted);margin-top:4px;">
+              Real-time streams synced from Anikoto API & HiAnime Database
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;align-items:center;">
+            <select id="animeSortSelect" onchange="sortAnimeCatalog(this.value)" class="auth-input" style="width:auto;padding:8px 16px;margin:0;font-size:0.82rem;">
+              <option value="popularity">🔥 Most Popular</option>
+              <option value="rating">★ Highest Rated</option>
+              <option value="latest">🆕 Latest Releases</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ANIME CARDS GRID -->
+        <div class="popular-grid" id="animeGrid" style="margin-top:20px;"></div>
+
+        <!-- LOAD MORE BUTTON -->
+        <div style="text-align:center;margin-top:40px;margin-bottom:60px;">
+          <button id="loadMoreAnimeBtn" class="auth-submit" style="width:auto;padding:12px 36px;border-radius:50px;background:linear-gradient(135deg,var(--anime-pink),var(--anime-purple));box-shadow:0 6px 20px rgba(255,117,160,0.3);" onclick="loadMoreAnimeCatalog()">
+            Load More Anime ▼
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ANIME SERIES EPISODE MODAL -->
+  <div id="animeModal" class="modal-backdrop" onclick="closeAnimeModalIfBackdrop(event)">
+    <div class="taste-box" style="width:780px;max-width:94vw;position:relative;">
+      <button onclick="closeAnimeModal()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:800;">✕</button>
+
+      <div style="display:flex;gap:24px;margin-bottom:24px;" id="animeModalHeader">
+        <img id="animeModalPoster" src="" alt="" style="width:130px;height:195px;border-radius:16px;object-fit:cover;box-shadow:0 8px 25px rgba(0,0,0,0.6);"/>
+        <div>
+          <div id="animeModalTitle" style="font-family:var(--font-heading);font-size:1.6rem;font-weight:900;color:var(--text);margin-bottom:8px;">Anime Title</div>
+          <div id="animeModalMeta" style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">2026 • 24 Episodes • Rating: ★ 9.0</div>
+          <div id="animeModalOverview" style="font-size:0.85rem;color:var(--text);line-height:1.5;max-height:90px;overflow-y:auto;">Anime overview goes here...</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;margin-bottom:16px;">
+        <div style="font-family:var(--font-heading);font-weight:800;font-size:1.05rem;">Select Episode to Watch</div>
+        <div class="sub-dub-toggle-group">
+          <button class="sub-dub-pill active" id="modalSubBtn" onclick="setAnimeAudio('sub')">🇯🇵 SUB</button>
+          <button class="sub-dub-pill" id="modalDubBtn" onclick="setAnimeAudio('dub')">🎙️ DUB</button>
+        </div>
+      </div>
+
+      <div id="animeEpisodesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;max-height:260px;overflow-y:auto;padding-right:6px;"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer style="border-top:1px solid rgba(255,255,255,0.08);padding:40px 28px;background:rgba(7,7,10,0.9);text-align:center;">
+    <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:900;margin-bottom:12px;">Cine<span style="color:var(--anime-pink);">Verse</span> アニメ Hub</div>
+    <div style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">Powered by Anikoto API & MegaPlay CDN Stream Engine</div>
+    <div style="font-size:0.78rem;color:var(--border);">© 2026 CineVerse — All rights reserved.</div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="anime.js"></script>
+</body>
+</html>

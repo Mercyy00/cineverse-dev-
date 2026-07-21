@@ -2692,3 +2692,103 @@ body.anime-player-mode #cinemaGlow {
 .auto-next-btn:hover {
   transform: scale(1.05);
 }
+
+/* ════════════════════════════════════════════════════════════
+   STANDALONE ANIME.HTML HERO SPOTLIGHT & PAGE DESIGN
+   ════════════════════════════════════════════════════════════ */
+
+.anime-hero-section {
+  position: relative;
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  padding: 60px 48px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.anime-hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.anime-hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.65) contrast(1.1);
+  transform: scale(1.02);
+  transition: transform 10s ease;
+}
+
+.anime-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(to right, #0b0813 15%, rgba(11, 8, 19, 0.75) 50%, transparent 100%),
+    linear-gradient(to top, #0b0813 0%, transparent 40%),
+    radial-gradient(circle at 20% 50%, rgba(255, 117, 160, 0.15), transparent 60%);
+}
+
+.anime-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 680px;
+}
+
+.anime-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.anime-hero-title {
+  font-family: var(--font-heading);
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #fff;
+  margin-bottom: 14px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+  letter-spacing: -0.5px;
+}
+
+.anime-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--anime-pink);
+  margin-bottom: 18px;
+}
+
+.anime-hero-desc {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.6;
+  margin-bottom: 28px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.anime-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+@media (max-width: 768px) {
+  .anime-hero-section {
+    padding: 30px 20px;
+    min-height: 60vh;
+  }
+  .anime-hero-title {
+    font-size: 2.2rem;
+  }
+}
