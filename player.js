@@ -92,11 +92,9 @@ function getResolvedAnimeInfo(id, title) {
 const SERVER_URLS = {
   // ─── TOP PRIORITY SERVERS ───
   zxcstream: (id, type, s, e, st) => {
-    const color = getAccentHex();
-    const base = type === 'tv'
-      ? `https://zxcstream.xyz/player/tv/${id}/${s}/${e}`
-      : `https://zxcstream.xyz/player/movie/${id}`;
-    return `${base}?color=${color}&autoplay=true&back=true`;
+    return type === 'tv'
+      ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
+      : `https://vidsrc.cc/v2/embed/movie/${id}`;
   },
   viduki1: (id, type, s, e, st) => {
     const color = getAccentHexWithHash();
@@ -1360,7 +1358,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const preferredServer = localStorage.getItem('cs_preferred_player');
-  const defaultServer = isAnimeMode ? 'anikoto_sub' : 'zxcstream';
+  const defaultServer = isAnimeMode ? 'anikoto_sub' : 'vidlink';
   const isValidPreferred = preferredServer && SERVER_URLS[preferredServer] && (isAnimeMode || !ANIME_ONLY_SERVERS.includes(preferredServer));
   const validServer = isValidPreferred ? preferredServer : defaultServer;
   renderEmbedServer(validServer);
