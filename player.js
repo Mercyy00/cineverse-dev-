@@ -90,37 +90,14 @@ function getResolvedAnimeInfo(id, title) {
    SERVER URL BUILDERS (All Priority Servers)
 ================================================ */
 const SERVER_URLS = {
-  // ─── ANIKOTO & MEGAPLAY SERVERS (Official HiAnime API Engine) ───
-  anikoto_sub: (id, type, s, e, st, params) => {
-    const resolved = getResolvedAnimeInfo(id, initialTitle);
-    if (resolved?.malId) {
-      return `https://megaplay.buzz/stream/mal/${resolved.malId}/${e}/sub`;
-    }
-    const epId = params?.aniwatchEpId || id;
-    return `https://vidnest.fun/anime/${epId}/${e || 1}/sub`;
+  // ─── TOP PRIORITY SERVERS ───
+  zxcstream: (id, type, s, e, st) => {
+    const color = getAccentHex();
+    const base = type === 'tv'
+      ? `https://zxcstream.xyz/player/tv/${id}/${s}/${e}`
+      : `https://zxcstream.xyz/player/movie/${id}`;
+    return `${base}?color=${color}&autoplay=true&back=true`;
   },
-  anikoto_dub: (id, type, s, e, st, params) => {
-    const resolved = getResolvedAnimeInfo(id, initialTitle);
-    if (resolved?.malId) {
-      return `https://megaplay.buzz/stream/mal/${resolved.malId}/${e}/dub`;
-    }
-    const epId = params?.aniwatchEpId || id;
-    return `https://vidnest.fun/anime/${epId}/${e || 1}/dub`;
-  },
-  megaplay_anilist: (id, type, s, e, st, params) => {
-    const resolved = getResolvedAnimeInfo(id, initialTitle);
-    const aniId = resolved?.anilistId || params?.anilistId || id;
-    const lang = currentAudioLang || 'sub';
-    return `https://vidnest.fun/anime/${aniId}/${e || 1}/${lang}`;
-  },
-  megaplay_mal: (id, type, s, e, st, params) => {
-    const resolved = getResolvedAnimeInfo(id, initialTitle);
-    const mId = resolved?.malId || params?.malId || id;
-    const lang = currentAudioLang || 'sub';
-    return `https://megaplay.buzz/stream/mal/${mId}/${e}/${lang}`;
-  },
-
-  // ─── PRIORITY 1: Viduki (4 API Tiers) ───
   viduki1: (id, type, s, e, st) => {
     const color = getAccentHexWithHash();
     return type === 'tv'
@@ -139,28 +116,11 @@ const SERVER_URLS = {
       ? `https://viduki.net/3/tv/${id}/${s}/${e}?color=${color}`
       : `https://viduki.net/3/movie/${id}?color=${color}`;
   },
-  viduki4: (id, type, s, e, st) => {
-    const color = getAccentHexWithHash();
-    return type === 'tv'
-      ? `https://viduki.net/4/tv/${id}/${s}/${e}?color=${color}`
-      : `https://viduki.net/4/movie/${id}?color=${color}`;
-  },
-
-  // ─── PRIORITY 2: ZXCStream (Multi-Dub HD) ───
-  zxcstream: (id, type, s, e, st) => {
-    const color = getAccentHex();
-    const base = type === 'tv'
-      ? `https://zxcstream.xyz/player/tv/${id}/${s}/${e}`
-      : `https://zxcstream.xyz/player/movie/${id}`;
-    return `${base}?color=${color}&autoplay=true&back=true`;
-  },
-
-  // ─── PRIORITY 3+: Additional Servers ───
-  rivestream: (id, type, s, e, st) => type === 'tv' ? `https://www.rivestream.app/embed?type=tv&id=${id}&season=${s}&episode=${e}` : `https://www.rivestream.app/embed?type=movie&id=${id}`,
-  vidcodin: (id, type, s, e, st) => type === 'tv' ? `https://vidcodin.net/embed/tv/${id}/${s}/${e}` : `https://vidcodin.net/embed/movie/${id}`,
-  oneembed: (id, type, s, e, st) => type === 'tv' ? `https://1embed.cc/embed/tv/${id}/${s}/${e}` : `https://1embed.cc/embed/movie/${id}`,
-  mapple: (id, type, s, e, st) => type === 'tv' ? `https://mapple.uk/watch/tv/${id}-${s}-${e}` : `https://mapple.uk/watch/movie/${id}`,
-  vidsync: (id, type, s, e, st) => type === 'tv' ? `https://vidsync.live/embed/tv/${id}/${s}/${e}?startTime=${st}` : `https://vidsync.live/embed/movie/${id}?startTime=${st}`,
+  vidsync_xyz: (id, type, s, e, st) => type === 'tv' ? `https://vidsync.xyz/embed/tv/${id}/${s}/${e}?autoPlay=true` : `https://vidsync.xyz/embed/movie/${id}?autoPlay=true`,
+  movies111: (id, type, s, e, st) => type === 'tv' ? `https://111movies.com/tv/${id}/${s}/${e}` : `https://111movies.com/movie/${id}`,
+  vidlink: (id, type, s, e, st) => type === 'tv' ? `https://vidlink.pro/tv/${id}/${s}/${e}` : `https://vidlink.pro/movie/${id}`,
+  videasy: (id, type, s, e, st) => type === 'tv' ? `https://player.videasy.net/tv/${id}/${s}/${e}?nextEpisode=true&autoplayNextEpisode=true` : `https://player.videasy.net/movie/${id}`,
+  vidfast: (id, type, s, e, st) => type === 'tv' ? `https://vidfast.pro/tv/${id}/${s}/${e}?autoPlay=true` : `https://vidfast.pro/movie/${id}?autoPlay=true`,
   cinesrc: (id, type, s, e, st) => {
     const colorHex = getAccentHexWithHash();
     let url = type === 'tv' 
@@ -169,45 +129,77 @@ const SERVER_URLS = {
     if (st > 0) url += `&t=${st}`;
     return url;
   },
-  vidnest: (id, type, s, e, st, anilistId) => {
+  vidsrc_to: (id, type, s, e, st) => type === 'tv' ? `https://vidsrc.to/embed/tv/${id}/${s}/${e}` : `https://vidsrc.to/embed/movie/${id}`,
+  vidsrc_cc: (id, type, s, e, st) => type === 'tv' ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}` : `https://vidsrc.cc/v2/embed/movie/${id}`,
+  vidnest: (id, type, s, e, st, params) => {
     let url;
-    if (anilistId) {
-      url = `https://vidnest.fun/anime/${anilistId}/${e || 1}/sub`;
+    if (params?.anilistId) {
+      url = `https://vidnest.fun/anime/${params.anilistId}/${e || 1}/sub`;
     } else if (type === 'tv' || type === 'anime') {
       url = `https://vidnest.fun/tv/${id}/${s || 1}/${e || 1}`;
     } else {
       url = `https://vidnest.fun/movie/${id}`;
     }
-    if (st > 0) url += `?startAt=${st}`;
     return url;
   },
+  // Anime Engine Embeds
+  anikoto_sub: (id, type, s, e, st, params) => {
+    const resolved = getResolvedAnimeInfo(id, initialTitle);
+    if (resolved?.malId) return `https://megaplay.buzz/stream/mal/${resolved.malId}/${e}/sub`;
+    const epId = params?.aniwatchEpId || id;
+    return `https://vidnest.fun/anime/${epId}/${e || 1}/sub`;
+  },
+  anikoto_dub: (id, type, s, e, st, params) => {
+    const resolved = getResolvedAnimeInfo(id, initialTitle);
+    if (resolved?.malId) return `https://megaplay.buzz/stream/mal/${resolved.malId}/${e}/dub`;
+    const epId = params?.aniwatchEpId || id;
+    return `https://vidnest.fun/anime/${epId}/${e || 1}/dub`;
+  },
+  megaplay_anilist: (id, type, s, e, st, params) => {
+    const resolved = getResolvedAnimeInfo(id, initialTitle);
+    const aniId = resolved?.anilistId || params?.anilistId || id;
+    const lang = currentAudioLang || 'sub';
+    return `https://vidnest.fun/anime/${aniId}/${e || 1}/${lang}`;
+  },
+  megaplay_mal: (id, type, s, e, st, params) => {
+    const resolved = getResolvedAnimeInfo(id, initialTitle);
+    const mId = resolved?.malId || params?.malId || id;
+    const lang = currentAudioLang || 'sub';
+    return `https://megaplay.buzz/stream/mal/${mId}/${e}/${lang}`;
+  }
 };
 
-/* Server display metadata */
-const ANIME_ONLY_SERVERS = ['anikoto_sub', 'anikoto_dub', 'megaplay_anilist', 'megaplay_mal', 'vidnest'];
+/* Server display metadata (Clean Server 1-10 labels with ZXCStream & Viduki on top) */
+const ANIME_ONLY_SERVERS = ['anikoto_sub', 'anikoto_dub', 'megaplay_anilist', 'megaplay_mal'];
 
 const SERVER_INFO = [
+  { key: 'zxcstream', name: 'Server 1 (ZXC Stream)', desc: 'Primary • Multi-dub HD', icon: '🚀', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
+  { key: 'viduki1', name: 'Server 2 (Viduki Multi)', desc: 'Auto-cascading HD stream node', icon: '⚡', gradient: 'linear-gradient(135deg,#ff6b35,#e50914)' },
+  { key: 'viduki2', name: 'Server 3 (Viduki Multi-Lang)', desc: 'Multi-language audio stream', icon: '🌐', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+  { key: 'viduki3', name: 'Server 4 (Viduki Premium)', desc: 'Ultra HD high speed stream', icon: '👑', gradient: 'linear-gradient(135deg,#ffb800,#f59e0b)' },
+  { key: 'vidsync_xyz', name: 'Server 5 (VidSync Cloud)', desc: 'Fast HLS video stream', icon: '🚀', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+  { key: 'movies111', name: 'Server 6 (111 Movies)', desc: 'Zero ads • fast playback', icon: '🎬', gradient: 'linear-gradient(135deg,#a855f7,#7c3aed)' },
+  { key: 'vidlink', name: 'Server 7 (VidLink Pro)', desc: 'High-definition CDN node', icon: '⚡', gradient: 'linear-gradient(135deg,#00d2d3,#3b82f6)' },
+  { key: 'videasy', name: 'Server 8 (Videasy Stream)', desc: 'Auto-next episode engine', icon: '🔮', gradient: 'linear-gradient(135deg,#ff4081,#ff75a0)' },
+  { key: 'vidfast', name: 'Server 9 (VidFast Pro)', desc: 'High-speed auto-buffering', icon: '🛸', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
+  { key: 'cinesrc', name: 'Server 10 (CineSrc HD)', desc: 'Theme sync • Full HD', icon: '🍁', gradient: 'linear-gradient(135deg,#f43f5e,#be123c)' },
+  { key: 'vidsrc_to', name: 'Server 11 (VidSrc Pro)', desc: 'High speed backup node', icon: '⚡', gradient: 'linear-gradient(135deg,#ff6b35,#e50914)' },
+  { key: 'vidsrc_cc', name: 'Server 12 (VidSrc v2)', desc: 'Multi-resolution backup', icon: '🌐', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
+  { key: 'vidnest', name: 'Server 13 (VidNest Direct)', desc: 'Anime & TV series stream', icon: '⛩️', gradient: 'linear-gradient(135deg,#ef4444,#dc2626)' },
+  // Dedicated Anime Hub Nodes
   { key: 'anikoto_sub', name: 'Anikoto Sub (MegaPlay)', desc: 'Japanese Audio • English Subs', icon: '⛩️', gradient: 'linear-gradient(135deg,#ff75a0,#a855f7)' },
   { key: 'anikoto_dub', name: 'Anikoto Dub (MegaPlay)', desc: 'English Dubbed Audio', icon: '🎙️', gradient: 'linear-gradient(135deg,#a855f7,#3b82f6)' },
   { key: 'megaplay_anilist', name: 'AniList Engine (MegaPlay)', desc: 'Direct AniList Stream', icon: '🌸', gradient: 'linear-gradient(135deg,#ff4081,#ff75a0)' },
   { key: 'megaplay_mal', name: 'MyAnimeList Engine', desc: 'Direct MAL Stream', icon: '⚡', gradient: 'linear-gradient(135deg,#00d2d3,#3b82f6)' },
-  { key: 'vidnest', name: 'VidNest Anime', desc: 'Anime • sub & dub', icon: '⛩️', gradient: 'linear-gradient(135deg,#ef4444,#dc2626)' },
-  { key: 'viduki1', name: 'Viduki Multi Server', desc: 'Primary • auto-cascading servers', icon: '⚡', gradient: 'linear-gradient(135deg,#ff6b35,#e50914)' },
-  { key: 'viduki2', name: 'Viduki Multi Language', desc: 'Multi-language audio support', icon: '🌐', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
-  { key: 'viduki3', name: 'Viduki Multi Embeds', desc: 'Multiple embed sources', icon: '🔮', gradient: 'linear-gradient(135deg,#a855f7,#7c3aed)' },
-  { key: 'viduki4', name: 'Viduki Premium', desc: 'Premium quality streams', icon: '👑', gradient: 'linear-gradient(135deg,#ffb800,#f59e0b)' },
-  { key: 'zxcstream', name: 'ZXC Stream', desc: 'Multi-dub • HD quality', icon: '🚀', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
-  { key: 'rivestream', name: 'RiveStream', desc: 'Auto-aggregator • fastest CDN', icon: '⚡', gradient: 'linear-gradient(135deg,#ff6b35,#e50914)' },
-  { key: 'vidcodin', name: 'VidCodin', desc: 'High-speed decoding', icon: '🛸', gradient: 'linear-gradient(135deg,#10b981,#059669)' },
-  { key: 'oneembed', name: '1embed', desc: 'Multi-quality • zero ads', icon: '🔮', gradient: 'linear-gradient(135deg,#a855f7,#7c3aed)' },
-  { key: 'mapple', name: 'Mapple HD', desc: 'HD streaming', icon: '🍁', gradient: 'linear-gradient(135deg,#f43f5e,#be123c)' },
-  { key: 'vidsync', name: 'VidSync Cloud', desc: 'HLS streaming', icon: '🚀', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
-  { key: 'cinesrc', name: 'CineSrc Premium', desc: 'Theme sync • FHD', icon: '🎬', gradient: 'linear-gradient(135deg,#ffb800,#f59e0b)' },
 ];
 
-/* Viduki auto-fallback cascade order */
-const VIDUKI_FALLBACK_ORDER = ['viduki1', 'viduki2', 'viduki3', 'viduki4', 'zxcstream', 'rivestream'];
-let vidukiFallbackIndex = 0;
+/* Auto-shifting fallback cascade order */
+const AUTO_FALLBACK_CASCADE = [
+  'zxcstream', 'viduki1', 'viduki2', 'viduki3', 'vidsync_xyz', 
+  'movies111', 'vidlink', 'videasy', 'vidfast', 'cinesrc', 
+  'vidsrc_to', 'vidsrc_cc', 'vidnest'
+];
+let autoFallbackIndex = 0;
 
 /* ================================================
    TMDB API FETCHER
@@ -356,6 +348,7 @@ function renderEmbedServer(serverKey = 'viduki1') {
       allowfullscreen="true"
       webkitallowfullscreen="true"
       mozallowfullscreen="true"
+      onerror="switchToFallbackApi()"
       style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
       title="Stream Player"
     ></iframe>
@@ -396,14 +389,23 @@ function saveWatchProgress(secs) {
   }
 }
 
-function switchToFallbackApi(mediaInfo) {
-  vidukiFallbackIndex++;
-  if (vidukiFallbackIndex < VIDUKI_FALLBACK_ORDER.length) {
-    const nextServer = VIDUKI_FALLBACK_ORDER[vidukiFallbackIndex];
-    showToast(`Server busy. Auto-switching to ${SERVER_INFO.find(s => s.key === nextServer)?.name || nextServer}...`, '🔄');
-    renderEmbedServer(nextServer);
+function switchToFallbackApi() {
+  autoFallbackIndex++;
+  if (autoFallbackIndex < AUTO_FALLBACK_CASCADE.length) {
+    const nextServerKey = AUTO_FALLBACK_CASCADE[autoFallbackIndex];
+    const serverObj = SERVER_INFO.find(s => s.key === nextServerKey);
+    const serverName = serverObj ? serverObj.name : nextServerKey;
+    if (typeof showToast === 'function') {
+      showToast(`Server issue detected. Auto-shifting to ${serverName}...`, '🔄');
+    }
+    renderEmbedServer(nextServerKey);
   } else {
-    showToast('All priority server nodes busy. Please select an alternate server from the menu.', '⚠️');
+    autoFallbackIndex = 0;
+    const fallbackServer = AUTO_FALLBACK_CASCADE[0];
+    if (typeof showToast === 'function') {
+      showToast('All server nodes checked. Re-connecting to Server 1...', '⚡');
+    }
+    renderEmbedServer(fallbackServer);
   }
 }
 
@@ -1375,7 +1377,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const preferredServer = localStorage.getItem('cs_preferred_player');
-  const defaultServer = isAnimeMode ? 'anikoto_sub' : 'viduki1';
+  const defaultServer = isAnimeMode ? 'anikoto_sub' : 'zxcstream';
   const isValidPreferred = preferredServer && SERVER_URLS[preferredServer] && (isAnimeMode || !ANIME_ONLY_SERVERS.includes(preferredServer));
   const validServer = isValidPreferred ? preferredServer : defaultServer;
   renderEmbedServer(validServer);
