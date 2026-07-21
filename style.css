@@ -2725,7 +2725,7 @@ body.anime-player-mode #cinemaGlow {
    CLEAN CINEMA PLAYER LAYOUT
    ════════════════════════════════════════════════════════════ */
 .player-wrapper-container {
-  max-width: 1240px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 85px 20px 0;
   position: relative;

@@ -450,63 +450,74 @@ const ANIME_CAST_MAP = {
 
 // ─── ANIME DETAILS & TV-STYLE TRAY OVERLAY ───
 async function openAnimeDetails(m) {
+  if (!m) return;
   currentSelectedAnime = m;
 
-  // 1. Sliding detail tray overlay (#animeSeriesOverlay)
-  const overlay = document.getElementById('animeSeriesOverlay');
-  if (overlay) {
-    const bg = document.getElementById('animeTrayHeroBg');
-    if (bg) bg.src = getAnimeBackdrop(m);
+  try {
+    const overlay = document.getElementById('animeSeriesOverlay');
+    if (overlay) {
+      const bg = document.getElementById('animeTrayHeroBg');
+      if (bg) bg.src = getAnimeBackdrop(m);
 
-    const title = document.getElementById('animeTrayTitle');
-    if (title) title.textContent = m.name || m.title || 'Anime Series';
+      const title = document.getElementById('animeTrayTitle');
+      if (title) title.textContent = m.name || m.title || 'Anime Series';
 
-    const ratingBadge = document.getElementById('animeTrayRatingBadge');
-    if (ratingBadge) ratingBadge.textContent = `★ ${m.vote_average ? m.vote_average.toFixed(1) : '9.0'}`;
+      const ratingBadge = document.getElementById('animeTrayRatingBadge');
+      if (ratingBadge) ratingBadge.textContent = `★ ${m.vote_average ? m.vote_average.toFixed(1) : '9.0'}`;
 
-    const meta = document.getElementById('animeTrayMeta');
-    if (meta) {
-      const year = (m.first_air_date || m.release_date || '2026').slice(0, 4);
-      meta.textContent = `${year} • Anikoto Streaming Engine • Japanese Animation`;
-    }
+      const meta = document.getElementById('animeTrayMeta');
+      if (meta) {
+        const year = (m.first_air_date || m.release_date || '2026').slice(0, 4);
+        meta.textContent = `${year} • Anikoto Streaming Engine • Japanese Animation`;
+      }
 
-    const overview = document.getElementById('animeTrayOverview');
-    if (overview) overview.textContent = m.overview || 'Stream this high-definition Japanese anime series with multi-language servers.';
+      const overview = document.getElementById('animeTrayOverview');
+      if (overview) overview.textContent = m.overview || 'Stream this high-definition Japanese anime series with multi-language servers.';
 
-    // Seiyuu Cast Track
-    const castTrack = document.getElementById('animeTrayCastTrack');
-    if (castTrack) {
-      const castList = ANIME_CAST_MAP[m.id] || [
-        { name: 'Main Protagonist', actor: 'Mayumi Tanaka / Voice Actor' },
-        { name: 'Deuteragonist', actor: 'Kazuya Nakai / Voice Actor' },
-        { name: 'Heroine', actor: 'Akemi Okamura / Voice Actor' }
+      // Seiyuu Cast Track
+      const castTrack = document.getElementById('animeTrayCastTrack');
+      if (castTrack) {
+        const castList = (m.id && ANIME_CAST_MAP[m.id]) ? ANIME_CAST_MAP[m.id] : [
+          { name: 'Main Protagonist', actor: 'Mayumi Tanaka / Voice Actor' },
+          { name: 'Deuteragonist', actor: 'Kazuya Nakai / Voice Actor' },
+          { name: 'Heroine', actor: 'Akemi Okamura / Voice Actor' }
+        ];
+        castTrack.innerHTML = castList.map(c => `
+          <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:24px;white-space:nowrap;font-size:0.78rem;flex-shrink:0;">
+            <span style="color:var(--anime-pink);font-weight:800;">${c.name}</span> <span style="color:var(--muted);">• ${c.actor}</span>
+          </div>
+        `).join('');
+      }
+
+      // Seasons / Story Arcs Dropdown (<select id="animeSeasonSelect">)
+      const seasonSelect = document.getElementById('animeSeasonSelect');
+      const sagas = (m.id && ANIME_SAGA_MAP[m.id] && ANIME_SAGA_MAP[m.id].length) ? ANIME_SAGA_MAP[m.id] : [
+        { saga: 'Season 1: Original Arc', start: 1, end: 24 },
+        { saga: 'Season 2: Sequel Arc', start: 25, end: 48 }
       ];
-      castTrack.innerHTML = castList.map(c => `
-        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:24px;white-space:nowrap;font-size:0.78rem;flex-shrink:0;">
-          <span style="color:var(--anime-pink);font-weight:800;">${c.name}</span> <span style="color:var(--muted);">• ${c.actor}</span>
-        </div>
-      `).join('');
+
+      if (seasonSelect) {
+        seasonSelect.innerHTML = sagas.map((s, i) => `<option value="${s.start}-${s.end}">Season ${i + 1}: ${s.saga} (${s.start}-${s.end})</option>`).join('');
+      }
+
+      // Render Episode Cards Grid for first saga
+      renderAnimeTrayEpCards(sagas[0].start, sagas[0].end);
+
+      overlay.style.display = 'block';
+      overlay.style.opacity = '1';
+      overlay.style.visibility = 'visible';
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      return;
     }
-
-    // Seasons / Story Arcs Dropdown (<select id="animeSeasonSelect">)
-    const seasonSelect = document.getElementById('animeSeasonSelect');
-    const sagas = ANIME_SAGA_MAP[m.id] || [
-      { saga: 'Season 1: Original Arc', start: 1, end: 24 },
-      { saga: 'Season 2: Sequel Arc', start: 25, end: 48 }
-    ];
-
-    if (seasonSelect) {
-      seasonSelect.innerHTML = sagas.map((s, i) => `<option value="${s.start}-${s.end}">Season ${i + 1}: ${s.saga} (${s.start}-${s.end})</option>`).join('');
-    }
-
-    // Render Episode Cards Grid for first saga
-    renderAnimeTrayEpCards(sagas[0].start, sagas[0].end);
-
-    overlay.style.display = 'block';
-    overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    return;
+  } catch (e) {
+    console.warn('Overlay rendering error, falling back to player redirect:', e);
   }
+
+  // Fallback direct watch redirect if overlay unavailable or throws
+  const id = m.id || 0;
+  const title = m.name || m.title || 'Anime Series';
+  window.location.href = `watch.html?id=${id}&type=tv&season=1&episode=1&title=${encodeURIComponent(title)}&isAnime=1&audio=${currentAnimeAudio || 'sub'}`;
 }
 
 function closeAnimeSeriesOverlay() {
