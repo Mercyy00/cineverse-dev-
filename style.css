@@ -2474,3 +2474,221 @@ body.offline-active #mainApp {
   box-shadow: 0 0 15px rgba(0,0,0,0.8);
   z-index: 5;
 }
+
+/* ════════════════════════════════════════════════════════════
+   JAPANESE ANIME SYSTEM & SAKURA PARTICLES DESIGN
+   ════════════════════════════════════════════════════════════ */
+
+/* Japanese Anime Color Variables */
+:root {
+  --anime-pink: #ff75a0;
+  --anime-purple: #a855f7;
+  --anime-cyan: #00d2d3;
+  --anime-gold: #ffc53d;
+  --anime-bg-dark: #0b0813;
+  --anime-glow: rgba(255, 117, 160, 0.4);
+}
+
+/* Body & Navbar Anime Mode Overrides */
+body.anime-mode {
+  background: #0b0813 !important;
+}
+
+body.anime-mode #navbar {
+  border-bottom: 1px solid rgba(255, 117, 160, 0.3) !important;
+  box-shadow: 0 4px 25px rgba(255, 117, 160, 0.15) !important;
+}
+
+/* Sakura Floating Petals Overlay Container */
+#sakuraContainer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+body.anime-mode #sakuraContainer {
+  opacity: 1;
+}
+
+.sakura-petal {
+  position: absolute;
+  background: radial-gradient(circle, #ff75a0 0%, #ff4081 70%, transparent 100%);
+  border-radius: 15px 0 15px 0;
+  opacity: 0.7;
+  filter: drop-shadow(0 2px 8px rgba(255, 117, 160, 0.5));
+  animation: floatSakura linear infinite;
+  pointer-events: none;
+}
+
+@keyframes floatSakura {
+  0% {
+    transform: translateY(-10vh) rotate(0deg) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(110vh) rotate(360deg) translateX(80px);
+    opacity: 0;
+  }
+}
+
+/* Japanese Anime Header Banner & Aesthetics */
+.anime-header-banner {
+  position: relative;
+  border-radius: 24px;
+  padding: 32px 36px;
+  margin-bottom: 28px;
+  background: linear-gradient(135deg, rgba(255, 117, 160, 0.15) 0%, rgba(168, 85, 247, 0.15) 50%, rgba(11, 8, 19, 0.8) 100%);
+  border: 1px solid rgba(255, 117, 160, 0.35);
+  box-shadow: 0 12px 36px rgba(255, 117, 160, 0.15);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.anime-header-banner::before {
+  content: "アニメ";
+  position: absolute;
+  right: -20px;
+  bottom: -30px;
+  font-size: 9rem;
+  font-weight: 900;
+  color: rgba(255, 117, 160, 0.05);
+  letter-spacing: -5px;
+  pointer-events: none;
+  font-family: var(--font-heading);
+}
+
+.anime-banner-title {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ffffff 0%, #ff75a0 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.anime-jp-tag {
+  background: rgba(255, 117, 160, 0.2);
+  border: 1px solid var(--anime-pink);
+  color: var(--anime-pink);
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  -webkit-text-fill-color: initial;
+}
+
+/* Sub / Dub Switch Pills */
+.sub-dub-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.sub-dub-pill {
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sub-dub-pill.active {
+  background: linear-gradient(135deg, var(--anime-pink), var(--anime-purple));
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255, 117, 160, 0.4);
+}
+
+.sub-dub-pill:hover:not(.active) {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Custom Anime Card Glowing Effect */
+body.anime-mode .movie-card {
+  border-color: rgba(255, 117, 160, 0.18);
+}
+
+body.anime-mode .movie-card:hover {
+  border-color: var(--anime-pink);
+  box-shadow: 0 12px 30px rgba(255, 117, 160, 0.25);
+}
+
+/* Anime Player Glowing Backdrop (In Watch Mode) */
+body.anime-player-mode {
+  background: #090710 !important;
+}
+
+body.anime-player-mode #cinemaGlow {
+  background: radial-gradient(circle at 50% 40%, rgba(255, 117, 160, 0.35) 0%, rgba(168, 85, 247, 0.2) 40%, transparent 75%) !important;
+}
+
+/* Auto Next Episode Toast Notification */
+.auto-next-toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 10000;
+  background: rgba(15, 12, 25, 0.95);
+  border: 1px solid var(--anime-pink);
+  box-shadow: 0 10px 40px rgba(255, 117, 160, 0.35);
+  backdrop-filter: blur(20px);
+  padding: 16px 24px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--text);
+  font-family: var(--font);
+  animation: slideInToast 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInToast {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.auto-next-btn {
+  background: linear-gradient(135deg, var(--anime-pink), var(--anime-purple));
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 117, 160, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.auto-next-btn:hover {
+  transform: scale(1.05);
+}

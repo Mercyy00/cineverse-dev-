@@ -18,7 +18,14 @@ const mediaType = urlParams.get('type') === 'tv' ? 'tv' : 'movie';
 const initialTitle = decodeURIComponent(urlParams.get('title') || 'Interstellar');
 const startTime = parseInt(urlParams.get('startTime') || '0', 10) || 0;
 
-let currentServer = 'viduki1';
+// Anime & Anikoto parameters
+const isAnimeMode = urlParams.get('isAnime') === '1';
+const aniwatchEpId = urlParams.get('aniwatchEpId');
+const anilistId = urlParams.get('anilistId');
+const malId = urlParams.get('malId');
+let currentAudioLang = urlParams.get('audio') || localStorage.getItem('cs_anime_audio') || 'sub';
+
+let currentServer = isAnimeMode ? (currentAudioLang === 'dub' ? 'anikoto_dub' : 'anikoto_sub') : 'viduki1';
 let currentSeason = parseInt(urlParams.get('season') || '1', 10) || 1;
 let currentEpisode = parseInt(urlParams.get('episode') || '1', 10) || 1;
 let movieDetailsData = null;
@@ -47,9 +54,29 @@ function getAccentHexWithHash() {
 }
 
 /* ================================================
-   SERVER URL BUILDERS (All 12 Priority Servers)
+   SERVER URL BUILDERS (All Priority Servers)
 ================================================ */
 const SERVER_URLS = {
+  // ─── ANIKOTO & MEGAPLAY SERVERS (Official HiAnime API Engine) ───
+  anikoto_sub: (id, type, s, e, st, params) => {
+    const epId = params?.aniwatchEpId || id;
+    return `https://megaplay.buzz/stream/s-2/${epId}/sub`;
+  },
+  anikoto_dub: (id, type, s, e, st, params) => {
+    const epId = params?.aniwatchEpId || id;
+    return `https://megaplay.buzz/stream/s-2/${epId}/dub`;
+  },
+  megaplay_anilist: (id, type, s, e, st, params) => {
+    const aniId = params?.anilistId || id;
+    const lang = currentAudioLang || 'sub';
+    return `https://megaplay.buzz/stream/ani/${aniId}/${e}/${lang}`;
+  },
+  megaplay_mal: (id, type, s, e, st, params) => {
+    const mId = params?.malId || id;
+    const lang = currentAudioLang || 'sub';
+    return `https://megaplay.buzz/stream/mal/${mId}/${e}/${lang}`;
+  },
+
   // ─── PRIORITY 1: Viduki (4 API Tiers) ───
   viduki1: (id, type, s, e, st) => {
     const color = getAccentHexWithHash();
@@ -115,6 +142,11 @@ const SERVER_URLS = {
 
 /* Server display metadata */
 const SERVER_INFO = [
+  { key: 'anikoto_sub', name: 'Anikoto Sub (MegaPlay)', desc: 'Japanese Audio • English Subs', icon: '⛩️', gradient: 'linear-gradient(135deg,#ff75a0,#a855f7)' },
+  { key: 'anikoto_dub', name: 'Anikoto Dub (MegaPlay)', desc: 'English Dubbed Audio', icon: '🎙️', gradient: 'linear-gradient(135deg,#a855f7,#3b82f6)' },
+  { key: 'megaplay_anilist', name: 'AniList Engine (MegaPlay)', desc: 'Direct AniList Stream', icon: '🌸', gradient: 'linear-gradient(135deg,#ff4081,#ff75a0)' },
+  { key: 'megaplay_mal', name: 'MyAnimeList Engine', desc: 'Direct MAL Stream', icon: '⚡', gradient: 'linear-gradient(135deg,#00d2d3,#3b82f6)' },
+  { key: 'vidnest', name: 'VidNest Anime', desc: 'Anime • sub & dub', icon: '⛩️', gradient: 'linear-gradient(135deg,#ef4444,#dc2626)' },
   { key: 'viduki1', name: 'Viduki Multi Server', desc: 'Primary • auto-cascading servers', icon: '⚡', gradient: 'linear-gradient(135deg,#ff6b35,#e50914)' },
   { key: 'viduki2', name: 'Viduki Multi Language', desc: 'Multi-language audio support', icon: '🌐', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
   { key: 'viduki3', name: 'Viduki Multi Embeds', desc: 'Multiple embed sources', icon: '🔮', gradient: 'linear-gradient(135deg,#a855f7,#7c3aed)' },
@@ -126,7 +158,6 @@ const SERVER_INFO = [
   { key: 'mapple', name: 'Mapple HD', desc: 'HD streaming', icon: '🍁', gradient: 'linear-gradient(135deg,#f43f5e,#be123c)' },
   { key: 'vidsync', name: 'VidSync Cloud', desc: 'HLS streaming', icon: '🚀', gradient: 'linear-gradient(135deg,#3b82f6,#1d4ed8)' },
   { key: 'cinesrc', name: 'CineSrc Premium', desc: 'Theme sync • FHD', icon: '🎬', gradient: 'linear-gradient(135deg,#ffb800,#f59e0b)' },
-  { key: 'vidnest', name: 'VidNest Anime', desc: 'Anime • sub & dub', icon: '⛩️', gradient: 'linear-gradient(135deg,#ef4444,#dc2626)' },
 ];
 
 /* Viduki auto-fallback cascade order */
@@ -261,7 +292,12 @@ function renderEmbedServer(serverKey = 'viduki1') {
   if (fallbackIdx !== -1) vidukiFallbackIndex = fallbackIdx;
 
   const builder = SERVER_URLS[serverKey] || SERVER_URLS.viduki1;
-  const embedUrl = builder(movieId, mediaType, currentSeason, currentEpisode, watchedSeconds);
+  const embedUrl = builder(movieId, mediaType, currentSeason, currentEpisode, watchedSeconds, {
+    aniwatchEpId,
+    anilistId,
+    malId,
+    audio: currentAudioLang
+  });
 
   wrapper.innerHTML = `
     <iframe
@@ -1146,6 +1182,112 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* ================================================
+   ANIME AUDIO TOGGLE & SAKURA ENGINE
+================================================ */
+function togglePlayerAudio(lang) {
+  currentAudioLang = lang;
+  localStorage.setItem('cs_anime_audio', lang);
+  const subBtn = $('playerSubBtn');
+  const dubBtn = $('playerDubBtn');
+  if (subBtn) subBtn.classList.toggle('active', lang === 'sub');
+  if (dubBtn) dubBtn.classList.toggle('active', lang === 'dub');
+
+  if (currentServer === 'anikoto_sub' || currentServer === 'anikoto_dub') {
+    renderEmbedServer(lang === 'sub' ? 'anikoto_sub' : 'anikoto_dub');
+  } else {
+    renderEmbedServer(currentServer);
+  }
+  showToast(`Player Audio switched to ${lang === 'sub' ? '🇯🇵 Japanese Sub' : '🎙️ English Dub'}`, '⛩️');
+}
+
+function initPlayerSakuraPetals() {
+  const container = $('sakuraPlayerContainer');
+  if (!container || container.children.length > 0) return;
+  for (let i = 0; i < 20; i++) {
+    const petal = document.createElement('div');
+    petal.className = 'sakura-petal';
+    const size = Math.random() * 10 + 6;
+    petal.style.width = `${size}px`;
+    petal.style.height = `${size * 1.3}px`;
+    petal.style.left = `${Math.random() * 100}%`;
+    petal.style.animationDuration = `${Math.random() * 8 + 6}s`;
+    petal.style.animationDelay = `${Math.random() * 5}s`;
+    container.appendChild(petal);
+  }
+}
+
+/* ================================================
+   MEGAPLAY & ANIKOTO PLAYER EVENT LISTENER
+================================================ */
+window.addEventListener("message", function (event) {
+  let data = event.data;
+  if (!data) return;
+
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data);
+    } catch (e) {
+      return;
+    }
+  }
+
+  // Monitor MegaPlay / megacloud playback progress & events
+  if (data.channel === "megacloud" || data.type === "watching-log" || data.event) {
+    if (data.currentTime || data.time) {
+      const current = data.currentTime || data.time;
+      watchedSeconds = Math.floor(current);
+      saveWatchProgress(watchedSeconds);
+    }
+
+    if (data.event === "complete") {
+      showAutoNextCountdown();
+    }
+  }
+});
+
+let autoNextCountdownTimer = null;
+function showAutoNextCountdown() {
+  if ($('autoNextToast')) return;
+  const toast = document.createElement('div');
+  toast.id = 'autoNextToast';
+  toast.className = 'auto-next-toast';
+  let secondsLeft = 5;
+
+  toast.innerHTML = `
+    <div>
+      <div style="font-weight:800;font-size:0.92rem;color:var(--anime-pink);">Episode Complete! 🍿</div>
+      <div style="font-size:0.78rem;color:var(--muted);" id="autoNextTxt">Next episode starts in 5s...</div>
+    </div>
+    <button class="auto-next-btn" onclick="playNextEpisodeImmediately()">Play Next Now ▶</button>
+  `;
+  document.body.appendChild(toast);
+
+  autoNextCountdownTimer = setInterval(() => {
+    secondsLeft--;
+    const txt = $('autoNextTxt');
+    if (txt) txt.textContent = `Next episode starts in ${secondsLeft}s...`;
+
+    if (secondsLeft <= 0) {
+      clearInterval(autoNextCountdownTimer);
+      playNextEpisodeImmediately();
+    }
+  }, 1000);
+}
+
+function playNextEpisodeImmediately() {
+  clearInterval(autoNextCountdownTimer);
+  const toast = $('autoNextToast');
+  if (toast) toast.remove();
+  
+  if (typeof goToNextEpisode === 'function') {
+    goToNextEpisode();
+  } else {
+    currentEpisode++;
+    renderEmbedServer(currentServer);
+  }
+}
+
+/* ================================================
    APPLICATION DOM INITIALIZER
 ================================================ */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1156,7 +1298,21 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSidebarServers();
   loadContentDetails();
 
-  const preferredServer = localStorage.getItem('cs_preferred_player') || 'viduki1';
-  const validServer = SERVER_URLS[preferredServer] ? preferredServer : 'viduki1';
+  // Check Anime Mode
+  if (isAnimeMode) {
+    document.body.classList.add('anime-player-mode');
+    const subDubGrp = $('playerSubDubGroup');
+    const badge = $('animePlayerBadge');
+    if (subDubGrp) subDubGrp.style.display = 'flex';
+    if (badge) badge.style.display = 'inline-block';
+    const subBtn = $('playerSubBtn');
+    const dubBtn = $('playerDubBtn');
+    if (subBtn) subBtn.classList.toggle('active', currentAudioLang === 'sub');
+    if (dubBtn) dubBtn.classList.toggle('active', currentAudioLang === 'dub');
+    initPlayerSakuraPetals();
+  }
+
+  const preferredServer = localStorage.getItem('cs_preferred_player') || (isAnimeMode ? 'anikoto_sub' : 'viduki1');
+  const validServer = SERVER_URLS[preferredServer] ? preferredServer : (isAnimeMode ? 'anikoto_sub' : 'viduki1');
   renderEmbedServer(validServer);
 });

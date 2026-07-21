@@ -498,11 +498,104 @@ function updateTicker() {
   t1.innerHTML = items + items;
 }
 
+// ---- JAPANESE ANIME & ANIKOTO API ENGINE ----
+const ANIKOTO_BASE = 'https://anikotoapi.site';
+let globalAnimeAudio = localStorage.getItem('cs_anime_audio') || 'sub';
+let anikotoRecentCache = [];
+
+function setGlobalAnimeAudio(lang) {
+  globalAnimeAudio = lang;
+  localStorage.setItem('cs_anime_audio', lang);
+  const subBtn = document.getElementById('subBtn');
+  const dubBtn = document.getElementById('dubBtn');
+  if (subBtn) subBtn.classList.toggle('active', lang === 'sub');
+  if (dubBtn) dubBtn.classList.toggle('active', lang === 'dub');
+  showToast(`Anime Audio set to ${lang === 'sub' ? '🇯🇵 Japanese Sub' : '🎙️ English Dub'}`, '⛩️');
+}
+
+function initSakuraPetals() {
+  const container = document.getElementById('sakuraContainer');
+  if (!container || container.children.length > 0) return;
+  
+  for (let i = 0; i < 25; i++) {
+    const petal = document.createElement('div');
+    petal.className = 'sakura-petal';
+    const size = Math.random() * 12 + 8;
+    petal.style.width = `${size}px`;
+    petal.style.height = `${size * 1.3}px`;
+    petal.style.left = `${Math.random() * 100}%`;
+    petal.style.animationDuration = `${Math.random() * 8 + 6}s`;
+    petal.style.animationDelay = `${Math.random() * 5}s`;
+    container.appendChild(petal);
+  }
+}
+
+function activateAnimeThemeMode(active) {
+  document.body.classList.toggle('anime-mode', active);
+  if (active) {
+    initSakuraPetals();
+  }
+}
+
+async function fetchAnikotoRecentAnime() {
+  try {
+    const res = await fetch(`${ANIKOTO_BASE}/recent-anime?page=1&per_page=20`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data.data || data.anime || data.results || (Array.isArray(data) ? data : []);
+  } catch (e) {
+    console.warn('Anikoto Recent API offline, utilizing TMDB Anime archive:', e);
+    return [];
+  }
+}
+
+async function fetchAnikotoSeries(seriesId) {
+  try {
+    const res = await fetch(`${ANIKOTO_BASE}/series/${seriesId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.warn(`Anikoto Series ${seriesId} fetch failed:`, e);
+    return null;
+  }
+}
+
+function filterAnimeGenre(genre, btnEl) {
+  if (btnEl) {
+    const parent = btnEl.parentElement;
+    if (parent) parent.querySelectorAll('.genre-chip').forEach(c => c.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+
+  showToast(`Filtering Anime by ${genre.toUpperCase()}...`, '⛩️');
+  const track = document.getElementById('animeTrack');
+  if (!track) return;
+
+  api('/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc')
+    .then(d => {
+      let items = d.results || [];
+      if (genre === 'shonen') items = items.filter(m => (m.overview||'').toLowerCase().includes('fight') || (m.overview||'').toLowerCase().includes('battle') || m.vote_average > 7.8);
+      else if (genre === 'isekai') items = items.filter(m => (m.overview||'').toLowerCase().includes('world') || (m.overview||'').toLowerCase().includes('reincarnat'));
+      else if (genre === 'action') items = items.filter(m => (m.overview||'').toLowerCase().includes('action') || (m.genre_ids||[]).includes(28));
+      else if (genre === 'fantasy') items = items.filter(m => (m.overview||'').toLowerCase().includes('magic') || (m.genre_ids||[]).includes(14));
+      else if (genre === 'romance') items = items.filter(m => (m.overview||'').toLowerCase().includes('love') || (m.genre_ids||[]).includes(10749));
+
+      renderSlider('animeTrack', items.slice(0, 20), 'card', 'SUB | DUB', 'Anime');
+    });
+}
+
 // ---- SLIDERS ----
 async function loadSliders() {
   const sliders = [
     {track:'top10Track', fetch:()=>api('/trending/movie/week'), key:'results', type:'top10'},
-    {track:'animeTrack', fetch:()=>api('/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc'), key:'results', type:'card', badge:'SUB | DUB', seeAll:'Anime'},
+    {track:'animeTrack', fetch:async () => {
+      const tmdbData = await api('/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc');
+      const anikotoList = await fetchAnikotoRecentAnime();
+      if (anikotoList && anikotoList.length > 0) {
+        anikotoRecentCache = anikotoList;
+      }
+      return tmdbData;
+    }, key:'results', type:'card', badge:'SUB | DUB', seeAll:'Anime'},
     {track:'kdramaTrack', fetch:()=>api('/discover/tv?with_original_language=ko&sort_by=popularity.desc'), key:'results', type:'card', badge:'SUB | DUB', seeAll:'K-Drama'},
     {track:'hollywoodTrack', fetch:()=>api('/discover/movie?with_original_language=en&sort_by=popularity.desc'), key:'results', type:'card', seeAll:'Hollywood'},
     {track:'bollywoodTrack', fetch:()=>api('/discover/movie?with_original_language=hi&sort_by=popularity.desc'), key:'results', type:'card', seeAll:'Bollywood'},
@@ -952,6 +1045,7 @@ function watchMovie(m) {
 function openPlayer(item, isTV, season=1, episode=1) {
   const id = item.id || item;
   const title = item.title || item.name || (isTV ? 'TV Series' : 'Movie');
+  const isAnime = item.media_type === 'anime' || (item.genre_ids && item.genre_ids.includes(16)) || (item.original_language === 'ja');
 
   // Check saved progress for startTime
   let startTimeParam = '';
@@ -962,8 +1056,14 @@ function openPlayer(item, isTV, season=1, episode=1) {
     }
   }
 
+  const audioParam = `&audio=${globalAnimeAudio}`;
+  const isAnimeParam = isAnime ? `&isAnime=1` : ``;
+  const aniwatchEpIdParam = item.aniwatchEpId ? `&aniwatchEpId=${item.aniwatchEpId}` : ``;
+  const malIdParam = item.mal_id ? `&malId=${item.mal_id}` : ``;
+  const anilistIdParam = item.anilist_id ? `&anilistId=${item.anilist_id}` : ``;
+
   // Redirect to standalone watch.html
-  window.location.href = `watch.html?id=${id}&type=${isTV ? 'tv' : 'movie'}&season=${season}&episode=${episode}&title=${encodeURIComponent(title)}${startTimeParam}`;
+  window.location.href = `watch.html?id=${id}&type=${isTV ? 'tv' : 'movie'}&season=${season}&episode=${episode}&title=${encodeURIComponent(title)}${startTimeParam}${audioParam}${isAnimeParam}${aniwatchEpIdParam}${malIdParam}${anilistIdParam}`;
 }
 
 function watchViaEmbed(embedUrl, title, isTV) {
@@ -1740,6 +1840,12 @@ function scrollToSection(id, tabName) {
   document.querySelectorAll('.nav-tab,.mobile-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => { if(t.textContent.trim()===tabName) t.classList.add('active'); });
   document.querySelectorAll('.mobile-tab').forEach(t => { if(t.textContent.trim()===tabName) t.classList.add('active'); });
+  
+  if (id === 'animeSection' || tabName === 'Anime') {
+    activateAnimeThemeMode(true);
+  } else if (id === 'hero' || id === 'hollywoodSection' || id === 'bollywoodSection') {
+    activateAnimeThemeMode(false);
+  }
 }
 
 function setupScrollEvents() {

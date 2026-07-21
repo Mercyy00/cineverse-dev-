@@ -982,6 +982,9 @@
   <!-- Theater Lights Backdrop Overlay -->
   <div id="theaterOverlay"></div>
 
+  <!-- JAPANESE ANIME FLOATING PETALS CONTAINER -->
+  <div id="sakuraPlayerContainer"></div>
+
   <!-- Top Navigation Bar -->
   <div class="watch-topbar" id="watchTopbar">
     <a href="index.html" class="back-btn">← Back to Browse</a>
@@ -989,9 +992,20 @@
     <div class="watch-title-wrap">
       <div class="watch-title" id="watchTitleBar">Loading stream…</div>
       <span class="quality-badge">4K ULTRA HD</span>
+      <span class="anime-jp-tag" id="animePlayerBadge" style="display:none;">Anikoto MegaPlay</span>
     </div>
 
     <div class="watch-topbar-actions">
+      <!-- Anime Sub/Dub Switcher (Visible when watching Anime) -->
+      <div class="sub-dub-toggle-group" id="playerSubDubGroup" style="display:none;margin-right:8px;">
+        <button class="sub-dub-pill active" id="playerSubBtn" onclick="togglePlayerAudio('sub')">
+          🇯🇵 SUB
+        </button>
+        <button class="sub-dub-pill" id="playerDubBtn" onclick="togglePlayerAudio('dub')">
+          🎙️ DUB
+        </button>
+      </div>
+
       <!-- Theater Mode Toggle -->
       <button class="icon-action-btn" id="theaterToggleBtn" onclick="toggleTheaterMode()" title="Toggle Theater Mode (Press T)">
         💡 <span class="action-txt">Theater</span>
