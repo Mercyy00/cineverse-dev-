@@ -153,19 +153,39 @@
         </div>
       </section>
 
-      <!-- LIVE ANIME CATALOG GRID -->
+      <!-- ANIKOTO OFFICIAL BOOKMARK REMINDER BANNER -->
+      <div class="anikoto-bookmark-alert" style="margin-top:20px;border-radius:12px;border:1px solid rgba(255,117,160,0.35);background:linear-gradient(135deg,rgba(255,117,160,0.15) 0%,rgba(15,20,35,0.95) 100%);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:1.3rem;">🔖</span>
+          <div style="font-size:0.9rem;color:var(--text);line-height:1.4;">
+            <strong style="color:var(--anime-pink);">Anikoto Stream Active:</strong> Please bookmark <a href="https://anikoto.site" target="_blank" style="color:var(--anime-cyan);font-weight:700;text-decoration:underline;">anikoto.site</a> to stay updated with our domains & daily episode releases!
+          </div>
+        </div>
+        <button onclick="this.parentElement.remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-weight:800;">✕</button>
+      </div>
+
+      <!-- LIVE ANIME CATALOG GRID & LATEST EPISODE TABS -->
       <section class="section" id="catalogSection" style="margin-top:40px;">
         <div class="section-header" style="flex-wrap:wrap;gap:16px;">
           <div>
             <div class="section-title" style="font-size:1.4rem;">
-              🌸 Anikoto Live Anime Catalog
+              🌸 Anikoto Latest Episodes & Catalog
             </div>
             <div style="font-size:0.82rem;color:var(--muted);margin-top:4px;">
-              Real-time streams synced from Anikoto API & HiAnime Database
+              Real-time anime streams synced from Anikoto API & MegaPlay CDN Engine
             </div>
           </div>
 
-          <div style="display:flex;gap:12px;align-items:center;">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <!-- ANIKOTO STYLE FILTER TABS -->
+            <div style="display:flex;gap:6px;background:rgba(255,255,255,0.06);padding:4px;border-radius:30px;border:1px solid rgba(255,255,255,0.08);" id="anikotoFilterTabs">
+              <button class="genre-chip active" style="padding:6px 14px;font-size:0.78rem;" onclick="filterAnikotoTab('all', this)">All</button>
+              <button class="genre-chip" style="padding:6px 14px;font-size:0.78rem;" onclick="filterAnikotoTab('sub', this)">🇯🇵 Sub</button>
+              <button class="genre-chip" style="padding:6px 14px;font-size:0.78rem;" onclick="filterAnikotoTab('dub', this)">🎙️ Dub</button>
+              <button class="genre-chip" style="padding:6px 14px;font-size:0.78rem;" onclick="filterAnikotoTab('trending', this)">🔥 Trending</button>
+              <button class="genre-chip" style="padding:6px 14px;font-size:0.78rem;" onclick="filterAnikotoTab('random', this)">🎲 Random</button>
+            </div>
+
             <select id="animeSortSelect" onchange="sortAnimeCatalog(this.value)" class="auth-input" style="width:auto;padding:8px 16px;margin:0;font-size:0.82rem;">
               <option value="popularity">🔥 Most Popular</option>
               <option value="rating">★ Highest Rated</option>

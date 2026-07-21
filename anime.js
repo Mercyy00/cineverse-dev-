@@ -573,3 +573,23 @@ function playAnimeTrayEpisode(epNum) {
 
   window.location.href = `watch.html?id=${id}&type=tv&season=1&episode=${epNum}&title=${encodeURIComponent(title)}&isAnime=1&audio=${currentAnimeAudio}`;
 }
+
+// ─── ANIKOTO TABS FILTER ───
+function filterAnikotoTab(tab, btnEl) {
+  if (btnEl) {
+    document.querySelectorAll('#anikotoFilterTabs .genre-chip').forEach(c => c.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+
+  if (tab === 'sub') setAnimeAudio('sub');
+  else if (tab === 'dub') setAnimeAudio('dub');
+  else if (tab === 'random') {
+    const list = CURATED_ANIME_FALLBACK;
+    const randomAnime = list[Math.floor(Math.random() * list.length)];
+    openAnimeDetails(randomAnime);
+  } else if (tab === 'trending') {
+    sortAnimeCatalog('popularity');
+  } else {
+    loadAnimeCatalogGrid(1);
+  }
+}
