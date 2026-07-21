@@ -1717,22 +1717,27 @@ async function renderTasteResults() {
     }
 
     container.innerHTML = '';
-    const topMatches = movies.slice(0, 3);
-    const matchScores = [98, 95, 92];
+    const topMatches = movies.slice(0, 4);
+    const matchScores = [98, 95, 92, 89];
 
     topMatches.forEach((m, idx) => {
       const card = document.createElement('div');
       card.className = 'search-result-item';
       card.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:12px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform 0.3s;';
+      
+      const cleanTitle = sanitizeHTML(m.title || m.name || 'Movie');
+      const cleanOverview = sanitizeHTML(m.overview || 'Stream this movie in HD on CineVerse.');
+      const posterUrl = m.poster_path ? `${IMG}w185${m.poster_path}` : 'https://images.pexels.com/photos/1790556/pexels-photo-1790556.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=300&w=200';
+
       card.innerHTML = `
-        <img src="${m.poster_path ? IMG + 'w185' + m.poster_path : ''}" style="width:50px;height:75px;border-radius:8px;object-fit:cover;" onerror="this.style.background='var(--card2)'"/>
+        <img src="${posterUrl}" style="width:50px;height:75px;border-radius:8px;object-fit:cover;" onerror="this.src='https://images.pexels.com/photos/1790556/pexels-photo-1790556.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=300&w=200'"/>
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-weight:800;font-size:0.9rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.title || m.name}</div>
-            <span style="background:var(--accent);color:#fff;font-size:0.65rem;font-weight:800;padding:2px 6px;border-radius:4px;">${matchScores[idx]}% Match</span>
+            <div style="font-weight:800;font-size:0.9rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${cleanTitle}</div>
+            <span style="background:var(--accent);color:#fff;font-size:0.65rem;font-weight:800;padding:2px 6px;border-radius:4px;">${matchScores[idx] || 90}% Match</span>
           </div>
           <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">⭐ ${m.vote_average ? m.vote_average.toFixed(1) : '8.5'} • ${(m.release_date || '2026').slice(0,4)}</div>
-          <div style="font-size:0.72rem;color:var(--text);opacity:0.8;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${m.overview || ''}</div>
+          <div style="font-size:0.72rem;color:var(--text);opacity:0.8;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${cleanOverview}</div>
         </div>
         <button onclick="event.stopPropagation();closeTasteFinderModal();watchMovie('${m.id}','movie','${encodeURIComponent(m.title||m.name)}')" style="background:var(--accent);color:#fff;border:none;border-radius:50px;padding:8px 16px;font-weight:800;font-size:0.75rem;cursor:pointer;flex-shrink:0;">Watch</button>
       `;
