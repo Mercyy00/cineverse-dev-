@@ -97,6 +97,7 @@ window.onload = async function() {
       setupKeyboard();
       renderProfiles();
       updateNavProfile();
+      initTasteDeckCard();
     }
   }
 };
