@@ -27,7 +27,6 @@ body{
   -moz-user-select:none !important;
   -ms-user-select:none !important;
   -webkit-touch-callout:none !important;
-  transform:translateZ(0);
 }
 
 /* SCROLLBAR — Premium thin */
