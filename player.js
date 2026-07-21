@@ -97,7 +97,7 @@ const SERVER_URLS = {
       return `https://megaplay.buzz/stream/mal/${resolved.malId}/${e}/sub`;
     }
     const epId = params?.aniwatchEpId || id;
-    return `https://megaplay.buzz/stream/s-2/${epId}/sub`;
+    return `https://vidnest.fun/anime/${epId}/${e || 1}/sub`;
   },
   anikoto_dub: (id, type, s, e, st, params) => {
     const resolved = getResolvedAnimeInfo(id, initialTitle);
@@ -105,13 +105,13 @@ const SERVER_URLS = {
       return `https://megaplay.buzz/stream/mal/${resolved.malId}/${e}/dub`;
     }
     const epId = params?.aniwatchEpId || id;
-    return `https://megaplay.buzz/stream/s-2/${epId}/dub`;
+    return `https://vidnest.fun/anime/${epId}/${e || 1}/dub`;
   },
   megaplay_anilist: (id, type, s, e, st, params) => {
     const resolved = getResolvedAnimeInfo(id, initialTitle);
     const aniId = resolved?.anilistId || params?.anilistId || id;
     const lang = currentAudioLang || 'sub';
-    return `https://megaplay.buzz/stream/ani/${aniId}/${e}/${lang}`;
+    return `https://vidnest.fun/anime/${aniId}/${e || 1}/${lang}`;
   },
   megaplay_mal: (id, type, s, e, st, params) => {
     const resolved = getResolvedAnimeInfo(id, initialTitle);

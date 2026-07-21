@@ -616,7 +616,14 @@ function playAnimeTrayEpisode(epNum) {
   const id = currentSelectedAnime.id || 0;
   const title = currentSelectedAnime.name || currentSelectedAnime.title || 'Anime Series';
 
-  window.location.href = `watch.html?id=${id}&type=tv&season=1&episode=${epNum}&title=${encodeURIComponent(title)}&isAnime=1&audio=${currentAnimeAudio}`;
+  // Calculate season number from active seasonSelect value if present
+  let seasonNum = 1;
+  const seasonSelect = document.getElementById('animeSeasonSelect');
+  if (seasonSelect && seasonSelect.selectedIndex >= 0) {
+    seasonNum = seasonSelect.selectedIndex + 1;
+  }
+
+  window.location.href = `watch.html?id=${id}&type=tv&season=${seasonNum}&episode=${epNum}&title=${encodeURIComponent(title)}&isAnime=1&audio=${currentAnimeAudio || 'sub'}`;
 }
 
 // ─── ANIKOTO TABS FILTER ───
