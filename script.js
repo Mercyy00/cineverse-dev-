@@ -84,15 +84,20 @@ window.onload = async function() {
     renderProfiles();
     updateNavProfile();
   } else {
-    await loadGenres();
-    await Promise.all([loadHero(), loadPopular()]);
-    loadSliders();
-    renderGenreChips();
-    setRandomQuote();
-    setupScrollEvents();
-    setupKeyboard();
-    renderProfiles();
-    updateNavProfile();
+    try {
+      await loadGenres();
+      await Promise.allSettled([loadHero(), loadPopular()]);
+      loadSliders();
+    } catch (e) {
+      console.warn('Initial data load warning:', e);
+    } finally {
+      renderGenreChips();
+      setRandomQuote();
+      setupScrollEvents();
+      setupKeyboard();
+      renderProfiles();
+      updateNavProfile();
+    }
   }
 };
 
@@ -597,25 +602,23 @@ function filterAnimeGenre(genre, btnEl) {
 async function loadSliders() {
   const sliders = [
     {track:'top10Track', fetch:()=>api('/trending/movie/week'), key:'results', type:'top10'},
-    {track:'animeTrack', fetch:async () => {
-      const tmdbData = await api('/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc');
-      const anikotoList = await fetchAnikotoRecentAnime();
-      if (anikotoList && anikotoList.length > 0) {
-        anikotoRecentCache = anikotoList;
-      }
-      return tmdbData;
-    }, key:'results', type:'card', badge:'SUB | DUB', seeAll:'Anime'},
+    {track:'animeTrack', fetch:()=>api('/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc'), key:'results', type:'card', badge:'SUB | DUB', seeAll:'Anime'},
     {track:'kdramaTrack', fetch:()=>api('/discover/tv?with_original_language=ko&sort_by=popularity.desc'), key:'results', type:'card', badge:'SUB | DUB', seeAll:'K-Drama'},
     {track:'hollywoodTrack', fetch:()=>api('/discover/movie?with_original_language=en&sort_by=popularity.desc'), key:'results', type:'card', seeAll:'Hollywood'},
     {track:'bollywoodTrack', fetch:()=>api('/discover/movie?with_original_language=hi&sort_by=popularity.desc'), key:'results', type:'card', seeAll:'Bollywood'},
     {track:'tvTrack', fetch:()=>api('/tv/popular'), key:'results', type:'card', seeAll:'TV Shows'},
   ];
-  for(const s of sliders) {
+
+  sliders.forEach(async (s) => {
     try {
       const d = await s.fetch();
-      renderSlider(s.track, d[s.key]?.slice(0,s.type==='top10'?10:20)||[], s.type, s.badge, s.seeAll);
-    } catch(e) { console.error(e); }
-  }
+      if (d && d[s.key]) {
+        renderSlider(s.track, d[s.key].slice(0, s.type === 'top10' ? 10 : 20), s.type, s.badge, s.seeAll);
+      }
+    } catch (e) {
+      console.warn(`Failed to load slider track ${s.track}:`, e);
+    }
+  });
 }
 
 function renderSlider(trackId, items, type, badge, seeAll) {
