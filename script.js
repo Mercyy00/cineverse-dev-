@@ -666,7 +666,8 @@ function createMovieCard(m, badge) {
     <div class="card-title">${m.title || m.name || 'Unknown'}</div>
     <div class="card-meta">${(m.release_date||m.first_air_date||'').slice(0,4)} • ${isAnime ? 'Anime' : (isTV ? 'TV Series' : 'Movie')}</div>
   </div>`;
-  div.onclick = () => {
+  div.onclick = (e) => {
+    e.stopPropagation();
     if (isAnime && typeof openAnimeDetails === 'function') {
       openAnimeDetails(m);
     } else if (isTV) {

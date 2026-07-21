@@ -128,7 +128,8 @@ function createSearchResultCard(m) {
     </div>
   `;
 
-  div.onclick = () => {
+  div.onclick = (e) => {
+    e.stopPropagation();
     if (isAnime) {
       if (typeof openAnimeDetails === 'function') {
         openAnimeDetails(m);

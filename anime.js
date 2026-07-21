@@ -288,7 +288,10 @@ function createAnimeCard(m) {
     </div>
   `;
 
-  div.onclick = () => openAnimeDetails(m);
+  div.onclick = (e) => {
+    e.stopPropagation();
+    openAnimeDetails(m);
+  };
   return div;
 }
 
@@ -513,6 +516,12 @@ function closeAnimeSeriesOverlay() {
     overlay.style.display = 'none';
   }
   document.body.style.overflow = '';
+}
+
+function closeAnimeSeriesOverlayIfBackdrop(e) {
+  if (e.target === document.getElementById('animeSeriesOverlay')) {
+    closeAnimeSeriesOverlay();
+  }
 }
 
 function changeAnimeTraySeason(val) {

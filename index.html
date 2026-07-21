@@ -624,7 +624,7 @@
 </div>
 
 <!-- ANIME SERIES OVERLAY (Matches TV Series Tray Layout & Mechanics) -->
-<div id="animeSeriesOverlay" class="tv-series-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:var(--bg);overflow-y:auto;">
+<div id="animeSeriesOverlay" class="tv-series-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:var(--bg);overflow-y:auto;" onclick="closeAnimeSeriesOverlayIfBackdrop(event)">
   <button class="tv-back-btn" onclick="closeAnimeSeriesOverlay()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15,18 9,12 15,6"/></svg>
     Back to Anime Browse
