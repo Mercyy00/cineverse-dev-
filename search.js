@@ -130,11 +130,15 @@ function createSearchResultCard(m) {
 
   div.onclick = () => {
     if (isAnime) {
-      window.location.href = `watch.html?id=${m.id}&type=tv&season=1&episode=1&title=${encodeURIComponent(title)}&isAnime=1`;
+      if (typeof openAnimeDetails === 'function') {
+        openAnimeDetails(m);
+      } else {
+        window.location.href = `watch.html?id=${m.id}&type=tv&season=1&episode=1&title=${encodeURIComponent(title)}&isAnime=1`;
+      }
     } else if (isTV) {
-      openTVSeries(m);
+      if (typeof openTVSeries === 'function') openTVSeries(m);
     } else {
-      openMovieTray(m);
+      if (typeof openMovieTray === 'function') openMovieTray(m);
     }
   };
   return div;

@@ -535,7 +535,12 @@ function renderSidebarServers() {
   if (!grid) return;
   grid.innerHTML = '';
 
-  SERVER_INFO.forEach(server => {
+  const animeServerKeys = ['anikoto_sub', 'anikoto_dub', 'megaplay_anilist', 'megaplay_mal', 'vidnest', 'zxcstream', 'cinesrc'];
+  const serversToDisplay = isAnimeMode
+    ? SERVER_INFO.filter(s => animeServerKeys.includes(s.key))
+    : SERVER_INFO;
+
+  serversToDisplay.forEach(server => {
     const btn = document.createElement('div');
     btn.className = `sidebar-server-btn ${server.key === currentServer ? 'active' : ''}`;
     btn.dataset.server = server.key;
@@ -548,11 +553,11 @@ function renderSidebarServers() {
       <div class="sidebar-server-status"></div>
     `;
     btn.onclick = () => {
-      currentServer = server.key;
-      vidukiFallbackIndex = VIDUKI_FALLBACK_ORDER.indexOf(server.key);
-      if (vidukiFallbackIndex === -1) vidukiFallbackIndex = VIDUKI_FALLBACK_ORDER.length;
       renderEmbedServer(server.key);
-      updateSidebarServerHighlight(server.key);
+      closePlayerSidebar();
+      if (typeof showToast === 'function') {
+        showToast(`Connected to server node ${server.name}`, '⚡');
+      }
     };
     grid.appendChild(btn);
   });

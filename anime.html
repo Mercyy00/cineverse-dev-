@@ -190,18 +190,29 @@
 
   <!-- ANIME SERIES EPISODE MODAL -->
   <div id="animeModal" class="modal-backdrop" onclick="closeAnimeModalIfBackdrop(event)">
-    <div class="taste-box" style="width:780px;max-width:94vw;position:relative;">
-      <button onclick="closeAnimeModal()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:800;">✕</button>
+    <div class="taste-box" style="width:820px;max-width:94vw;position:relative;max-height:90vh;overflow-y:auto;">
+      <button onclick="closeAnimeModal()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-weight:800;z-index:10;">✕</button>
 
-      <div style="display:flex;gap:24px;margin-bottom:24px;" id="animeModalHeader">
-        <img id="animeModalPoster" src="" alt="" style="width:130px;height:195px;border-radius:16px;object-fit:cover;box-shadow:0 8px 25px rgba(0,0,0,0.6);"/>
-        <div>
-          <div id="animeModalTitle" style="font-family:var(--font-heading);font-size:1.6rem;font-weight:900;color:var(--text);margin-bottom:8px;">Anime Title</div>
-          <div id="animeModalMeta" style="font-size:0.85rem;color:var(--muted);margin-bottom:12px;">2026 • 24 Episodes • Rating: ★ 9.0</div>
-          <div id="animeModalOverview" style="font-size:0.85rem;color:var(--text);line-height:1.5;max-height:90px;overflow-y:auto;">Anime overview goes here...</div>
+      <div style="display:flex;gap:24px;margin-bottom:20px;" id="animeModalHeader">
+        <img id="animeModalPoster" src="" alt="" style="width:140px;height:210px;border-radius:16px;object-fit:cover;box-shadow:0 8px 25px rgba(0,0,0,0.6);flex-shrink:0;"/>
+        <div style="flex:1;min-width:0;">
+          <div id="animeModalTitle" style="font-family:var(--font-heading);font-size:1.7rem;font-weight:900;color:var(--text);margin-bottom:6px;">Anime Title</div>
+          <div id="animeModalMeta" style="font-size:0.85rem;color:var(--anime-pink);font-weight:700;margin-bottom:10px;">2026 • Rating: ★ 9.0 • Anikoto Stream</div>
+          <div id="animeModalOverview" style="font-size:0.85rem;color:var(--text);line-height:1.6;max-height:80px;overflow-y:auto;margin-bottom:12px;opacity:0.9;">Anime overview goes here...</div>
+
+          <!-- Japanese Voice Cast (Seiyuu) -->
+          <div style="font-size:0.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">🎙️ Voice Cast (Seiyuu)</div>
+          <div id="animeModalCast" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"></div>
         </div>
       </div>
 
+      <!-- Season / Arc Selector Chips -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⛩️ Select Story Arc / Season</div>
+        <div id="animeArcChips" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      </div>
+
+      <!-- Sub / Dub & Episode Grid Header -->
       <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;margin-bottom:16px;">
         <div style="font-family:var(--font-heading);font-weight:800;font-size:1.05rem;">Select Episode to Watch</div>
         <div class="sub-dub-toggle-group">
@@ -210,7 +221,7 @@
         </div>
       </div>
 
-      <div id="animeEpisodesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:8px;max-height:260px;overflow-y:auto;padding-right:6px;"></div>
+      <div id="animeEpisodesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:8px;max-height:240px;overflow-y:auto;padding-right:6px;"></div>
     </div>
   </div>
 

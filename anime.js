@@ -403,6 +403,48 @@ function handleAnimeSearch(query) {
   }, 250);
 }
 
+// ─── OFFICIAL ANIME SAGAS & SEIYUU DICTIONARY ───
+const ANIME_SAGA_MAP = {
+  37854: [
+    { saga: 'East Blue & Alabasta', start: 1, end: 130 },
+    { saga: 'Skypiea & Water 7', start: 131, end: 336 },
+    { saga: 'Marineford & Fishman', start: 337, end: 574 },
+    { saga: 'Dressrosa & Whole Cake', start: 575, end: 891 },
+    { saga: 'Wano Country Arc', start: 892, end: 1085 },
+    { saga: 'Egghead Arc', start: 1086, end: 1120 }
+  ],
+  95557: [
+    { saga: 'S1: Unwavering Resolve', start: 1, end: 26 },
+    { saga: 'S2: Mugen Train & District', start: 27, end: 44 },
+    { saga: 'S3: Swordsmith Village', start: 45, end: 55 },
+    { saga: 'S4: Hashira Training', start: 56, end: 65 }
+  ],
+  1429: [
+    { saga: 'Season 1', start: 1, end: 25 },
+    { saga: 'Season 2', start: 26, end: 37 },
+    { saga: 'Season 3', start: 38, end: 59 },
+    { saga: 'Final Season', start: 60, end: 89 }
+  ],
+  114411: [
+    { saga: 'Season 1: Cursed Womb', start: 1, end: 24 },
+    { saga: 'Season 2: Shibuya Incident', start: 25, end: 47 }
+  ]
+};
+
+const ANIME_CAST_MAP = {
+  37854: [
+    { name: 'Monkey D. Luffy', actor: 'Mayumi Tanaka (Voice)' },
+    { name: 'Roronoa Zoro', actor: 'Kazuya Nakai (Voice)' },
+    { name: 'Nami', actor: 'Akemi Okamura (Voice)' },
+    { name: 'Sanji', actor: 'Hiroaki Hirata (Voice)' }
+  ],
+  95557: [
+    { name: 'Tanjiro Kamado', actor: 'Natsuki Hanae (Voice)' },
+    { name: 'Nezuko Kamado', actor: 'Akari Kito (Voice)' },
+    { name: 'Zenitsu Agatsuma', actor: 'Hiro Shimono (Voice)' }
+  ]
+};
+
 // ─── ANIME DETAILS & EPISODE MODAL ───
 async function openAnimeDetails(m) {
   currentSelectedAnime = m;
@@ -418,23 +460,67 @@ async function openAnimeDetails(m) {
   const meta = document.getElementById('animeModalMeta');
   if (meta) {
     const year = (m.first_air_date || m.release_date || '2026').slice(0, 4);
-    meta.textContent = `${year} • Rating: ★ ${m.vote_average ? m.vote_average.toFixed(1) : '8.5'} • Anikoto Video Stream`;
+    meta.textContent = `${year} • Rating: ★ ${m.vote_average ? m.vote_average.toFixed(1) : '9.0'} • Anikoto Video Stream`;
   }
 
   const overview = document.getElementById('animeModalOverview');
   if (overview) overview.textContent = m.overview || 'Enjoy watching this high-definition anime series with multi-language server choices.';
 
-  // Build Episode Selector Grid
-  const epGrid = document.getElementById('animeEpisodesGrid');
-  if (epGrid) {
-    epGrid.innerHTML = Array.from({ length: 24 }, (_, i) => `
-      <button class="sidebar-ep-btn" style="padding:10px;font-weight:800;border-color:rgba(255,117,160,0.3);" onclick="playAnimeEpisode(${i + 1})">
-        E${i + 1}
+  // Render Seiyuu Voice Cast
+  const castContainer = document.getElementById('animeModalCast');
+  if (castContainer) {
+    const castList = ANIME_CAST_MAP[m.id] || [
+      { name: 'Main Character', actor: 'Japanese Seiyuu' },
+      { name: 'Supporting Hero', actor: 'Japanese Voice Actor' }
+    ];
+    castContainer.innerHTML = castList.map(c => `
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);padding:6px 12px;border-radius:20px;font-size:0.75rem;">
+        <strong style="color:var(--anime-pink);">${c.name}</strong> • ${c.actor}
+      </div>
+    `).join('');
+  }
+
+  // Render Sagas / Seasons Chips
+  const arcChips = document.getElementById('animeArcChips');
+  const sagas = ANIME_SAGA_MAP[m.id] || [
+    { saga: 'Season 1', start: 1, end: 24 },
+    { saga: 'Season 2', start: 25, end: 48 }
+  ];
+
+  if (arcChips) {
+    arcChips.innerHTML = sagas.map((s, idx) => `
+      <button class="genre-chip ${idx === 0 ? 'active' : ''}" onclick="selectAnimeArc(${s.start}, ${s.end}, this)">
+        ${s.saga} (${s.start}-${s.end})
       </button>
     `).join('');
   }
 
+  // Render Episode Grid for first saga
+  renderAnimeModalEpGrid(sagas[0].start, sagas[0].end);
+
   modal.classList.add('open');
+}
+
+function selectAnimeArc(start, end, btnEl) {
+  if (btnEl) {
+    document.querySelectorAll('#animeArcChips .genre-chip').forEach(c => c.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+  renderAnimeModalEpGrid(start, end);
+}
+
+function renderAnimeModalEpGrid(start, end) {
+  const epGrid = document.getElementById('animeEpisodesGrid');
+  if (!epGrid) return;
+  epGrid.innerHTML = '';
+  for (let i = start; i <= end; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'sidebar-ep-btn';
+    btn.style.cssText = 'padding:10px;font-weight:800;border-color:rgba(255,117,160,0.3);cursor:pointer;';
+    btn.textContent = `E${i}`;
+    btn.onclick = () => playAnimeEpisode(i);
+    epGrid.appendChild(btn);
+  }
 }
 
 function closeAnimeModal() {
