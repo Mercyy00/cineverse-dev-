@@ -247,6 +247,13 @@ function deleteProfile(event, id) {
       activeProfile = null;
       localStorage.removeItem('cs_active_profile');
       updateNavProfile();
+    }
+    
+    showToast(`Profile "${deletedName}" deleted`, '🗑️');
+    renderProfiles();
+  }
+}
+
 function handleSearchKey(e) {
   if (e.key === 'Enter') {
     const query = e.target.value.trim();
