@@ -53,26 +53,69 @@ function getAccentHexWithHash() {
   return '%23' + getAccentHex();
 }
 
+// ─── OFFICIAL ANIME ID RESOLUTION MAP ───
+const ANIME_ID_MAP = {
+  37854: { malId: 21, anilistId: 21, totalEps: 1120, name: 'One Piece' },
+  46260: { malId: 20, anilistId: 20, totalEps: 220, name: 'Naruto' },
+  31911: { malId: 1735, anilistId: 1735, totalEps: 500, name: 'Naruto Shippuden' },
+  95557: { malId: 38000, anilistId: 101922, totalEps: 65, name: 'Demon Slayer' },
+  1429: { malId: 16498, anilistId: 16498, totalEps: 89, name: 'Attack on Titan' },
+  114411: { malId: 40748, anilistId: 113415, totalEps: 47, name: 'Jujutsu Kaisen' },
+  219109: { malId: 52299, anilistId: 151807, totalEps: 12, name: 'Solo Leveling' },
+  30984: { malId: 269, anilistId: 269, totalEps: 366, name: 'Bleach' },
+  12971: { malId: 223, anilistId: 223, totalEps: 291, name: 'Dragon Ball Z' },
+  46298: { malId: 11061, anilistId: 11061, totalEps: 148, name: 'Hunter x Hunter' },
+  65930: { malId: 31964, anilistId: 21459, totalEps: 150, name: 'My Hero Academia' }
+};
+
+function getResolvedAnimeInfo(id, title) {
+  const numericId = parseInt(id, 10);
+  if (ANIME_ID_MAP[numericId]) return ANIME_ID_MAP[numericId];
+
+  const tLower = (title || '').toLowerCase();
+  if (tLower.includes('one piece')) return ANIME_ID_MAP[37854];
+  if (tLower.includes('naruto shippuden')) return ANIME_ID_MAP[31911];
+  if (tLower.includes('naruto')) return ANIME_ID_MAP[46260];
+  if (tLower.includes('demon slayer') || tLower.includes('kimetsu')) return ANIME_ID_MAP[95557];
+  if (tLower.includes('attack on titan') || tLower.includes('shingeki')) return ANIME_ID_MAP[1429];
+  if (tLower.includes('jujutsu kaisen')) return ANIME_ID_MAP[114411];
+  if (tLower.includes('solo leveling')) return ANIME_ID_MAP[219109];
+  if (tLower.includes('bleach')) return ANIME_ID_MAP[30984];
+  if (tLower.includes('dragon ball')) return ANIME_ID_MAP[12971];
+
+  return null;
+}
+
 /* ================================================
    SERVER URL BUILDERS (All Priority Servers)
 ================================================ */
 const SERVER_URLS = {
   // ─── ANIKOTO & MEGAPLAY SERVERS (Official HiAnime API Engine) ───
   anikoto_sub: (id, type, s, e, st, params) => {
+    const resolved = getResolvedAnimeInfo(id, initialTitle);
+    if (resolved?.malId) {
+      return `https://megaplay.buzz/stream/mal/${resolved.malId}/${e}/sub`;
+    }
     const epId = params?.aniwatchEpId || id;
     return `https://megaplay.buzz/stream/s-2/${epId}/sub`;
   },
   anikoto_dub: (id, type, s, e, st, params) => {
+    const resolved = getResolvedAnimeInfo(id, initialTitle);
+    if (resolved?.malId) {
+      return `https://megaplay.buzz/stream/mal/${resolved.malId}/${e}/dub`;
+    }
     const epId = params?.aniwatchEpId || id;
     return `https://megaplay.buzz/stream/s-2/${epId}/dub`;
   },
   megaplay_anilist: (id, type, s, e, st, params) => {
-    const aniId = params?.anilistId || id;
+    const resolved = getResolvedAnimeInfo(id, initialTitle);
+    const aniId = resolved?.anilistId || params?.anilistId || id;
     const lang = currentAudioLang || 'sub';
     return `https://megaplay.buzz/stream/ani/${aniId}/${e}/${lang}`;
   },
   megaplay_mal: (id, type, s, e, st, params) => {
-    const mId = params?.malId || id;
+    const resolved = getResolvedAnimeInfo(id, initialTitle);
+    const mId = resolved?.malId || params?.malId || id;
     const lang = currentAudioLang || 'sub';
     return `https://megaplay.buzz/stream/mal/${mId}/${e}/${lang}`;
   },
@@ -1288,6 +1331,139 @@ function playNextEpisodeImmediately() {
 }
 
 /* ================================================
+   HIANIME 3-COLUMN PLAYER UI RENDERERS
+================================================ */
+function renderHiAnimePlayerUI() {
+  const resolved = getResolvedAnimeInfo(movieId, initialTitle);
+  const totalEps = resolved?.totalEps || (movieDetailsData?.number_of_episodes || 1120);
+
+  // 1. Notice Text
+  const noticeEp = $('currentEpNoticeNum');
+  if (noticeEp) noticeEp.textContent = currentEpisode;
+
+  // 2. Range Selector
+  const rangeSelect = $('epRangeSelect');
+  if (rangeSelect) {
+    rangeSelect.innerHTML = '';
+    const chunkSize = 100;
+    const chunks = Math.ceil(totalEps / chunkSize);
+    for (let i = 0; i < chunks; i++) {
+      const start = i * chunkSize + 1;
+      const end = Math.min((i + 1) * chunkSize, totalEps);
+      const opt = document.createElement('option');
+      opt.value = `${start}-${end}`;
+      opt.textContent = `${start}-${end}`;
+      if (currentEpisode >= start && currentEpisode <= end) {
+        opt.selected = true;
+      }
+      rangeSelect.appendChild(opt);
+    }
+  }
+
+  // 3. Render Episode Grid
+  const currentChunkStart = Math.floor((currentEpisode - 1) / 100) * 100 + 1;
+  const currentChunkEnd = Math.min(currentChunkStart + 99, totalEps);
+  renderHiAnimeEpGrid(currentChunkStart, currentChunkEnd);
+
+  // 4. Render Related Sidebar
+  renderHiAnimeRelatedSidebar();
+}
+
+function renderHiAnimeEpGrid(start, end) {
+  const grid = $('hianimeEpGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (let i = start; i <= end; i++) {
+    const btn = document.createElement('button');
+    btn.className = `hianime-ep-btn ${i === currentEpisode ? 'active' : ''}`;
+    btn.dataset.ep = i;
+    btn.textContent = i;
+    btn.onclick = () => {
+      currentEpisode = i;
+      $$('.hianime-ep-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const noticeEp = $('currentEpNoticeNum');
+      if (noticeEp) noticeEp.textContent = i;
+      renderEmbedServer(currentServer);
+    };
+    grid.appendChild(btn);
+  }
+}
+
+function changeEpRange(val) {
+  if (!val) return;
+  const [start, end] = val.split('-').map(n => parseInt(n, 10));
+  renderHiAnimeEpGrid(start, end);
+}
+
+function filterEpButtons(val) {
+  const q = val.trim();
+  $$('.hianime-ep-btn').forEach(btn => {
+    if (!q || btn.textContent.includes(q)) {
+      btn.style.display = 'block';
+    } else {
+      btn.style.display = 'none';
+    }
+  });
+}
+
+function selectHiAnimeServer(serverKey, btnEl) {
+  currentServer = serverKey;
+  $$('.server-pill').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  renderEmbedServer(serverKey);
+  if (typeof showToast === 'function') {
+    showToast(`Switched server node to ${serverKey}`, '⚡');
+  }
+}
+
+async function renderHiAnimeRelatedSidebar() {
+  const container = $('relatedAnimeList');
+  if (!container) return;
+  container.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:12px;">Loading related titles...</div>';
+
+  try {
+    let items = [];
+    if (typeof apiFetch === 'function') {
+      const d = await apiFetch('/discover/tv', { with_genres: 16, with_original_language: 'ja', sort_by: 'popularity.desc' });
+      items = (d?.results || []).slice(0, 10);
+    }
+    container.innerHTML = '';
+    if (!items.length) {
+      items = [
+        { id: 37854, name: 'One Piece: Taose! Kaizoku Ganzack', poster_path: '/cMD9Y.jpg', vote_average: 8.9 },
+        { id: 95557, name: 'Demon Slayer: Kimetsu no Yaiba', poster_path: '/xUfVStAEX3GichfZFfZvYviWd21.jpg', vote_average: 8.8 },
+        { id: 114411, name: 'Jujutsu Kaisen', poster_path: '/eAbAV.jpg', vote_average: 8.7 },
+        { id: 219109, name: 'Solo Leveling', poster_path: '/gO6X1.jpg', vote_average: 8.9 }
+      ];
+    }
+
+    items.forEach(m => {
+      const card = document.createElement('div');
+      card.className = 'related-card';
+      const poster = m.poster_path ? `https://image.tmdb.org/t/p/w185${m.poster_path}` : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&q=80';
+      const title = m.name || m.title || 'Anime';
+      const year = (m.first_air_date || '2026').slice(0, 4);
+      const rating = m.vote_average ? m.vote_average.toFixed(1) : '8.5';
+
+      card.innerHTML = `
+        <img class="related-poster" src="${poster}" alt="${title}" loading="lazy"/>
+        <div class="related-info">
+          <div class="related-title">${title}</div>
+          <div class="related-meta">${year} • ★ ${rating}</div>
+        </div>
+      `;
+      card.onclick = () => {
+        window.location.href = `watch.html?id=${m.id}&type=tv&season=1&episode=1&title=${encodeURIComponent(title)}&isAnime=1`;
+      };
+      container.appendChild(card);
+    });
+  } catch (e) {
+    container.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Related titles unavailable.</div>';
+  }
+}
+
+/* ================================================
    APPLICATION DOM INITIALIZER
 ================================================ */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1315,4 +1491,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const preferredServer = localStorage.getItem('cs_preferred_player') || (isAnimeMode ? 'anikoto_sub' : 'viduki1');
   const validServer = SERVER_URLS[preferredServer] ? preferredServer : (isAnimeMode ? 'anikoto_sub' : 'viduki1');
   renderEmbedServer(validServer);
+
+  // Render HiAnime 3-Column Player Layout UI
+  renderHiAnimePlayerUI();
 });

@@ -2792,3 +2792,364 @@ body.anime-player-mode #cinemaGlow {
     font-size: 2.2rem;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   HIANIME 3-COLUMN PLAYER LAYOUT (MATCHING REFERENCE IMAGE)
+   ════════════════════════════════════════════════════════════ */
+
+.hianime-player-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr 280px;
+  gap: 16px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 85px 20px 40px;
+  align-items: start;
+}
+
+/* LEFT PANEL: EPISODE GRID & RANGE SELECTOR */
+.hianime-episodes-panel {
+  background: rgba(12, 14, 23, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 700px;
+  backdrop-filter: blur(20px);
+}
+
+.ep-panel-top {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sub-dub-badge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.ep-range-select {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 6px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+.find-ep-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  width: 70px;
+  outline: none;
+}
+
+.hianime-ep-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  overflow-y: auto;
+  padding-right: 4px;
+  max-height: 620px;
+}
+
+.hianime-ep-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 8px 2px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.hianime-ep-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--anime-cyan);
+}
+
+.hianime-ep-btn.active {
+  background: #00d2d3 !important;
+  color: #000 !important;
+  font-weight: 900 !important;
+  border-color: #00d2d3 !important;
+  box-shadow: 0 0 12px rgba(0, 210, 211, 0.5);
+}
+
+/* CENTER PANEL: PLAYER, QUICK BAR & SERVERS BOX */
+.hianime-center-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hianime-center-panel .player-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Quick Toolbar under video */
+.hianime-quick-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(12, 14, 23, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 14px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quick-left, .quick-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quick-btn {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+
+.quick-btn:hover {
+  color: var(--anime-cyan);
+}
+
+.quick-check {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--anime-gold);
+  cursor: pointer;
+}
+
+.quick-check input {
+  accent-color: var(--anime-pink);
+  cursor: pointer;
+}
+
+/* SERVER SELECTOR BOX (BELOW PLAYER) */
+.hianime-servers-box {
+  background: rgba(12, 14, 23, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.servers-info-left {
+  max-width: 220px;
+}
+
+.servers-info-txt {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.servers-pills-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.server-audio-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.server-audio-label {
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--text);
+  min-width: 40px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 4px 6px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.server-pills-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.server-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.server-pill:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--anime-cyan);
+}
+
+.server-pill.active {
+  background: #00d2d3 !important;
+  color: #000 !important;
+  font-weight: 900 !important;
+  border-color: #00d2d3 !important;
+  box-shadow: 0 4px 15px rgba(0, 210, 211, 0.4);
+}
+
+/* RIGHT PANEL: RELATED ANIME SIDEBAR */
+.hianime-related-panel {
+  background: rgba(12, 14, 23, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 700px;
+}
+
+.related-panel-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+}
+
+.related-anime-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: 630px;
+}
+
+.related-card {
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.related-card:hover {
+  background: rgba(255, 117, 160, 0.12);
+  border-color: var(--anime-pink);
+  transform: translateX(3px);
+}
+
+.related-poster {
+  width: 50px;
+  height: 70px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.related-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.related-title {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.related-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* RESPONSIVE LAYOUT */
+@media (max-width: 1200px) {
+  .hianime-player-layout {
+    grid-template-columns: 240px 1fr;
+  }
+  .hianime-related-panel {
+    grid-column: 1 / -1;
+    max-height: none;
+  }
+  .related-anime-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    max-height: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .hianime-player-layout {
+    grid-template-columns: 1fr;
+    padding: 75px 12px 30px;
+  }
+  .hianime-episodes-panel {
+    max-height: 380px;
+  }
+  .hianime-ep-grid {
+    grid-template-columns: repeat(6, 1fr);
+    max-height: 300px;
+  }
+}

@@ -1141,25 +1141,79 @@
   <!-- Main Cinema Player Container -->
   <div class="player-section" id="playerSection">
     <div class="cinema-ambient-glow" id="cinemaGlow"></div>
-    <div class="player-wrapper" id="playerWrapper"></div>
     
-    <!-- Top Player Controls Bar -->
-    <div class="player-top-controls" id="playerTopControls">
-      <button class="player-ctrl-btn" id="playerFullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen (Press F)">
-        <svg class="icon-expand" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-        </svg>
-        <svg class="icon-compress" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:none;">
-          <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
-        </svg>
-        <span class="fs-text">Fullscreen</span>
-      </button>
-
-      <!-- Active Server Status Badge -->
-      <div class="player-active-status" id="playerActiveStatus">
-        <span class="status-dot"></span>
-        <span id="currentActiveServerName">Viduki Multi</span>
+    <!-- HIANIME 3-COLUMN PLAYER LAYOUT (Matches reference image) -->
+    <div class="hianime-player-layout" id="hianimePlayerLayout">
+      
+      <!-- LEFT COLUMN: EPISODES GRID & RANGE SELECTOR -->
+      <div class="hianime-episodes-panel" id="hianimeEpisodesPanel">
+        <div class="ep-panel-top">
+          <span class="sub-dub-badge" id="subDubIndicator">Sub & Dub</span>
+          <select id="epRangeSelect" onchange="changeEpRange(this.value)" class="ep-range-select"></select>
+          <input type="text" id="findEpInput" placeholder="Find num." oninput="filterEpButtons(this.value)" class="find-ep-input"/>
+        </div>
+        <div class="hianime-ep-grid" id="hianimeEpGrid">
+          <!-- 5-column grid of episode buttons -->
+        </div>
       </div>
+
+      <!-- CENTER COLUMN: VIDEO PLAYER, QUICK CONTROLS & SERVER BOX -->
+      <div class="hianime-center-panel">
+        <div class="player-wrapper" id="playerWrapper"></div>
+
+        <!-- QUICK CONTROL TOOLBAR -->
+        <div class="hianime-quick-bar" id="hianimeQuickBar">
+          <div class="quick-left">
+            <button class="quick-btn" onclick="toggleFullscreen()">⛶ Expand</button>
+            <label class="quick-check"><input type="checkbox" id="chkAutoPlay" checked/> Auto Play</label>
+            <label class="quick-check"><input type="checkbox" id="chkAutoNext" checked/> Auto Next</label>
+            <label class="quick-check"><input type="checkbox" id="chkAutoSkip" checked/> Auto Skip</label>
+            <button class="quick-btn" onclick="toggleTheaterMode()">💡 Light</button>
+            <button class="quick-btn" onclick="goToPrevEpisode()">⏮ Prev</button>
+            <button class="quick-btn" onclick="goToNextEpisode()">⏭ Next</button>
+          </div>
+          <div class="quick-right">
+            <button class="quick-btn" onclick="handleSidebarWatchParty()">👥 Watch Together</button>
+          </div>
+        </div>
+
+        <!-- SERVER SELECTOR BOX (BELOW PLAYER) -->
+        <div class="hianime-servers-box" id="hianimeServersBox">
+          <div class="servers-info-left">
+            <div class="servers-info-txt" id="watchingEpNotice">
+              You're watching <strong style="color:var(--anime-cyan);">Episode <span id="currentEpNoticeNum">1</span></strong>.<br/>
+              <span style="font-size:0.75rem;color:var(--muted);">If current servers don't work, please try other servers beside.</span>
+            </div>
+          </div>
+          <div class="servers-pills-right">
+            <div class="server-audio-row">
+              <div class="server-audio-label">SUB</div>
+              <div class="server-pills-list" id="subServerPills">
+                <button class="server-pill active" data-server="anikoto_sub" onclick="selectHiAnimeServer('anikoto_sub', this)">VidCloud-1</button>
+                <button class="server-pill" data-server="viduki1" onclick="selectHiAnimeServer('viduki1', this)">VidPlay-1</button>
+                <button class="server-pill" data-server="cinesrc" onclick="selectHiAnimeServer('cinesrc', this)">HD-1</button>
+                <button class="server-pill" data-server="zxcstream" onclick="selectHiAnimeServer('zxcstream', this)">Vidstream-2</button>
+              </div>
+            </div>
+            <div class="server-audio-row">
+              <div class="server-audio-label">DUB</div>
+              <div class="server-pills-list" id="dubServerPills">
+                <button class="server-pill" data-server="anikoto_dub" onclick="selectHiAnimeServer('anikoto_dub', this)">VidCloud-1</button>
+                <button class="server-pill" data-server="vidnest" onclick="selectHiAnimeServer('vidnest', this)">VidPlay-1</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: RELATED ANIME SIDEBAR -->
+      <div class="hianime-related-panel">
+        <div class="related-panel-title">Related</div>
+        <div class="related-anime-list" id="relatedAnimeList">
+          <!-- Related anime list -->
+        </div>
+      </div>
+
     </div>
 
     <!-- Download Progress Ring Overlay -->

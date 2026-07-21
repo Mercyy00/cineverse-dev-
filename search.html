@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineVerse — Search Results</title>
+  <link rel="icon" type="image/png" href="icon/favicon.png"/>
+  <link rel="apple-touch-icon" href="icon/favicon.png"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css?v=6.0"/>
+</head>
+<body class="dark-theme">
+
+  <!-- NAVBAR -->
+  <nav id="navbar" class="scrolled">
+    <a href="index.html" class="nav-logo">
+      <div class="play-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+      </div>
+      Cine<span class="accent">Verse</span>
+    </a>
+    <div class="nav-tabs" id="navTabs">
+      <a href="index.html" class="nav-tab">Home</a>
+      <a href="index.html#hollywoodSection" class="nav-tab">Hollywood</a>
+      <a href="index.html#bollywoodSection" class="nav-tab">Bollywood</a>
+      <a href="anime.html" class="nav-tab" style="color:var(--anime-pink);">Anime ⛩️</a>
+      <a href="index.html#tvSection" class="nav-tab">TV Shows</a>
+    </div>
+
+    <div class="nav-right">
+      <div class="nav-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" id="pageSearchInput" placeholder="Search movies, tv, anime..." autocomplete="off" onkeydown="handlePageSearchKey(event)"/>
+        <button onclick="executePageSearch()" style="background:var(--accent);color:#fff;border:none;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;cursor:pointer;">Search</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SEARCH CONTENT CONTAINER -->
+  <main style="padding-top:100px;min-height:100vh;max-width:1400px;margin:0 auto;padding-left:28px;padding-right:28px;padding-bottom:60px;">
+    
+    <div style="margin-bottom:32px;">
+      <div style="font-size:0.85rem;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">SEARCH RESULTS</div>
+      <h1 id="searchPageHeading" style="font-family:var(--font-heading);font-size:2.2rem;font-weight:900;color:var(--text);">
+        Searching for "<span id="searchQueryText" style="color:var(--accent-cyan);">...</span>"
+      </h1>
+      <div id="searchTotalCount" style="font-size:0.9rem;color:var(--muted);margin-top:6px;">Found 0 titles</div>
+    </div>
+
+    <!-- MEDIA TYPE TABS -->
+    <div style="display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;">
+      <button class="genre-chip active" id="tabAll" onclick="filterSearchMedia('all', this)">⚡ All Results</button>
+      <button class="genre-chip" id="tabMovie" onclick="filterSearchMedia('movie', this)">🎬 Movies</button>
+      <button class="genre-chip" id="tabTv" onclick="filterSearchMedia('tv', this)">📺 TV Series</button>
+      <button class="genre-chip" id="tabAnime" onclick="filterSearchMedia('anime', this)">⛩️ Anime Hub</button>
+    </div>
+
+    <!-- SEARCH RESULTS GRID -->
+    <div class="popular-grid" id="searchResultsGrid"></div>
+
+    <!-- LOAD MORE -->
+    <div style="text-align:center;margin-top:40px;display:none;" id="loadMoreSearchWrap">
+      <button id="loadMoreSearchBtn" class="auth-submit" style="width:auto;padding:12px 36px;border-radius:50px;" onclick="loadMoreSearchResults()">
+        Load More Results ▼
+      </button>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer style="border-top:1px solid rgba(255,255,255,0.08);padding:40px 28px;background:rgba(7,7,10,0.9);text-align:center;">
+    <div style="font-family:var(--font-heading);font-size:1.3rem;font-weight:900;margin-bottom:12px;">Cine<span style="color:var(--accent)">Verse</span> Search Engine</div>
+    <div style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">Search thousands of movies, TV shows, and Japanese Anime in HD quality.</div>
+    <div style="font-size:0.78rem;color:var(--border);">© 2026 CineVerse — All rights reserved.</div>
+  </footer>
+
+  <script src="script.js?v=6.0"></script>
+  <script src="search.js?v=6.0"></script>
+</body>
+</html>
