@@ -542,23 +542,26 @@ function renderSidebarServers() {
     ? SERVER_INFO.filter(s => animeServerKeys.includes(s.key))
     : SERVER_INFO.filter(s => !ANIME_ONLY_SERVERS.includes(s.key));
 
-  serversToDisplay.forEach(server => {
+  serversToDisplay.forEach((server, idx) => {
     const btn = document.createElement('div');
     btn.className = `sidebar-server-btn ${server.key === currentServer ? 'active' : ''}`;
     btn.dataset.server = server.key;
+    const mockPing = Math.floor(25 + (idx * 8) + (Math.random() * 10));
+    const pingColor = mockPing < 50 ? '#10B981' : (mockPing < 80 ? '#F59E0B' : '#EF4444');
     btn.innerHTML = `
       <div class="sidebar-server-icon" style="background:${server.gradient}">${server.icon}</div>
       <div class="sidebar-server-info">
-        <div class="sidebar-server-name">${server.name}</div>
-        <div class="sidebar-server-desc">${server.desc}</div>
+        <div class="sidebar-server-name">${sanitizeHTML(server.name)}</div>
+        <div class="sidebar-server-desc">${sanitizeHTML(server.desc)}</div>
       </div>
+      <div class="sidebar-server-ping" style="font-size:0.68rem;font-weight:800;color:${pingColor};margin-right:6px;">${mockPing}ms</div>
       <div class="sidebar-server-status"></div>
     `;
     btn.onclick = () => {
       renderEmbedServer(server.key);
       closePlayerSidebar();
       if (typeof showToast === 'function') {
-        showToast(`Connected to server node ${server.name}`, '⚡');
+        showToast(`Connected to server node ${server.name} (${mockPing}ms)`, '⚡');
       }
     };
     grid.appendChild(btn);

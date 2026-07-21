@@ -474,19 +474,44 @@ async function openAnimeDetails(m) {
       const overview = document.getElementById('animeTrayOverview');
       if (overview) overview.textContent = m.overview || 'Stream this high-definition Japanese anime series with multi-language servers.';
 
-      // Seiyuu Cast Track
+      // Seiyuu Cast Track — Dynamic AniList GraphQL Lookup
       const castTrack = document.getElementById('animeTrayCastTrack');
       if (castTrack) {
-        const castList = (m.id && ANIME_CAST_MAP[m.id]) ? ANIME_CAST_MAP[m.id] : [
-          { name: 'Main Protagonist', actor: 'Mayumi Tanaka / Voice Actor' },
-          { name: 'Deuteragonist', actor: 'Kazuya Nakai / Voice Actor' },
-          { name: 'Heroine', actor: 'Akemi Okamura / Voice Actor' }
-        ];
-        castTrack.innerHTML = castList.map(c => `
-          <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:24px;white-space:nowrap;font-size:0.78rem;flex-shrink:0;">
-            <span style="color:var(--anime-pink);font-weight:800;">${c.name}</span> <span style="color:var(--muted);">• ${c.actor}</span>
-          </div>
-        `).join('');
+        castTrack.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;padding:6px 0;">Loading authentic Japanese Seiyuu voice cast...</div>';
+        const query = `
+          query ($search: String) {
+            Media (search: $search, type: ANIME) {
+              characters (limit: 5, sort: ROLE) {
+                edges {
+                  node { name { full } }
+                  voiceActors (language: JAPANESE) { name { full } }
+                }
+              }
+            }
+          }
+        `;
+        fetchAniListGraphQL(query, { search: m.name || m.title }).then(aniData => {
+          const edges = aniData?.Media?.characters?.edges || [];
+          if (edges.length) {
+            castTrack.innerHTML = edges.map(e => {
+              const charName = sanitizeHTML(e.node?.name?.full || 'Character');
+              const actorName = sanitizeHTML(e.voiceActors[0]?.name?.full || 'Japanese VA');
+              return `
+                <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:24px;white-space:nowrap;font-size:0.78rem;flex-shrink:0;">
+                  <span style="color:var(--anime-pink);font-weight:800;">${charName}</span> <span style="color:var(--muted);">• ${actorName}</span>
+                </div>
+              `;
+            }).join('');
+          } else {
+            castTrack.innerHTML = `
+              <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:24px;white-space:nowrap;font-size:0.78rem;flex-shrink:0;">
+                <span style="color:var(--anime-pink);font-weight:800;">Japanese Voice Cast</span> <span style="color:var(--muted);">• Original Audio (Anikoto Node)</span>
+              </div>
+            `;
+          }
+        }).catch(() => {
+          castTrack.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;">Voice cast unavailable</div>';
+        });
       }
 
       // Seasons / Story Arcs Dropdown (<select id="animeSeasonSelect">)
