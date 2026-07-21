@@ -348,7 +348,6 @@ function renderEmbedServer(serverKey = 'viduki1') {
       allowfullscreen="true"
       webkitallowfullscreen="true"
       mozallowfullscreen="true"
-      onerror="switchToFallbackApi()"
       style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
       title="Stream Player"
     ></iframe>
@@ -390,23 +389,7 @@ function saveWatchProgress(secs) {
 }
 
 function switchToFallbackApi() {
-  autoFallbackIndex++;
-  if (autoFallbackIndex < AUTO_FALLBACK_CASCADE.length) {
-    const nextServerKey = AUTO_FALLBACK_CASCADE[autoFallbackIndex];
-    const serverObj = SERVER_INFO.find(s => s.key === nextServerKey);
-    const serverName = serverObj ? serverObj.name : nextServerKey;
-    if (typeof showToast === 'function') {
-      showToast(`Server issue detected. Auto-shifting to ${serverName}...`, '🔄');
-    }
-    renderEmbedServer(nextServerKey);
-  } else {
-    autoFallbackIndex = 0;
-    const fallbackServer = AUTO_FALLBACK_CASCADE[0];
-    if (typeof showToast === 'function') {
-      showToast('All server nodes checked. Re-connecting to Server 1...', '⚡');
-    }
-    renderEmbedServer(fallbackServer);
-  }
+  // Manual server selection mode active (auto-shift disabled)
 }
 
 /* ================================================
