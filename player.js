@@ -184,6 +184,8 @@ const SERVER_URLS = {
 };
 
 /* Server display metadata */
+const ANIME_ONLY_SERVERS = ['anikoto_sub', 'anikoto_dub', 'megaplay_anilist', 'megaplay_mal', 'vidnest'];
+
 const SERVER_INFO = [
   { key: 'anikoto_sub', name: 'Anikoto Sub (MegaPlay)', desc: 'Japanese Audio • English Subs', icon: '⛩️', gradient: 'linear-gradient(135deg,#ff75a0,#a855f7)' },
   { key: 'anikoto_dub', name: 'Anikoto Dub (MegaPlay)', desc: 'English Dubbed Audio', icon: '🎙️', gradient: 'linear-gradient(135deg,#a855f7,#3b82f6)' },
@@ -538,7 +540,7 @@ function renderSidebarServers() {
   const animeServerKeys = ['anikoto_sub', 'anikoto_dub', 'megaplay_anilist', 'megaplay_mal', 'vidnest', 'zxcstream', 'cinesrc'];
   const serversToDisplay = isAnimeMode
     ? SERVER_INFO.filter(s => animeServerKeys.includes(s.key))
-    : SERVER_INFO;
+    : SERVER_INFO.filter(s => !ANIME_ONLY_SERVERS.includes(s.key));
 
   serversToDisplay.forEach(server => {
     const btn = document.createElement('div');
@@ -1336,139 +1338,6 @@ function playNextEpisodeImmediately() {
 }
 
 /* ================================================
-   HIANIME 3-COLUMN PLAYER UI RENDERERS
-================================================ */
-function renderHiAnimePlayerUI() {
-  const resolved = getResolvedAnimeInfo(movieId, initialTitle);
-  const totalEps = resolved?.totalEps || (movieDetailsData?.number_of_episodes || 1120);
-
-  // 1. Notice Text
-  const noticeEp = $('currentEpNoticeNum');
-  if (noticeEp) noticeEp.textContent = currentEpisode;
-
-  // 2. Range Selector
-  const rangeSelect = $('epRangeSelect');
-  if (rangeSelect) {
-    rangeSelect.innerHTML = '';
-    const chunkSize = 100;
-    const chunks = Math.ceil(totalEps / chunkSize);
-    for (let i = 0; i < chunks; i++) {
-      const start = i * chunkSize + 1;
-      const end = Math.min((i + 1) * chunkSize, totalEps);
-      const opt = document.createElement('option');
-      opt.value = `${start}-${end}`;
-      opt.textContent = `${start}-${end}`;
-      if (currentEpisode >= start && currentEpisode <= end) {
-        opt.selected = true;
-      }
-      rangeSelect.appendChild(opt);
-    }
-  }
-
-  // 3. Render Episode Grid
-  const currentChunkStart = Math.floor((currentEpisode - 1) / 100) * 100 + 1;
-  const currentChunkEnd = Math.min(currentChunkStart + 99, totalEps);
-  renderHiAnimeEpGrid(currentChunkStart, currentChunkEnd);
-
-  // 4. Render Related Sidebar
-  renderHiAnimeRelatedSidebar();
-}
-
-function renderHiAnimeEpGrid(start, end) {
-  const grid = $('hianimeEpGrid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  for (let i = start; i <= end; i++) {
-    const btn = document.createElement('button');
-    btn.className = `hianime-ep-btn ${i === currentEpisode ? 'active' : ''}`;
-    btn.dataset.ep = i;
-    btn.textContent = i;
-    btn.onclick = () => {
-      currentEpisode = i;
-      $$('.hianime-ep-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const noticeEp = $('currentEpNoticeNum');
-      if (noticeEp) noticeEp.textContent = i;
-      renderEmbedServer(currentServer);
-    };
-    grid.appendChild(btn);
-  }
-}
-
-function changeEpRange(val) {
-  if (!val) return;
-  const [start, end] = val.split('-').map(n => parseInt(n, 10));
-  renderHiAnimeEpGrid(start, end);
-}
-
-function filterEpButtons(val) {
-  const q = val.trim();
-  $$('.hianime-ep-btn').forEach(btn => {
-    if (!q || btn.textContent.includes(q)) {
-      btn.style.display = 'block';
-    } else {
-      btn.style.display = 'none';
-    }
-  });
-}
-
-function selectHiAnimeServer(serverKey, btnEl) {
-  currentServer = serverKey;
-  $$('.server-pill').forEach(b => b.classList.remove('active'));
-  if (btnEl) btnEl.classList.add('active');
-  renderEmbedServer(serverKey);
-  if (typeof showToast === 'function') {
-    showToast(`Switched server node to ${serverKey}`, '⚡');
-  }
-}
-
-async function renderHiAnimeRelatedSidebar() {
-  const container = $('relatedAnimeList');
-  if (!container) return;
-  container.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;padding:12px;">Loading related titles...</div>';
-
-  try {
-    let items = [];
-    if (typeof apiFetch === 'function') {
-      const d = await apiFetch('/discover/tv', { with_genres: 16, with_original_language: 'ja', sort_by: 'popularity.desc' });
-      items = (d?.results || []).slice(0, 10);
-    }
-    container.innerHTML = '';
-    if (!items.length) {
-      items = [
-        { id: 37854, name: 'One Piece: Taose! Kaizoku Ganzack', poster_path: '/cMD9Y.jpg', vote_average: 8.9 },
-        { id: 95557, name: 'Demon Slayer: Kimetsu no Yaiba', poster_path: '/xUfVStAEX3GichfZFfZvYviWd21.jpg', vote_average: 8.8 },
-        { id: 114411, name: 'Jujutsu Kaisen', poster_path: '/eAbAV.jpg', vote_average: 8.7 },
-        { id: 219109, name: 'Solo Leveling', poster_path: '/gO6X1.jpg', vote_average: 8.9 }
-      ];
-    }
-
-    items.forEach(m => {
-      const card = document.createElement('div');
-      card.className = 'related-card';
-      const poster = m.poster_path ? `https://image.tmdb.org/t/p/w185${m.poster_path}` : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&q=80';
-      const title = m.name || m.title || 'Anime';
-      const year = (m.first_air_date || '2026').slice(0, 4);
-      const rating = m.vote_average ? m.vote_average.toFixed(1) : '8.5';
-
-      card.innerHTML = `
-        <img class="related-poster" src="${poster}" alt="${title}" loading="lazy"/>
-        <div class="related-info">
-          <div class="related-title">${title}</div>
-          <div class="related-meta">${year} • ★ ${rating}</div>
-        </div>
-      `;
-      card.onclick = () => {
-        window.location.href = `watch.html?id=${m.id}&type=tv&season=1&episode=1&title=${encodeURIComponent(title)}&isAnime=1`;
-      };
-      container.appendChild(card);
-    });
-  } catch (e) {
-    container.innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Related titles unavailable.</div>';
-  }
-}
-
-/* ================================================
    APPLICATION DOM INITIALIZER
 ================================================ */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1491,12 +1360,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (subBtn) subBtn.classList.toggle('active', currentAudioLang === 'sub');
     if (dubBtn) dubBtn.classList.toggle('active', currentAudioLang === 'dub');
     initPlayerSakuraPetals();
+
+    const sidebarEpSec = $('sidebarEpisodesSection');
+    if (sidebarEpSec) sidebarEpSec.style.display = 'block';
+  } else {
+    document.body.classList.add('standard-player-mode');
+    const sidebarEpSec = $('sidebarEpisodesSection');
+    if (mediaType === 'tv' && sidebarEpSec) {
+      sidebarEpSec.style.display = 'block';
+    }
   }
 
-  const preferredServer = localStorage.getItem('cs_preferred_player') || (isAnimeMode ? 'anikoto_sub' : 'viduki1');
-  const validServer = SERVER_URLS[preferredServer] ? preferredServer : (isAnimeMode ? 'anikoto_sub' : 'viduki1');
+  const preferredServer = localStorage.getItem('cs_preferred_player');
+  const defaultServer = isAnimeMode ? 'anikoto_sub' : 'viduki1';
+  const isValidPreferred = preferredServer && SERVER_URLS[preferredServer] && (isAnimeMode || !ANIME_ONLY_SERVERS.includes(preferredServer));
+  const validServer = isValidPreferred ? preferredServer : defaultServer;
   renderEmbedServer(validServer);
-
-  // Render HiAnime 3-Column Player Layout UI
-  renderHiAnimePlayerUI();
 });
