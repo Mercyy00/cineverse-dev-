@@ -92,9 +92,10 @@ function getResolvedAnimeInfo(id, title) {
 const SERVER_URLS = {
   // ─── TOP PRIORITY SERVERS ───
   zxcstream: (id, type, s, e, st) => {
+    const color = getAccentHex();
     return type === 'tv'
-      ? `https://vidsrc.cc/v2/embed/tv/${id}/${s}/${e}`
-      : `https://vidsrc.cc/v2/embed/movie/${id}`;
+      ? `https://zxcstream.xyz/player/tv/${id}/${s}/${e}?color=${color}&autoplay=true`
+      : `https://zxcstream.xyz/player/movie/${id}?color=${color}&autoplay=true`;
   },
   viduki1: (id, type, s, e, st) => {
     const color = getAccentHexWithHash();
