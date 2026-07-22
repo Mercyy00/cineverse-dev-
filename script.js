@@ -49,33 +49,22 @@ const ACHIEVEMENTS_DEF = [
 ];
 
 // ---- INIT ----
-window.onload = async function() {
+async function initApp() {
   loadTheme();
   loadUser();
   
-  const introPlayed = sessionStorage.getItem('cs_intro_played') === '1';
-  if (introPlayed) {
-    const splash = document.getElementById('loadingSplash');
-    if (splash) {
-      splash.style.display = 'none';
-      splash.classList.add('hidden');
-    }
-    const saved = localStorage.getItem('cs_active_profile');
-    if (saved) {
-      try {
-        activeProfile = JSON.parse(saved);
-        revealMainAppDirectly();
-      } catch (e) {
-        showProfileScreenDirectly();
-      }
-    } else {
-      showProfileScreenDirectly();
-    }
+  // Ensure default profile exists to prevent blank profile blocking
+  const saved = localStorage.getItem('cs_active_profile');
+  if (saved) {
+    try { activeProfile = JSON.parse(saved); } catch (e) { activeProfile = { id: 'p1', name: 'Viewer', avatar: '🍿' }; }
   } else {
-    sessionStorage.setItem('cs_intro_played', '1');
-    animateSplash();
+    activeProfile = { id: 'p1', name: 'Viewer', avatar: '🍿' };
+    localStorage.setItem('cs_active_profile', JSON.stringify(activeProfile));
   }
-  
+
+  // Force reveal mainApp immediately
+  revealMainAppDirectly();
+
   const isOffline = localStorage.getItem('cs_offline_mode') === '1';
   if (isOffline) {
     toggleOfflineMode(true, false);
@@ -100,6 +89,23 @@ window.onload = async function() {
       initTasteDeckCard();
     }
   }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initApp();
+  // Fail-safe backup timer to guarantee screen is never black
+  setTimeout(() => {
+    const splash = document.getElementById('loadingSplash');
+    if (splash) { splash.style.display = 'none'; splash.classList.add('hidden'); }
+    const ps = document.getElementById('profileScreen');
+    if (ps) { ps.style.opacity = '0'; ps.style.visibility = 'hidden'; ps.classList.add('hidden'); }
+    const app = document.getElementById('mainApp');
+    if (app) { app.style.opacity = '1'; app.style.transform = 'translateY(0)'; }
+  }, 1000);
+});
+
+window.onload = function() {
+  revealMainAppDirectly();
 };
 
 function revealMainAppDirectly() {
