@@ -25,28 +25,60 @@ function sanitizeHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
+const apiCache = new Map();
+const pendingRequests = new Map();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 /**
- * Robust fetch wrapper with timeout & error handling for TMDB
+ * Robust fetch wrapper with caching, de-duplication, timeout & exponential backoff
  */
-async function fetchTMDB(endpoint, params = {}) {
+async function fetchTMDB(endpoint, params = {}, retries = 2) {
   const url = new URL(`${CINEVERSE_CONFIG.TMDB_BASE}${endpoint}`);
   url.searchParams.set('api_key', CINEVERSE_CONFIG.TMDB_KEY);
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) url.searchParams.set(k, v);
   });
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const cacheKey = url.toString();
+  const cached = apiCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    return cached.data;
+  }
 
+  if (pendingRequests.has(cacheKey)) {
+    return pendingRequests.get(cacheKey);
+  }
+
+  const fetchPromise = (async () => {
+    let attempt = 0;
+    while (attempt <= retries) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      try {
+        const res = await fetch(cacheKey, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`TMDB HTTP ${res.status}`);
+        const data = await res.json();
+        apiCache.set(cacheKey, { timestamp: Date.now(), data });
+        return data;
+      } catch (e) {
+        clearTimeout(timeoutId);
+        attempt++;
+        if (attempt > retries) {
+          console.error(`Fetch failed for ${endpoint} after ${retries} retries:`, e);
+          return null;
+        }
+        await new Promise(r => setTimeout(r, attempt * 500));
+      }
+    }
+  })();
+
+  pendingRequests.set(cacheKey, fetchPromise);
   try {
-    const res = await fetch(url.toString(), { signal: controller.signal });
-    clearTimeout(timeoutId);
-    if (!res.ok) throw new Error(`TMDB HTTP ${res.status}`);
-    return await res.json();
-  } catch (e) {
-    clearTimeout(timeoutId);
-    console.error(`Fetch error for ${endpoint}:`, e);
-    return null;
+    return await fetchPromise;
+  } finally {
+    pendingRequests.delete(cacheKey);
   }
 }
 

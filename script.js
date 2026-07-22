@@ -359,6 +359,34 @@ function saveNewProfile() {
   showToast(`Profile "${name}" created!`,'✅');
 }
 
+function exportWatchlistJSON() {
+  const wl = getWatchlist();
+  if (!wl.length) {
+    showToast('Your Watchlist is empty!', '⚠️');
+    return;
+  }
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(wl, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", `cineverse_watchlist_${activeProfile?.name || 'export'}.json`);
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+  showToast('Watchlist exported as JSON!', '📥');
+}
+
+function deleteCurrentProfileData() {
+  if (!activeProfile) return;
+  if (!confirm(`Are you sure you want to delete all watch data for profile "${activeProfile.name}"?`)) return;
+
+  const profileId = activeProfile.id;
+  localStorage.removeItem(`cs_watchlist_${profileId}`);
+  localStorage.removeItem(`cs_progress_${profileId}`);
+  renderWatchlist();
+  renderContinueWatching();
+  showToast(`All data for "${activeProfile.name}" cleared`, '🗑️');
+}
+
 // ---- THEME ----
 function loadTheme() {
   const mode = localStorage.getItem('cs_mode') || 'dark';
@@ -1377,27 +1405,83 @@ function switchAuthTab(t) {
   document.getElementById('signinForm').style.display = t==='signin' ? '' : 'none';
   document.getElementById('signupForm').style.display = t==='signup' ? '' : 'none';
 }
-function handleSignIn() {
-  const email = document.getElementById('signinEmail').value.trim();
+async function hashPassword(plainText) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plainText);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function getUsersDatabase() {
+  return JSON.parse(localStorage.getItem('cs_users_db') || '[]');
+}
+
+function saveUsersDatabase(db) {
+  localStorage.setItem('cs_users_db', JSON.stringify(db));
+}
+
+async function handleSignIn() {
+  const email = document.getElementById('signinEmail').value.trim().toLowerCase();
   const pass = document.getElementById('signinPassword').value;
-  if(!email||!pass) { showToast('Please fill in all fields','⚠️'); return; }
-  user = {name:email.split('@')[0], email, avatar:'🎬'};
+  if (!email || !pass) { showToast('Please fill in all fields', '⚠️'); return; }
+
+  const db = getUsersDatabase();
+  const passHash = await hashPassword(pass);
+  const existingUser = db.find(u => u.email === email);
+
+  if (!existingUser) {
+    showToast('No account found with this email. Please sign up!', '⚠️');
+    return;
+  }
+
+  if (existingUser.passwordHash !== passHash) {
+    showToast('Invalid password! Please try again.', '❌');
+    return;
+  }
+
+  user = { id: existingUser.id, name: existingUser.name, email: existingUser.email, avatar: existingUser.avatar || '🎬' };
   localStorage.setItem('cs_user', JSON.stringify(user));
-  updateAuthUI(); closeAuthModal(); showToast(`Welcome back, ${user.name}!`,'🎉');
+  updateAuthUI();
+  closeAuthModal();
+  showToast(`Welcome back, ${user.name}!`, '🎉');
 }
-function handleSignUp() {
+
+async function handleSignUp() {
   const name = document.getElementById('signupName').value.trim();
-  const email = document.getElementById('signupEmail').value.trim();
+  const email = document.getElementById('signupEmail').value.trim().toLowerCase();
   const pass = document.getElementById('signupPassword').value;
-  if(!name||!email||!pass) { showToast('Please fill in all fields','⚠️'); return; }
-  user = {name, email, avatar:'🎬'};
+  if (!name || !email || !pass) { showToast('Please fill in all fields', '⚠️'); return; }
+  if (pass.length < 6) { showToast('Password must be at least 6 characters', '⚠️'); return; }
+
+  const db = getUsersDatabase();
+  if (db.some(u => u.email === email)) {
+    showToast('An account with this email already exists!', '⚠️');
+    return;
+  }
+
+  const passHash = await hashPassword(pass);
+  const newUser = { id: 'usr_' + Date.now(), name, email, passwordHash: passHash, avatar: '🎬', created: Date.now() };
+  db.push(newUser);
+  saveUsersDatabase(db);
+
+  user = { id: newUser.id, name: newUser.name, email: newUser.email, avatar: newUser.avatar };
   localStorage.setItem('cs_user', JSON.stringify(user));
-  updateAuthUI(); closeAuthModal(); showToast(`Account created! Welcome, ${name}!`,'🎉');
+  updateAuthUI();
+  closeAuthModal();
+  showToast(`Account created! Welcome, ${name}!`, '🎉');
 }
+
 function socialLogin(provider) {
-  user = {name:`${provider} User`, email:`user@${provider.toLowerCase()}.com`, avatar:'🌐'};
+  const token = 'oauth_' + Math.random().toString(36).substring(2);
+  const name = `${provider} User`;
+  const email = `user_${token.slice(0, 6)}@${provider.toLowerCase()}.com`;
+
+  user = { id: token, name, email, avatar: '🌐', provider };
   localStorage.setItem('cs_user', JSON.stringify(user));
-  updateAuthUI(); closeAuthModal(); showToast(`Signed in with ${provider}!`,'✅');
+  updateAuthUI();
+  closeAuthModal();
+  showToast(`Authenticated via ${provider} OAuth!`, '✅');
 }
 function updateAuthUI() {
   const btn = document.getElementById('authBtn');

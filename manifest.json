@@ -1,7 +1,15 @@
 {
+  "id": "com.cineverse.app",
   "short_name": "CineVerse",
   "name": "CineVerse — Premium Cinematic Experience",
+  "categories": ["entertainment", "movies"],
   "icons": [
+    {
+      "src": "icon/favicon.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
     {
       "src": "icon/favicon.png",
       "type": "image/png",
@@ -14,5 +22,5 @@
   "theme_color": "#e50914",
   "display": "standalone",
   "orientation": "any",
-  "description": "Watch free movies and TV shows in HD with real watch parties and custom themes."
+  "description": "Discover films matched to your mood, swipe with The Decider, explore Anime Universe, and stream movies & TV shows in HD."
 }
