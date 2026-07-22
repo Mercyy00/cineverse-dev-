@@ -1,0 +1,17 @@
+{
+  "name": "cineverse",
+  "version": "8.0.0",
+  "private": true,
+  "description": "CineVerse — Premium Cinematic Experience & Vibe Discovery Platform",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0",
+    "vitest": "^1.5.0"
+  }
+}
