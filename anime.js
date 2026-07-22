@@ -413,16 +413,17 @@ const ANIME_SAGA_MAP = {
   37854: [
     { saga: 'East Blue & Alabasta', start: 1, end: 130 },
     { saga: 'Skypiea & Water 7', start: 131, end: 336 },
-    { saga: 'Marineford & Fishman', start: 337, end: 574 },
-    { saga: 'Dressrosa & Whole Cake', start: 575, end: 891 },
+    { saga: 'Marineford & Fishman Island', start: 337, end: 574 },
+    { saga: 'Dressrosa & Whole Cake Island', start: 575, end: 891 },
     { saga: 'Wano Country Arc', start: 892, end: 1085 },
-    { saga: 'Egghead Arc', start: 1086, end: 1120 }
+    { saga: 'Egghead Island Arc', start: 1086, end: 1122 },
+    { saga: 'Elbaf Island Arc (Latest Airing 2026 🔥)', start: 1123, end: 1200 }
   ],
   95557: [
     { saga: 'S1: Unwavering Resolve', start: 1, end: 26 },
     { saga: 'S2: Mugen Train & District', start: 27, end: 44 },
     { saga: 'S3: Swordsmith Village', start: 45, end: 55 },
-    { saga: 'S4: Hashira Training', start: 56, end: 65 }
+    { saga: 'S4: Hashira Training & Infinity Castle', start: 56, end: 75 }
   ],
   1429: [
     { saga: 'Season 1', start: 1, end: 25 },
@@ -432,7 +433,7 @@ const ANIME_SAGA_MAP = {
   ],
   114411: [
     { saga: 'Season 1: Cursed Womb', start: 1, end: 24 },
-    { saga: 'Season 2: Shibuya Incident', start: 25, end: 47 }
+    { saga: 'Season 2: Shibuya Incident & Culling Game', start: 25, end: 60 }
   ]
 };
 
