@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cineverse-v6.0';
+const CACHE_NAME = 'cineverse-v6.1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

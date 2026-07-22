@@ -404,8 +404,10 @@ function loadTheme() {
     mode = prefersLight ? 'light' : 'dark';
   }
   const accent = localStorage.getItem('cs_accent_theme') || 'crimson';
-  document.documentElement.className = mode === 'light' ? 'light-theme' : 'dark-theme';
-  document.body.className = mode === 'light' ? 'light-theme' : 'dark-theme';
+  document.documentElement.classList.remove('light-theme', 'dark-theme');
+  document.documentElement.classList.add(mode === 'light' ? 'light-theme' : 'dark-theme');
+  document.body.classList.remove('light-theme', 'dark-theme');
+  document.body.classList.add(mode === 'light' ? 'light-theme' : 'dark-theme');
   applyAccent(accent, false);
   updateModeBtn(mode);
   
@@ -787,11 +789,17 @@ function renderPopularGrid(movies, append=false) {
 }
 
 async function loadMorePopular() {
+  const btn = document.getElementById('loadMoreBtn');
+  if (btn && btn.dataset.loading) return;
+  if (btn) { btn.dataset.loading = '1'; btn.textContent = 'Loading...'; btn.disabled = true; }
   popularPage++;
   try {
     const d = await api(`${getPopularEndpoint()}&page=${popularPage}`);
     renderPopularGrid(d.results||[], true);
-  } catch(e) {}
+  } catch(e) {
+  } finally {
+    if (btn) { delete btn.dataset.loading; btn.textContent = 'Load More Content ↓'; btn.disabled = false; }
+  }
 }
 
 async function sortPopular() {
@@ -2130,15 +2138,6 @@ function setupScrollEvents() {
 
     if (liquidBg) {
       liquidBg.style.transform = `translateY(${scrollTop * 0.12}px)`;
-    }
-
-    // Infinite scroll trigger
-    if (window.innerHeight + scrollTop >= document.body.offsetHeight - 400) {
-      const btn = document.getElementById('loadMoreBtn');
-      if (btn && !btn.dataset.loading) {
-        btn.dataset.loading = '1';
-        loadMorePopular().then(() => { delete btn.dataset.loading; });
-      }
     }
   }, { passive: true });
 
