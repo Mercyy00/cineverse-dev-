@@ -343,9 +343,18 @@ function selectAvatar(el) {
   el.classList.add('selected'); selectedAvatar = el.dataset.emoji;
 }
 function toggleKidsMode() {
+  if (kidsMode) {
+    const pin = prompt('Enter 4-digit Parent PIN to disable Kids Mode (Default: 1234):');
+    const storedPin = localStorage.getItem('cs_kids_pin') || '1234';
+    if (pin !== storedPin) {
+      showToast('Incorrect Parental Control PIN!', '🔒');
+      return;
+    }
+    showToast('Parental Controls unlocked', '🔓');
+  }
   kidsMode = !kidsMode;
   const t = document.getElementById('kidsToggle');
-  t.classList.toggle('on', kidsMode);
+  if (t) t.classList.toggle('on', kidsMode);
 }
 function saveNewProfile() {
   const name = document.getElementById('newProfileName').value.trim();
@@ -389,7 +398,11 @@ function deleteCurrentProfileData() {
 
 // ---- THEME ----
 function loadTheme() {
-  const mode = localStorage.getItem('cs_mode') || 'dark';
+  let mode = localStorage.getItem('cs_mode') || 'dark';
+  if (mode === 'auto') {
+    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    mode = prefersLight ? 'light' : 'dark';
+  }
   const accent = localStorage.getItem('cs_accent_theme') || 'crimson';
   document.documentElement.className = mode === 'light' ? 'light-theme' : 'dark-theme';
   document.body.className = mode === 'light' ? 'light-theme' : 'dark-theme';
