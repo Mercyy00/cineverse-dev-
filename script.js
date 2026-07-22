@@ -86,7 +86,7 @@ window.onload = async function() {
   } else {
     try {
       await loadGenres();
-      await Promise.allSettled([loadHero(), loadPopular()]);
+      await Promise.allSettled([loadHero(), loadPopular(), loadVibeRecommendations('hyped', 'Hyped 🔥')]);
       loadSliders();
     } catch (e) {
       console.warn('Initial data load warning:', e);
@@ -2566,7 +2566,7 @@ const VIBE_PROFILES = {
   curious: { name: 'Curious 🌍', genres: [99, 36, 12], sub: 'Documentaries & World Cinema · Inspiring' }
 };
 
-function selectVibe(vibeId, r, g, b, label, subtext, btn) {
+async function selectVibe(vibeId, r, g, b, label, subtext, btn) {
   activeVibe = vibeId;
   const section = document.getElementById('vibeHeroSection');
   if (section) {
@@ -2581,7 +2581,42 @@ function selectVibe(vibeId, r, g, b, label, subtext, btn) {
   if (btn) btn.classList.add('active');
 
   showToast(`Vibe switched to ${label}`, '🎭');
+  loadVibeRecommendations(vibeId, label);
   loadPopular();
+}
+
+async function loadVibeRecommendations(vibeId, label) {
+  const track = document.getElementById('vibeRecTrack');
+  const titleIcon = document.getElementById('vibeRecTitleIcon');
+  const titleText = document.getElementById('vibeRecTitleText');
+  const badge = document.getElementById('vibeRecMatchBadge');
+  if (!track) return;
+
+  track.innerHTML = '<div style="color:var(--muted);padding:20px;font-weight:700;">Curating movies for your ' + label + ' mood...</div>';
+
+  if (titleText) titleText.textContent = `Recommended For ${label} Mood`;
+  if (titleIcon) titleIcon.textContent = label.split(' ').pop() || '🔥';
+  if (badge) badge.textContent = `98% Match • ${label}`;
+
+  const genres = VIBE_PROFILES[vibeId]?.genres || [28];
+  try {
+    const data = await api(`/discover/movie`, {
+      with_genres: genres.join(','),
+      sort_by: 'popularity.desc',
+      'vote_count.gte': 100
+    });
+    track.innerHTML = '';
+    const results = (data.results || []).slice(0, 15);
+    if (!results.length) {
+      track.innerHTML = '<div style="color:var(--muted);padding:20px;">No movies found for this mood.</div>';
+      return;
+    }
+    results.forEach(m => {
+      track.appendChild(createMovieCard(m));
+    });
+  } catch (e) {
+    track.innerHTML = '<div style="color:var(--muted);padding:20px;">Failed to load vibe recommendations.</div>';
+  }
 }
 
 function calculateVibeMatchScore(movie) {

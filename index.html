@@ -134,19 +134,40 @@
     </div>
     Cine<span class="accent">Verse</span>
   </a>
+
+  <!-- Primary Clean Nav Tabs -->
   <div class="nav-tabs" id="navTabs" role="tablist" aria-label="Primary Content Sections">
-    <button class="nav-tab active" role="tab" aria-selected="true" aria-label="Home section" onclick="scrollToSection('hero','Home')">Home</button>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="Vibe Tonight section" onclick="scrollToSection('vibeHeroSection','Vibe Tonight')">🔥 Vibe Tonight</button>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="The Decider section" onclick="scrollToSection('deciderSection','The Decider')">🎴 The Decider</button>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="Post-Binge Recovery section" onclick="scrollToSection('postBingeSection','Post-Binge')">▶ Post-Binge</button>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="Friends Activity section" onclick="scrollToSection('friendsSection','Friends')">👥 Friends</button>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="Hollywood category" onclick="scrollToSection('hollywoodSection','Hollywood')">Hollywood</button>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="Bollywood category" onclick="scrollToSection('bollywoodSection','Bollywood')">Bollywood</button>
-    <a href="anime.html" class="nav-tab" role="tab" aria-selected="false" aria-label="Anime Portal" style="text-decoration:none;display:inline-flex;align-items:center;color:var(--anime-pink);">Anime ⛩️</a>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="K-Drama category" onclick="scrollToSection('kdramaSection','K-Drama')">K-Drama</button>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="TV Shows category" onclick="scrollToSection('tvSection','TV Shows')">TV Shows</button>
-    <button class="nav-tab" role="tab" aria-selected="false" aria-label="My Watchlist" onclick="scrollToSection('watchlistSection','My List')">My List</button>
+    <button class="nav-tab active" role="tab" aria-selected="true" onclick="scrollToSection('hero','Home')">Home</button>
+
+    <!-- Categories Dropdown -->
+    <div class="nav-dropdown-wrapper">
+      <button class="nav-tab nav-dropdown-btn">Categories ▾</button>
+      <div class="nav-menu-dropdown">
+        <button class="nav-dropdown-item" onclick="scrollToSection('hollywoodSection','Hollywood')">🎬 Hollywood</button>
+        <button class="nav-dropdown-item" onclick="scrollToSection('bollywoodSection','Bollywood')">💃 Bollywood</button>
+        <a href="anime.html" class="nav-dropdown-item" style="text-decoration:none;color:var(--anime-pink);">⛩️ Anime Portal</a>
+        <button class="nav-dropdown-item" onclick="scrollToSection('kdramaSection','K-Drama')">🌸 K-Drama</button>
+        <button class="nav-dropdown-item" onclick="scrollToSection('tvSection','TV Shows')">📺 TV Series</button>
+        <button class="nav-dropdown-item" onclick="scrollToSection('trendingMovies','Movies')">🍿 Popular Movies</button>
+      </div>
+    </div>
+
+    <!-- Features Dropdown -->
+    <div class="nav-dropdown-wrapper">
+      <button class="nav-tab nav-dropdown-btn">Features ▾</button>
+      <div class="nav-menu-dropdown">
+        <button class="nav-dropdown-item" onclick="scrollToSection('vibeHeroSection','Vibe Tonight')">🔥 Vibe Tonight</button>
+        <button class="nav-dropdown-item" onclick="scrollToSection('deciderSection','The Decider')">🎴 The Decider Deck</button>
+        <button class="nav-dropdown-item" onclick="scrollToSection('postBingeSection','Post-Binge')">▶ Post-Binge Recovery</button>
+        <button class="nav-dropdown-item" onclick="scrollToSection('friendsSection','Friends')">👥 Social Circle</button>
+        <button class="nav-dropdown-item" onclick="scrollToTasteDeck()">🎯 Taste Finder</button>
+        <button class="nav-dropdown-item" onclick="openSurpriseSpinner()">🎲 Surprise Roulette</button>
+      </div>
+    </div>
+
+    <button class="nav-tab" role="tab" onclick="scrollToSection('watchlistSection','My List')">My List</button>
   </div>
+
   <div class="nav-right">
     <div class="nav-search">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -157,14 +178,7 @@
       </span>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
-    <!-- Taste Finder Trigger -->
-    <button class="random-btn" onclick="scrollToTasteDeck()" title="Taste Finder Matchmaker" style="background:linear-gradient(135deg,rgba(0,210,211,0.2),rgba(229,9,20,0.2));border-color:var(--accent-cyan);">
-      🎯 <span class="hide-sm">Taste Finder</span>
-    </button>
-    <!-- Surprise Roulette Wheel -->
-    <button class="random-btn" onclick="openSurpriseSpinner()" title="Surprise Me!">
-      🎲 <span class="hide-sm">Surprise</span>
-    </button>
+
     <div style="position:relative;">
       <button class="btn-theme" onclick="toggleThemeDropdown()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
@@ -173,10 +187,10 @@
       <div class="theme-dropdown" id="themeDropdown">
         <div class="theme-dropdown-title">8 Cinematic Palettes</div>
         <div class="theme-swatches" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-          <div class="theme-swatch active" id="sw-crimson" data-theme="crimson" onclick="setTheme('crimson')"><div class="swatch-circle" style="background:#E50914;"></div>Crimson</div>
-          <div class="theme-swatch" id="sw-cyan" data-theme="cyan" onclick="setTheme('cyan')"><div class="swatch-circle" style="background:#00D2D3;"></div>Cyan</div>
-          <div class="theme-swatch" id="sw-gold" data-theme="gold" onclick="setTheme('gold')"><div class="swatch-circle" style="background:#FFB800;"></div>Gold</div>
-          <div class="theme-swatch" id="sw-violet" data-theme="violet" onclick="setTheme('violet')"><div class="swatch-circle" style="background:#A855F7;"></div>Violet</div>
+          <div class="theme-swatch active" id="sw-crimson" data-theme="crimson" onclick="setTheme('crimson')"><div class="swatch-circle" style="background:#e50914;"></div>Crimson</div>
+          <div class="theme-swatch" id="sw-cyan" data-theme="cyan" onclick="setTheme('cyan')"><div class="swatch-circle" style="background:#00d2d3;"></div>Cyan</div>
+          <div class="theme-swatch" id="sw-gold" data-theme="gold" onclick="setTheme('gold')"><div class="swatch-circle" style="background:#ffb800;"></div>Gold</div>
+          <div class="theme-swatch" id="sw-purple" data-theme="purple" onclick="setTheme('purple')"><div class="swatch-circle" style="background:#a855f7;"></div>Purple</div>
           <div class="theme-swatch" id="sw-emerald" data-theme="emerald" onclick="setTheme('emerald')"><div class="swatch-circle" style="background:#10B981;"></div>Emerald</div>
           <div class="theme-swatch" id="sw-rose" data-theme="rose" onclick="setTheme('rose')"><div class="swatch-circle" style="background:#FB7185;"></div>Rose</div>
           <div class="theme-swatch" id="sw-sunset" data-theme="sunset" onclick="setTheme('sunset')"><div class="swatch-circle" style="background:linear-gradient(135deg,#FF7A45,#FFC53D);"></div>Sunset</div>
@@ -189,6 +203,7 @@
         </button>
       </div>
     </div>
+
     <button class="btn-settings" onclick="openSettingsModal()" title="Settings">
       <svg class="settings-cog" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3"></circle>
@@ -196,12 +211,13 @@
       </svg>
       <span class="hide-sm">Settings</span>
     </button>
+
+    <!-- Unified Account Button -->
     <button class="profile-btn" id="profileBtn" onclick="handleProfileClick()">
       <div class="profile-btn-avatar" id="profileBtnAvatar">🍿</div>
-      <span id="profileBtnName">Profile</span>
+      <span id="profileBtnName">Account</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6,9 12,15 18,9"/></svg>
     </button>
-    <button class="btn-signin" id="authBtn" onclick="handleAuthClick()">Sign In</button>
   </div>
 </nav>
 
@@ -289,6 +305,24 @@
       </button>
     </div>
     <p class="hero-decider-nudge">Can't decide? <a href="#deciderSection" class="hero-decider-link">Let The Decider pick for you →</a></p>
+  </div>
+</section>
+
+<!-- 🎭 MOOD RECOMMENDATIONS SECTION -->
+<section class="section" id="vibeRecommendationsSection" style="padding-top:30px;padding-bottom:10px;">
+  <div class="section-header">
+    <div class="section-title">
+      <span id="vibeRecTitleIcon">🔥</span>
+      <span id="vibeRecTitleText">Handpicked For Your Hyped Mood</span>
+      <span class="vibe-match-badge" id="vibeRecMatchBadge" style="background:rgba(229,9,20,0.2);color:var(--accent);font-size:0.75rem;padding:4px 12px;border-radius:14px;font-weight:800;border:1px solid var(--accent);">98% Match • Hyped 🔥</span>
+    </div>
+  </div>
+  <div class="slider-wrap">
+    <button class="slider-arrow left" onclick="scrollSlider('vibeRecTrack', -500)">‹</button>
+    <div class="slider-track" id="vibeRecTrack">
+      <!-- Vibe-matched movies dynamically loaded here -->
+    </div>
+    <button class="slider-arrow right" onclick="scrollSlider('vibeRecTrack', 500)">›</button>
   </div>
 </section>
 
