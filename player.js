@@ -55,7 +55,7 @@ function getAccentHexWithHash() {
 
 // ─── OFFICIAL ANIME ID RESOLUTION MAP ───
 const ANIME_ID_MAP = {
-  37854: { malId: 21, anilistId: 21, totalEps: 1120, name: 'One Piece' },
+  37854: { malId: 21, anilistId: 21, totalEps: 1200, name: 'One Piece' },
   46260: { malId: 20, anilistId: 20, totalEps: 220, name: 'Naruto' },
   31911: { malId: 1735, anilistId: 1735, totalEps: 500, name: 'Naruto Shippuden' },
   95557: { malId: 38000, anilistId: 101922, totalEps: 65, name: 'Demon Slayer' },

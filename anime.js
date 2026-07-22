@@ -451,6 +451,8 @@ const ANIME_CAST_MAP = {
   ]
 };
 
+let latestReleasedEp = 1200;
+
 // ─── ANIME DETAILS & TV-STYLE TRAY OVERLAY ───
 async function openAnimeDetails(m) {
   if (!m) return;
@@ -477,24 +479,40 @@ async function openAnimeDetails(m) {
       const overview = document.getElementById('animeTrayOverview');
       if (overview) overview.textContent = m.overview || 'Stream this high-definition Japanese anime series with multi-language servers.';
 
-      // Seiyuu Cast Track — Dynamic AniList GraphQL Lookup
+      // Dynamic AniList GraphQL Lookup for Seiyuu Cast & Latest Airing Episode Count
       const castTrack = document.getElementById('animeTrayCastTrack');
       if (castTrack) {
-        castTrack.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;padding:6px 0;">Loading authentic Japanese Seiyuu voice cast...</div>';
-        const query = `
-          query ($search: String) {
-            Media (search: $search, type: ANIME) {
-              characters (limit: 5, sort: ROLE) {
-                edges {
-                  node { name { full } }
-                  voiceActors (language: JAPANESE) { name { full } }
-                }
+        castTrack.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;padding:6px 0;">Loading authentic Japanese Seiyuu voice cast & episode database...</div>';
+      }
+
+      const query = `
+        query ($search: String) {
+          Media (search: $search, type: ANIME) {
+            episodes
+            status
+            nextAiringEpisode { episode airingAt }
+            characters (limit: 5, sort: ROLE) {
+              edges {
+                node { name { full } }
+                voiceActors (language: JAPANESE) { name { full } }
               }
             }
           }
-        `;
-        fetchAniListGraphQL(query, { search: m.name || m.title }).then(aniData => {
-          const edges = aniData?.Media?.characters?.edges || [];
+        }
+      `;
+
+      fetchAniListGraphQL(query, { search: m.name || m.title }).then(aniData => {
+        const media = aniData?.Media;
+        if (media) {
+          if (media.nextAiringEpisode && media.nextAiringEpisode.episode) {
+            latestReleasedEp = media.nextAiringEpisode.episode - 1;
+          } else if (media.episodes) {
+            latestReleasedEp = media.episodes;
+          }
+        }
+
+        const edges = media?.characters?.edges || [];
+        if (castTrack) {
           if (edges.length) {
             castTrack.innerHTML = edges.map(e => {
               const charName = sanitizeHTML(e.node?.name?.full || 'Character');
@@ -512,10 +530,17 @@ async function openAnimeDetails(m) {
               </div>
             `;
           }
-        }).catch(() => {
-          castTrack.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;">Voice cast unavailable</div>';
-        });
-      }
+        }
+
+        // Re-render episode grid with live released episode count
+        const sagas = (m.id && ANIME_SAGA_MAP[m.id] && ANIME_SAGA_MAP[m.id].length) ? ANIME_SAGA_MAP[m.id] : [
+          { saga: 'Season 1: Original Arc', start: 1, end: Math.min(24, latestReleasedEp) },
+          { saga: 'Season 2: Sequel Arc', start: 25, end: Math.min(48, latestReleasedEp) }
+        ];
+        renderAnimeTrayEpCards(sagas[0].start, sagas[0].end);
+      }).catch(() => {
+        if (castTrack) castTrack.innerHTML = '<div style="color:var(--muted);font-size:0.75rem;">Voice cast & episode metadata loaded</div>';
+      });
 
       // Seasons / Story Arcs Dropdown (<select id="animeSeasonSelect">)
       const seasonSelect = document.getElementById('animeSeasonSelect');
@@ -525,10 +550,10 @@ async function openAnimeDetails(m) {
       ];
 
       if (seasonSelect) {
-        seasonSelect.innerHTML = sagas.map((s, i) => `<option value="${s.start}-${s.end}">Season ${i + 1}: ${s.saga} (${s.start}-${s.end})</option>`).join('');
+        seasonSelect.innerHTML = sagas.map((s, i) => `<option value="${s.start}-${s.end}">Season ${i + 1}: ${s.saga} (Ep ${s.start}-${s.end})</option>`).join('');
       }
 
-      // Render Episode Cards Grid for first saga
+      // Initial render episode cards grid for first saga
       renderAnimeTrayEpCards(sagas[0].start, sagas[0].end);
 
       overlay.style.display = 'block';
@@ -575,8 +600,9 @@ function renderAnimeTrayEpCards(start, end) {
   grid.innerHTML = '';
 
   const backdrop = currentSelectedAnime ? getAnimeBackdrop(currentSelectedAnime) : '';
+  const effectiveEnd = Math.min(end, latestReleasedEp || 1200);
 
-  for (let i = start; i <= end; i++) {
+  for (let i = start; i <= effectiveEnd; i++) {
     const card = document.createElement('div');
     card.className = 'episode-card';
     card.onclick = () => playAnimeTrayEpisode(i);
@@ -584,7 +610,7 @@ function renderAnimeTrayEpCards(start, end) {
     card.innerHTML = `
       <div class="episode-thumb" style="background:var(--card2);">
         <img src="${backdrop}" alt="Episode ${i}" loading="lazy"/>
-        <div class="episode-badge">S1 : E${i}</div>
+        <div class="episode-badge">E${i}</div>
         <div class="ep-play-overlay">
           <div class="play-circle" style="background:linear-gradient(135deg,var(--anime-pink),var(--anime-purple));">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
