@@ -2373,3 +2373,367 @@ function renderOfflineLibrary() {
     grid.appendChild(div);
   });
 }
+
+/* ==========================================================================
+   🎭 CINEVIBE & CINESTREAM UNIFIED JAVASCRIPT ENGINE
+   ========================================================================== */
+
+// STATE
+let activeVibe = 'hyped';
+let deciderStack = [];
+let deciderIdx = 0;
+let deciderMode = 'movie';
+let deciderSwipes = { loved: [], pass: [], unseen: [] };
+let bywSearchTimeout = null;
+let selectedOnboardEmoji = '🍿';
+
+// ---- VIBE ENGINE ----
+const VIBE_PROFILES = {
+  hyped: { name: 'Hyped 🔥', genres: [28, 12, 878], sub: 'Action-packed · High energy · Mindblowing adrenaline' },
+  melancholy: { name: 'Melancholy 💜', genres: [18, 10749], sub: 'Emotional · Deep feeling · Heartfelt' },
+  terrified: { name: 'Terrified 😱', genres: [27, 53], sub: 'Thrills & Horror · Edge of seat' },
+  romantic: { name: 'Romantic 💕', genres: [10749, 35], sub: 'Warmth & Passion · Cozy love' },
+  mindblown: { name: 'Mindblown 🌀', genres: [878, 9648], sub: 'Sci-Fi & Mind-bending plot twists' },
+  funny: { name: 'Funny 😄', genres: [35, 16], sub: 'Laughs & Pure Comedy · Feel good' },
+  chill: { name: 'Chill 🌙', genres: [10751, 35, 18], sub: 'Relaxed · Cozy vibes · Comfort watch' },
+  curious: { name: 'Curious 🌍', genres: [99, 36, 12], sub: 'Documentaries & World Cinema · Inspiring' }
+};
+
+function selectVibe(vibeId, r, g, b, label, subtext, btn) {
+  activeVibe = vibeId;
+  const section = document.getElementById('vibeHeroSection');
+  if (section) {
+    section.style.setProperty('--vr', r);
+    section.style.setProperty('--vg', g);
+    section.style.setProperty('--vb', b);
+  }
+  document.getElementById('activeVibeWord').textContent = label;
+  document.getElementById('activeVibeSub').textContent = subtext;
+
+  document.querySelectorAll('.vibe-grid .vb').forEach(el => el.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  showToast(`Vibe switched to ${label}`, '🎭');
+  loadPopular();
+}
+
+function calculateVibeMatchScore(movie) {
+  if (!movie) return 85;
+  const targetGenres = VIBE_PROFILES[activeVibe]?.genres || [28];
+  const itemGenres = movie.genre_ids || movie.genres?.map(g => g.id) || [];
+  let matchCount = 0;
+  targetGenres.forEach(g => { if (itemGenres.includes(g)) matchCount++; });
+  const voteScore = movie.vote_average ? movie.vote_average * 8 : 70;
+  return Math.min(99, Math.max(65, Math.round(voteScore + (matchCount * 12))));
+}
+
+// ---- THE DECIDER (SWIPE DECISION ENGINE) ----
+function setDeciderMode(mode) {
+  deciderMode = mode;
+  document.getElementById('deciderModeMovies').classList.toggle('active', mode === 'movie');
+  document.getElementById('deciderModeTV').classList.toggle('active', mode === 'tv');
+}
+
+async function startDeciderSession() {
+  deciderSwipes = { loved: [], pass: [], unseen: [] };
+  deciderIdx = 0;
+  const container = document.getElementById('deciderStackContainer');
+  container.innerHTML = '<div style="color:var(--muted);font-weight:700;">Loading Decider Deck...</div>';
+
+  try {
+    const endpoint = deciderMode === 'movie' ? '/trending/movie/week' : '/trending/tv/week';
+    const data = await api(endpoint);
+    deciderStack = (data.results || []).slice(0, 10);
+    if (deciderStack.length > 0) {
+      renderDeciderCard();
+    } else {
+      container.innerHTML = '<div style="color:var(--muted);">No cards available right now.</div>';
+    }
+  } catch (e) {
+    container.innerHTML = '<div style="color:var(--muted);">Failed to load deck. Try again.</div>';
+  }
+}
+
+function renderDeciderCard() {
+  const container = document.getElementById('deciderStackContainer');
+  if (deciderIdx >= deciderStack.length) {
+    renderDeciderResults();
+    return;
+  }
+
+  const m = deciderStack[deciderIdx];
+  const title = m.title || m.name || 'Unknown';
+  const poster = m.poster_path ? IMG + 'w342' + m.poster_path : '';
+
+  container.innerHTML = `
+    <div class="sp-card" style="transform: rotate(0deg) scale(1); z-index: 5;">
+      <div class="decider-card-content">
+        <img class="decider-poster" src="${poster}" alt="${title}" onerror="this.style.background='var(--card2)'"/>
+        <div class="decider-card-title">${title}</div>
+        <div style="font-size:0.75rem;color:var(--muted);">${(m.release_date||m.first_air_date||'').slice(0,4)} • ★ ${m.vote_average?.toFixed(1)||'7.5'}</div>
+        <div class="decider-actions">
+          <button class="decider-act-btn" onclick="handleDeciderAction('pass')" title="Not for me">👎</button>
+          <button class="decider-act-btn" onclick="handleDeciderAction('unseen')" title="Haven't seen">👁</button>
+          <button class="decider-act-btn" onclick="handleDeciderAction('loved')" title="Loved it">❤️</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function handleDeciderAction(action) {
+  const m = deciderStack[deciderIdx];
+  if (m) deciderSwipes[action].push(m);
+  deciderIdx++;
+  renderDeciderCard();
+}
+
+function renderDeciderResults() {
+  const container = document.getElementById('deciderStackContainer');
+  const lovedCount = deciderSwipes.loved.length;
+  container.innerHTML = `
+    <div class="sp-card" style="width:100%;height:100%;padding:24px;text-align:center;display:flex;flex-direction:column;justify-content:center;">
+      <div style="font-size:2.5rem;margin-bottom:8px;">✨ 🎯</div>
+      <div style="font-family:var(--font-heading);font-weight:900;font-size:1.3rem;color:var(--accent);margin-bottom:6px;">Your Pick is Ready!</div>
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">Based on your ${lovedCount} loved picks, here is your top match for tonight:</div>
+      ${deciderSwipes.loved[0] ? `
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.06);padding:10px;border-radius:12px;text-align:left;cursor:pointer;margin-bottom:14px;" onclick="openMovieTray(deciderSwipes.loved[0])">
+          <img src="${IMG+'w185'+deciderSwipes.loved[0].poster_path}" style="width:45px;height:65px;border-radius:6px;object-fit:cover;"/>
+          <div>
+            <div style="font-weight:800;font-size:0.9rem;">${deciderSwipes.loved[0].title||deciderSwipes.loved[0].name}</div>
+            <div style="font-size:0.75rem;color:var(--accent);">★ 98% Vibe Match</div>
+          </div>
+        </div>
+      ` : `<div style="font-size:0.85rem;color:var(--muted);">You skipped all titles!</div>`}
+      <button class="btn-sm accent" onclick="startDeciderSession()">Try Decider Again ↺</button>
+    </div>`;
+}
+
+// ---- POST-BINGE RECOVERY ("BECAUSE YOU WATCHED...") ----
+function handleBywSearch(query) {
+  const spinner = document.getElementById('bywSpinner');
+  const dropdown = document.getElementById('bywDropdown');
+  if (bywSearchTimeout) clearTimeout(bywSearchTimeout);
+
+  if (!query.trim()) {
+    dropdown.style.display = 'none';
+    if (spinner) spinner.style.display = 'none';
+    return;
+  }
+
+  if (spinner) spinner.style.display = 'inline-block';
+
+  bywSearchTimeout = setTimeout(async () => {
+    try {
+      const data = await api(`/search/multi?query=${encodeURIComponent(query)}`);
+      const results = (data.results || []).filter(x => x.media_type === 'movie' || x.media_type === 'tv').slice(0, 5);
+      renderBywSuggestions(results);
+    } catch (e) {
+      dropdown.style.display = 'none';
+    } finally {
+      if (spinner) spinner.style.display = 'none';
+    }
+  }, 300);
+}
+
+function renderBywSuggestions(items) {
+  const dropdown = document.getElementById('bywDropdown');
+  if (!items.length) {
+    dropdown.style.display = 'none';
+    return;
+  }
+  dropdown.innerHTML = items.map(m => {
+    const title = m.title || m.name || 'Unknown';
+    const poster = m.poster_path ? IMG + 'w185' + m.poster_path : '';
+    const year = (m.release_date || m.first_air_date || '').slice(0, 4);
+    const type = m.media_type === 'tv' ? 'TV Series' : 'Movie';
+    return `
+      <button class="byw-suggestion" onclick='selectBywFilm(${JSON.stringify(m).replace(/'/g, "&apos;")})'>
+        <img class="byw-sug-poster" src="${poster}" alt="${title}" onerror="this.style.background='var(--card2)'"/>
+        <div class="byw-sug-info">
+          <div class="byw-sug-title">${title}</div>
+          <div class="byw-sug-meta">${type} • ${year} • ★ ${m.vote_average?.toFixed(1)||'--'}</div>
+        </div>
+      </button>`;
+  }).join('');
+  dropdown.style.display = 'block';
+}
+
+async function selectBywFilm(m) {
+  document.getElementById('bywDropdown').style.display = 'none';
+  document.getElementById('bywInput').value = m.title || m.name || '';
+  const resultHeader = document.getElementById('bywResult');
+  resultHeader.style.display = 'block';
+
+  document.getElementById('bywSourcePoster').src = m.poster_path ? IMG + 'w185' + m.poster_path : '';
+  document.getElementById('bywSourceTitle').textContent = m.title || m.name || '';
+  const year = (m.release_date || m.first_air_date || '').slice(0, 4);
+  document.getElementById('bywSourceMeta').textContent = `${m.media_type === 'tv' ? 'TV Series' : 'Film'} • ${year}`;
+
+  const grid = document.getElementById('bywGrid');
+  grid.innerHTML = '<div style="color:var(--muted);grid-column:1/-1;">Finding perfect post-binge recommendations...</div>';
+
+  try {
+    const type = m.media_type === 'tv' ? 'tv' : 'movie';
+    const recs = await api(`/${type}/${m.id}/recommendations`);
+    grid.innerHTML = '';
+    (recs.results || []).slice(0, 10).forEach(item => {
+      const card = createMovieCard(item);
+      grid.appendChild(card);
+    });
+  } catch (e) {
+    grid.innerHTML = '<div style="color:var(--muted);grid-column:1/-1;">No recommendations found. Try another search.</div>';
+  }
+}
+
+function resetBywSearch() {
+  document.getElementById('bywInput').value = '';
+  document.getElementById('bywDropdown').style.display = 'none';
+  document.getElementById('bywResult').style.display = 'none';
+}
+
+// ---- REAL-TIME WATCHING & FRIENDS FEED ----
+function initLiveWatchingFeed() {
+  const list = document.getElementById('wnSessionList');
+  if (!list) return;
+  const simulatedSessions = [
+    { name: 'Alex', avatar: '🎬', film: 'Past Lives', type: 'Movie', year: '2023', time: 'just now', id: 1075794 },
+    { name: 'Maya', avatar: '🌙', film: 'Aftersun', type: 'Movie', year: '2022', time: '4m ago', id: 804095 },
+    { name: 'Jordan', avatar: '🎭', film: 'The Intouchables', type: 'Movie', year: '2011', time: '9m ago', id: 77338 },
+    { name: 'Sam', avatar: '🍿', film: 'About Time', type: 'Movie', year: '2013', time: '16m ago', id: 194662 },
+    { name: 'Riley', avatar: '🎥', film: 'Portrait of a Lady on Fire', type: 'Movie', year: '2019', time: '22m ago', id: 601666 }
+  ];
+
+  list.innerHTML = simulatedSessions.map(s => `
+    <div class="wn-session-row" onclick="openMovieTray({id:${s.id}, title:'${s.film}', media_type:'movie'})">
+      <div class="wn-avatar">${s.avatar}</div>
+      <div class="wn-session-info">
+        <div class="wn-session-name">${s.name}</div>
+        <div class="wn-session-meta">Watching ${s.film} (${s.year}) • ${s.time}</div>
+      </div>
+      <div style="font-size:0.75rem;color:#10B981;font-weight:700;">● LIVE</div>
+    </div>`).join('');
+}
+
+function initFriendsFeed() {
+  const feed = document.getElementById('friendFeedList');
+  if (!feed) return;
+  const activities = [
+    { name: 'Alex', avatar: '🎬', action: 'added to Watch Tonight', film: 'Past Lives', year: '2023', time: '2m ago', id: 1075794 },
+    { name: 'Maya', avatar: '🌙', action: 'is watching live', film: 'Aftersun', year: '2022', time: 'LIVE', isWatching: true, id: 804095 },
+    { name: 'Jordan', avatar: '🎭', action: 'rewatching', film: 'The Intouchables', year: '2011', time: '12m ago', id: 77338 }
+  ];
+
+  feed.innerHTML = activities.map(a => `
+    <div class="ff-item ${a.isWatching ? 'ff-is-watching' : ''}">
+      <div class="ff-avatar">${a.avatar}</div>
+      <div class="ff-info">
+        <div class="ff-name">${a.name}</div>
+        <div class="ff-action">${a.isWatching ? '<span class="ff-watching-badge">● LIVE</span>' : a.action} · ${a.time}</div>
+        <div class="ff-film-title">${a.film} (${a.year})</div>
+      </div>
+      <div class="ff-right">
+        <button class="ff-watch-btn" onclick="addFeedMovieToWatchlist('${a.film}', ${a.id})">+ Watch</button>
+        <div class="ff-live-dot ${a.isWatching ? 'ff-dot-pulse' : ''}"></div>
+      </div>
+    </div>`).join('');
+}
+
+function addFeedMovieToWatchlist(title, id) {
+  toggleWatchlistItem({ id, title, media_type: 'movie' });
+  showToast(`Added "${title}" to your Watchlist!`, '📋');
+}
+
+// USER ONBOARDING MODAL
+function openUserOnboardModal() {
+  document.getElementById('userOnboardModal').style.display = 'flex';
+  const savedHandle = JSON.parse(localStorage.getItem('cs_user_handle') || '{}');
+  if (savedHandle.displayName) document.getElementById('onboardDisplayName').value = savedHandle.displayName;
+  if (savedHandle.username) document.getElementById('onboardUsername').value = savedHandle.username;
+}
+
+function closeUserOnboardModal() {
+  document.getElementById('userOnboardModal').style.display = 'none';
+}
+
+function closeUserOnboardModalIfBackdrop(e) {
+  if (e.target === document.getElementById('userOnboardModal')) closeUserOnboardModal();
+}
+
+function selectOnboardEmoji(emoji, btn) {
+  selectedOnboardEmoji = emoji;
+  document.querySelectorAll('#onboardEmojiGrid .emoji-opt').forEach(el => el.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function handleSaveUserHandle(e) {
+  e.preventDefault();
+  const name = document.getElementById('onboardDisplayName').value.trim();
+  const username = document.getElementById('onboardUsername').value.trim().toLowerCase();
+  if (!name || !username) return;
+
+  const userHandle = { displayName: name, username, emoji: selectedOnboardEmoji };
+  localStorage.setItem('cs_user_handle', JSON.stringify(userHandle));
+  showToast(`Profile handle @${username} saved!`, '👤');
+  closeUserOnboardModal();
+}
+
+// FIND FRIENDS MODAL
+function openFindFriendsModal() {
+  document.getElementById('findFriendsModal').style.display = 'flex';
+  const saved = JSON.parse(localStorage.getItem('cs_user_handle') || '{}');
+  document.getElementById('myUsernameHint').textContent = saved.username || 'guest';
+  handleSearchFriends('');
+}
+
+function closeFindFriendsModal() {
+  document.getElementById('findFriendsModal').style.display = 'none';
+}
+
+function closeFindFriendsModalIfBackdrop(e) {
+  if (e.target === document.getElementById('findFriendsModal')) closeFindFriendsModal();
+}
+
+function handleSearchFriends(query) {
+  const list = document.getElementById('friendsResultsList');
+  const sampleUsers = [
+    { name: 'Alex Rivers', handle: 'alex_cine', emoji: '🎬', isFollowing: true },
+    { name: 'Maya Lin', handle: 'maya_night', emoji: '🌙', isFollowing: false },
+    { name: 'Jordan Vance', handle: 'jordan_v', emoji: '🎭', isFollowing: false },
+    { name: 'Sam Taylor', handle: 'samtaylor', emoji: '🍿', isFollowing: true }
+  ];
+
+  const filtered = sampleUsers.filter(u => u.name.toLowerCase().includes(query.toLowerCase()) || u.handle.toLowerCase().includes(query.toLowerCase()));
+
+  list.innerHTML = filtered.map(u => `
+    <div class="follow-result-item">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="font-size:1.2rem;">${u.emoji}</div>
+        <div>
+          <div style="font-weight:700;font-size:0.85rem;">${u.name}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">@${u.handle}</div>
+        </div>
+      </div>
+      <button class="follow-btn ${u.isFollowing ? 'following' : ''}" onclick="toggleFollowUser('${u.handle}', this)">
+        ${u.isFollowing ? 'Following ✓' : '+ Follow'}
+      </button>
+    </div>`).join('');
+}
+
+function toggleFollowUser(handle, btn) {
+  const isFollowing = btn.classList.contains('following');
+  if (isFollowing) {
+    btn.classList.remove('following');
+    btn.textContent = '+ Follow';
+    showToast(`Unfollowed @${handle}`, '👥');
+  } else {
+    btn.classList.add('following');
+    btn.textContent = 'Following ✓';
+    showToast(`Now following @${handle}!`, '👥');
+  }
+}
+
+// INITIALIZATION HOOK
+document.addEventListener('DOMContentLoaded', () => {
+  initLiveWatchingFeed();
+  initFriendsFeed();
+});

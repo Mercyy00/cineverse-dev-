@@ -99,6 +99,10 @@
   </a>
   <div class="nav-tabs" id="navTabs">
     <button class="nav-tab active" onclick="scrollToSection('hero','Home')">Home</button>
+    <button class="nav-tab" onclick="scrollToSection('vibeHeroSection','Vibe Tonight')">🔥 Vibe Tonight</button>
+    <button class="nav-tab" onclick="scrollToSection('deciderSection','The Decider')">🎴 The Decider</button>
+    <button class="nav-tab" onclick="scrollToSection('postBingeSection','Post-Binge')">▶ Post-Binge</button>
+    <button class="nav-tab" onclick="scrollToSection('friendsSection','Friends')">👥 Friends</button>
     <button class="nav-tab" onclick="scrollToSection('hollywoodSection','Hollywood')">Hollywood</button>
     <button class="nav-tab" onclick="scrollToSection('bollywoodSection','Bollywood')">Bollywood</button>
     <a href="anime.html" class="nav-tab" style="text-decoration:none;display:inline-flex;align-items:center;color:var(--anime-pink);">Anime ⛩️</a>
@@ -210,6 +214,159 @@
 
 <!-- MAIN APP -->
 <div id="mainApp" style="opacity:0;transform:translateY(30px);transition:all .8s cubic-bezier(0.16,1,0.3,1);">
+
+<!-- 🎭 CINEVIBE AMBIENT HERO & MOOD SELECTOR -->
+<section class="vibe-hero" id="vibeHeroSection" style="--vr:225;--vg:130;--vb:50">
+  <div class="vibe-hero-bg"></div>
+  <div class="vibe-hero-inner">
+    <div class="vibe-kicker">What's the vibe tonight?</div>
+    <h1 class="vibe-hero-title">
+      <span>You're feeling</span>
+      <span class="vibe-word" id="activeVibeWord">Hyped 🔥</span>
+    </h1>
+    <p class="vibe-hero-sub" id="activeVibeSub">Action-packed · High energy · Mindblowing adrenaline</p>
+    <div class="vibe-grid">
+      <button class="vb active" style="--vr:225;--vg:130;--vb:50" onclick="selectVibe('hyped', 225, 130, 50, 'Hyped 🔥', 'Action-packed · High energy', this)">
+        <span class="vb-icon">🔥</span><span class="vb-name">Hyped</span>
+      </button>
+      <button class="vb" style="--vr:120;--vg:80;--vb:200" onclick="selectVibe('melancholy', 120, 80, 200, 'Melancholy 💜', 'Emotional · Deep feeling · Heartfelt', this)">
+        <span class="vb-icon">💜</span><span class="vb-name">Melancholy</span>
+      </button>
+      <button class="vb" style="--vr:180;--vg:40;--vb:40" onclick="selectVibe('terrified', 180, 40, 40, 'Terrified 😱', 'Thrills & Horror · Edge of seat', this)">
+        <span class="vb-icon">😱</span><span class="vb-name">Terrified</span>
+      </button>
+      <button class="vb" style="--vr:220;--vg:80;--vb:130" onclick="selectVibe('romantic', 220, 80, 130, 'Romantic 💕', 'Warmth & Passion · Cozy love', this)">
+        <span class="vb-icon">💕</span><span class="vb-name">Romantic</span>
+      </button>
+      <button class="vb" style="--vr:50;--vg:180;--vb:220" onclick="selectVibe('mindblown', 50, 180, 220, 'Mindblown 🌀', 'Sci-Fi & Mind-bending plot twists', this)">
+        <span class="vb-icon">🌀</span><span class="vb-name">Mindblown</span>
+      </button>
+      <button class="vb" style="--vr:255;--vg:180;--vb:0" onclick="selectVibe('funny', 255, 180, 0, 'Funny 😄', 'Laughs & Pure Comedy · Feel good', this)">
+        <span class="vb-icon">😄</span><span class="vb-name">Funny</span>
+      </button>
+      <button class="vb" style="--vr:60;--vg:180;--vb:120" onclick="selectVibe('chill', 60, 180, 120, 'Chill 🌙', 'Relaxed · Cozy vibes · Comfort watch', this)">
+        <span class="vb-icon">🌙</span><span class="vb-name">Chill</span>
+      </button>
+      <button class="vb" style="--vr:255;--vg:150;--vb:50" onclick="selectVibe('curious', 255, 150, 50, 'Curious 🌍', 'Documentaries & World Cinema · Inspiring', this)">
+        <span class="vb-icon">🌍</span><span class="vb-name">Curious</span>
+      </button>
+    </div>
+    <p class="hero-decider-nudge">Can't decide? <a href="#deciderSection" class="hero-decider-link">Let The Decider pick for you →</a></p>
+  </div>
+</section>
+
+<!-- 🎞️ INFINITE MARQUEE FILM STRIP -->
+<div class="strip">
+  <div class="strip-track" id="filmStripTrack">
+    <span class="strip-item">Oppenheimer</span>
+    <span class="strip-item">Mad Max: Fury Road</span>
+    <span class="strip-item">Top Gun: Maverick</span>
+    <span class="strip-item">Avatar: The Way of Water</span>
+    <span class="strip-item">Mission Impossible</span>
+    <span class="strip-item">John Wick: Chapter 4</span>
+    <span class="strip-item">Spider-Man: Across the Spider-Verse</span>
+    <span class="strip-item">The Batman</span>
+    <span class="strip-item">Inception</span>
+    <span class="strip-item">Interstellar</span>
+    <span class="strip-item">Dune: Part Two</span>
+    <span class="strip-item">Oppenheimer</span>
+    <span class="strip-item">Mad Max: Fury Road</span>
+    <span class="strip-item">Top Gun: Maverick</span>
+    <span class="strip-item">Avatar: The Way of Water</span>
+    <span class="strip-item">Mission Impossible</span>
+    <span class="strip-item">John Wick: Chapter 4</span>
+  </div>
+</div>
+
+<!-- 🎴 THE DECIDER (TINDER-STYLE SWIPE DECISION ENGINE) -->
+<section class="decider-section" id="deciderSection">
+  <div class="container">
+    <div class="decider-inner">
+      <div class="decider-left">
+        <div class="decider-tag">🎴 The Decider</div>
+        <h2 class="decider-title">Can't decide?<br><em>Let us match you.</em></h2>
+        <p class="decider-desc">Swipe or click through titles — ❤️ Loved it, 👎 Not for me, or 👁 Haven't seen. We'll instantly calculate what you actually want to watch tonight.</p>
+        <div class="decider-mode-picker">
+          <button class="dmp-btn active" id="deciderModeMovies" onclick="setDeciderMode('movie')">Movies</button>
+          <button class="dmp-btn" id="deciderModeTV" onclick="setDeciderMode('tv')">TV Shows</button>
+        </div>
+        <button class="btn-start" onclick="startDeciderSession()">▶ Start The Decider Deck</button>
+      </div>
+      <div class="decider-right">
+        <div class="stack-container" id="deciderStackContainer">
+          <div class="sp-card sp-card-3"><div class="sp-label">Click Start to reveal your pick</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ▶ POST-BINGE RECOVERY ("BECAUSE YOU WATCHED...") -->
+<section class="byw-section sec" id="postBingeSection">
+  <div class="container">
+    <div class="sec-header fu">
+      <div class="sec-kicker">Post-Binge Recovery</div>
+      <h2 class="sec-title">Because you watched…</h2>
+      <p class="sec-sub">Finished something good? Type it in and we'll take it from there</p>
+    </div>
+    <div class="byw-search-wrap fu" id="bywSearchWrap">
+      <div class="byw-search-field">
+        <span class="byw-search-icon">▶</span>
+        <input class="byw-input" id="bywInput" placeholder="I just finished… The Sopranos, Inception, Breaking Bad, Succession…" autocomplete="off" oninput="handleBywSearch(this.value)"/>
+        <span class="byw-spinner" id="bywSpinner" style="display:none;"></span>
+      </div>
+      <div class="byw-dropdown" id="bywDropdown"></div>
+    </div>
+    <div class="byw-result" id="bywResult" style="display:none;">
+      <div class="byw-result-header fu">
+        <div class="byw-source-card">
+          <img class="byw-source-poster" id="bywSourcePoster" src="" alt=""/>
+          <div class="byw-source-info">
+            <div class="byw-source-label">You just finished</div>
+            <div class="byw-source-title" id="bywSourceTitle">Title</div>
+            <div class="byw-source-meta" id="bywSourceMeta">Film · Year</div>
+          </div>
+        </div>
+        <button class="byw-reset-btn" onclick="resetBywSearch()">Search another ↺</button>
+      </div>
+      <div class="byw-grid popular-grid" id="bywGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 🔴 LIVE ACTIVITY ("RIGHT NOW") & 👥 SOCIAL CIRCLE ("FRIENDS TONIGHT") -->
+<section class="sec wn-section" id="friendsSection">
+  <div class="container">
+    <div class="sec-header fu">
+      <div class="sec-kicker">Real-time & Social</div>
+      <h2 class="sec-title">Right Now & Friends Tonight</h2>
+      <p class="sec-sub">See who's streaming live and what your circle is watching</p>
+    </div>
+    
+    <div class="wn-layout">
+      <!-- LIVE WATCHING PANEL -->
+      <div class="wn-panel">
+        <div class="wn-panel-header">
+          <span class="wn-live-dot"></span> Live Watching Now
+          <span class="wn-online-count" id="wnOnlineCount">24 online</span>
+        </div>
+        <div class="wn-session-list" id="wnSessionList"></div>
+      </div>
+      
+      <!-- FRIENDS TONIGHT PANEL -->
+      <div class="wn-panel">
+        <div class="wn-panel-header" style="justify-content:space-between;display:flex;align-items:center;">
+          <span>👥 Friends Activity</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sm ghost" onclick="openFindFriendsModal()">+ Find Friends</button>
+            <button class="btn-sm accent" onclick="openUserOnboardModal()">My Handle</button>
+          </div>
+        </div>
+        <div class="friend-feed" id="friendFeedList"></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- OFFLINE LIBRARY SECTION -->
 <div class="section" id="offlineSection" style="display:none;padding:30px 5% 60px;width:100%;box-sizing:border-box;">
@@ -1253,6 +1410,69 @@
       <div class="taste-step-desc" style="color:var(--accent-cyan);font-weight:800;">✨ Perfect Matches Found For Your Taste!</div>
       <div id="tasteResultsGrid" style="display:flex;flex-direction:column;gap:12px;max-height:340px;overflow-y:auto;padding-right:4px;"></div>
     </div>
+  </div>
+</div>
+
+<!-- 👤 USER ONBOARDING MODAL -->
+<div id="userOnboardModal" class="modal-backdrop" style="display:none;" onclick="closeUserOnboardModalIfBackdrop(event)">
+  <div class="modal-box onboard-box">
+    <button class="modal-close-btn" onclick="closeUserOnboardModal()">✕</button>
+    <div class="onboard-header">
+      <div class="onboard-icon">🎬</div>
+      <h2 class="onboard-title">Welcome to CineVibe Social</h2>
+      <p class="onboard-sub">Set up your handle to share your taste and join your friends' circle</p>
+    </div>
+    <form onsubmit="handleSaveUserHandle(event)" class="onboard-form">
+      <div class="onboard-field">
+        <label class="onboard-label">Pick your avatar emoji</label>
+        <div class="emoji-grid" id="onboardEmojiGrid">
+          <button type="button" class="emoji-opt active" data-emoji="🍿" onclick="selectOnboardEmoji('🍿', this)">🍿</button>
+          <button type="button" class="emoji-opt" data-emoji="⚡" onclick="selectOnboardEmoji('⚡', this)">⚡</button>
+          <button type="button" class="emoji-opt" data-emoji="⛩️" onclick="selectOnboardEmoji('⛩️', this)">⛩️</button>
+          <button type="button" class="emoji-opt" data-emoji="🦁" onclick="selectOnboardEmoji('🦁', this)">🦁</button>
+          <button type="button" class="emoji-opt" data-emoji="🚀" onclick="selectOnboardEmoji('🚀', this)">🚀</button>
+          <button type="button" class="emoji-opt" data-emoji="🎬" onclick="selectOnboardEmoji('🎬', this)">🎬</button>
+          <button type="button" class="emoji-opt" data-emoji="🌙" onclick="selectOnboardEmoji('🌙', this)">🌙</button>
+          <button type="button" class="emoji-opt" data-emoji="🎭" onclick="selectOnboardEmoji('🎭', this)">🎭</button>
+          <button type="button" class="emoji-opt" data-emoji="⭐" onclick="selectOnboardEmoji('⭐', this)">⭐</button>
+        </div>
+      </div>
+      <div class="onboard-field">
+        <label class="onboard-label">Display Name</label>
+        <input class="onboard-input" id="onboardDisplayName" placeholder="e.g. Alex" maxlength="30" required/>
+      </div>
+      <div class="onboard-field">
+        <label class="onboard-label">Username <span class="onboard-hint-inline">(used by friends to find you)</span></label>
+        <div class="onboard-input-wrap">
+          <span class="onboard-prefix">@</span>
+          <input class="onboard-input onboard-input-prefixed" id="onboardUsername" placeholder="alex_movie_buff" maxlength="20" required oninput="this.value = this.value.replace(/[^a-z0-9_]/gi,'').toLowerCase()"/>
+        </div>
+      </div>
+      <div id="onboardError" class="onboard-error" style="display:none;"></div>
+      <button type="submit" class="onboard-submit">Save Handle & Profile</button>
+    </form>
+  </div>
+</div>
+
+<!-- 👥 FIND FRIENDS MODAL -->
+<div id="findFriendsModal" class="modal-backdrop" style="display:none;" onclick="closeFindFriendsModalIfBackdrop(event)">
+  <div class="modal-box follow-box" onclick="event.stopPropagation()">
+    <div class="follow-header">
+      <div>
+        <h2 class="follow-title">Find Friends</h2>
+        <p class="follow-sub">Search by username or display name</p>
+      </div>
+      <button class="modal-close-btn" onclick="closeFindFriendsModal()">✕</button>
+    </div>
+    <div class="follow-search-wrap">
+      <svg class="follow-search-icon" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="M21 21l-4.35-4.35"></path>
+      </svg>
+      <input class="follow-search-input" id="friendsSearchInput" placeholder="Search people..." oninput="handleSearchFriends(this.value)"/>
+    </div>
+    <div class="follow-results" id="friendsResultsList"></div>
+    <p class="follow-footer-hint">Share your username `@<span id="myUsernameHint">guest</span>` with friends so they can find you!</p>
   </div>
 </div>
 
