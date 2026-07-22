@@ -986,46 +986,46 @@
   <div id="sakuraPlayerContainer"></div>
 
   <!-- Top Navigation Bar -->
-  <div class="watch-topbar" id="watchTopbar">
-    <a href="index.html" class="back-btn">← Back to Browse</a>
+  <div class="watch-topbar" id="watchTopbar" role="navigation" aria-label="Player Navigation">
+    <a href="index.html" class="back-btn" aria-label="Return to CineVerse home browse">← Back to Browse</a>
     
     <div class="watch-title-wrap">
-      <div class="watch-title" id="watchTitleBar">Loading stream…</div>
-      <span class="quality-badge">4K ULTRA HD</span>
-      <span class="anime-jp-tag" id="animePlayerBadge" style="display:none;">Anikoto MegaPlay</span>
+      <div class="watch-title" id="watchTitleBar" role="heading" aria-level="1">Loading stream…</div>
+      <span class="quality-badge" aria-label="Video Quality: 4K Ultra HD">4K ULTRA HD</span>
+      <span class="anime-jp-tag" id="animePlayerBadge" style="display:none;" aria-label="Anikoto MegaPlay Engine">Anikoto MegaPlay</span>
     </div>
 
-    <div class="watch-topbar-actions">
+    <div class="watch-topbar-actions" role="toolbar" aria-label="Player options and theme toggles">
       <!-- Anime Sub/Dub Switcher (Visible when watching Anime) -->
-      <div class="sub-dub-toggle-group" id="playerSubDubGroup" style="display:none;margin-right:8px;">
-        <button class="sub-dub-pill active" id="playerSubBtn" onclick="togglePlayerAudio('sub')">
+      <div class="sub-dub-toggle-group" id="playerSubDubGroup" style="display:none;margin-right:8px;" role="radiogroup" aria-label="Audio Stream Selection">
+        <button class="sub-dub-pill active" id="playerSubBtn" role="radio" aria-checked="true" aria-label="Japanese Subtitled Audio" onclick="togglePlayerAudio('sub')">
           🇯🇵 SUB
         </button>
-        <button class="sub-dub-pill" id="playerDubBtn" onclick="togglePlayerAudio('dub')">
+        <button class="sub-dub-pill" id="playerDubBtn" role="radio" aria-checked="false" aria-label="English Dubbed Audio" onclick="togglePlayerAudio('dub')">
           🎙️ DUB
         </button>
       </div>
 
       <!-- Theater Mode Toggle -->
-      <button class="icon-action-btn" id="theaterToggleBtn" onclick="toggleTheaterMode()" title="Toggle Theater Mode (Press T)">
+      <button class="icon-action-btn" id="theaterToggleBtn" aria-label="Toggle Theater Mode Lights" onclick="toggleTheaterMode()" title="Toggle Theater Mode (Press T)">
         💡 <span class="action-txt">Theater</span>
       </button>
 
       <!-- Keyboard Shortcuts Modal Trigger -->
-      <button class="icon-action-btn" id="shortcutsBtn" onclick="toggleShortcutsModal()" title="Keyboard Shortcuts (Press ?)">
+      <button class="icon-action-btn" id="shortcutsBtn" aria-label="Open Keyboard Shortcuts Panel" onclick="toggleShortcutsModal()" title="Keyboard Shortcuts (Press ?)">
         ⌨️ <span class="action-txt">Keys</span>
       </button>
 
       <!-- Theme & Swatch Switcher -->
-      <button class="icon-action-btn" id="watchModeToggle" onclick="toggleWatchMode()">
+      <button class="icon-action-btn" id="watchModeToggle" aria-label="Toggle Dark and Light theme" onclick="toggleWatchMode()">
         🌙 Mode
       </button>
 
-      <div class="accent-swatch-picker" style="display:flex;gap:6px;">
-        <button class="swatch-btn crimson active" data-accent="crimson" title="Crimson Theme"></button>
-        <button class="swatch-btn cyan" data-accent="cyan" title="Cyan Theme"></button>
-        <button class="swatch-btn gold" data-accent="gold" title="Gold Theme"></button>
-        <button class="swatch-btn purple" data-accent="purple" title="Purple Theme"></button>
+      <div class="accent-swatch-picker" style="display:flex;gap:6px;" role="group" aria-label="Color Palette Swatches">
+        <button class="swatch-btn crimson active" data-accent="crimson" aria-label="Crimson Red Theme Swatch" title="Crimson Theme"></button>
+        <button class="swatch-btn cyan" data-accent="cyan" aria-label="Cyber Cyan Theme Swatch" title="Cyan Theme"></button>
+        <button class="swatch-btn gold" data-accent="gold" aria-label="Gold Theme Swatch" title="Gold Theme"></button>
+        <button class="swatch-btn purple" data-accent="purple" aria-label="Purple Theme Swatch" title="Purple Theme"></button>
       </div>
     </div>
 
