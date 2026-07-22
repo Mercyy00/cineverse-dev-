@@ -2815,8 +2815,35 @@ function toggleFollowUser(handle, btn) {
   }
 }
 
+function initAnimationPerformanceObserver() {
+  const bg = document.getElementById('liquidBg');
+  const sakura = document.getElementById('sakuraContainer');
+
+  if ('IntersectionObserver' in window && bg) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = 'running';
+        } else {
+          entry.target.style.animationPlayState = 'paused';
+        }
+      });
+    }, { threshold: 0.05 });
+
+    observer.observe(bg);
+    if (sakura) observer.observe(sakura);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    const state = document.hidden ? 'paused' : 'running';
+    if (bg) bg.style.animationPlayState = state;
+    if (sakura) sakura.style.animationPlayState = state;
+  });
+}
+
 // INITIALIZATION HOOK
 document.addEventListener('DOMContentLoaded', () => {
   initLiveWatchingFeed();
   initFriendsFeed();
+  initAnimationPerformanceObserver();
 });

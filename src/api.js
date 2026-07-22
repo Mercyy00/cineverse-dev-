@@ -122,9 +122,21 @@ const CINEVERSE_ICONS = {
   menu: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>`
 };
 
+/**
+ * Responsive Image Helper for TMDB
+ */
+function getTMDBImageUrl(path, size = 'w342') {
+  if (!path) return CINEVERSE_CONFIG.POSTER_FALLBACK;
+  if (path.startsWith('http')) return path;
+  const validSizes = ['w185', 'w342', 'w500', 'w780', 'w1280', 'original'];
+  const targetSize = validSizes.includes(size) ? size : 'w342';
+  return `${CINEVERSE_CONFIG.IMG_BASE}${targetSize}${path}`;
+}
+
 // Export to window
 window.CINEVERSE_CONFIG = CINEVERSE_CONFIG;
 window.sanitizeHTML = sanitizeHTML;
 window.fetchTMDB = fetchTMDB;
 window.fetchAniListGraphQL = fetchAniListGraphQL;
+window.getTMDBImageUrl = getTMDBImageUrl;
 window.CINEVERSE_ICONS = CINEVERSE_ICONS;
