@@ -105,9 +105,11 @@ function applyMode(mode) {
   localStorage.setItem('cs_mode', mode);
 }
 
-function toggleMode() {
-  const isLight = document.body.classList.contains('light-theme');
-  applyMode(isLight ? 'dark' : 'light');
+if (typeof window.toggleMode !== 'function') {
+  window.toggleMode = function() {
+    const isLight = document.body.classList.contains('light-theme');
+    applyMode(isLight ? 'dark' : 'light');
+  };
 }
 
 /* ================================================

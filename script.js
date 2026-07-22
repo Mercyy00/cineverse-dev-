@@ -261,10 +261,17 @@ function deleteProfile(event, id) {
 }
 
 function handleSearchKey(e) {
+  if (e.key === 'Escape') {
+    if (typeof clearSearch === 'function') clearSearch();
+  }
   if (e.key === 'Enter') {
-    const query = e.target.value.trim();
-    if (query) {
-      window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+    const val = (e.target.value || '').trim();
+    if (val) {
+      if (typeof submitSearch === 'function') {
+        submitSearch(val);
+      } else {
+        window.location.href = `search.html?q=${encodeURIComponent(val)}`;
+      }
     }
   }
 }
@@ -1247,14 +1254,6 @@ function clearSearch() {
 }
 
 function closeSearch() { document.getElementById('searchDropdown').classList.remove('open'); }
-
-function handleSearchKey(e) {
-  if(e.key === 'Escape') clearSearch();
-  if(e.key === 'Enter') {
-    const val = document.getElementById('searchInput').value.trim();
-    if(val) submitSearch(val);
-  }
-}
 
 async function submitSearch(q) {
   closeSearch();

@@ -67,20 +67,22 @@ function setupClickOutsideSearch() {
 }
 
 // ─── SAKURA PETALS SYSTEM ───
-function initSakuraPetals() {
-  const container = document.getElementById('sakuraContainer');
-  if (!container || container.children.length > 0) return;
-  for (let i = 0; i < 30; i++) {
-    const petal = document.createElement('div');
-    petal.className = 'sakura-petal';
-    const size = Math.random() * 12 + 8;
-    petal.style.width = `${size}px`;
-    petal.style.height = `${size * 1.3}px`;
-    petal.style.left = `${Math.random() * 100}%`;
-    petal.style.animationDuration = `${Math.random() * 8 + 6}s`;
-    petal.style.animationDelay = `${Math.random() * 5}s`;
-    container.appendChild(petal);
-  }
+if (typeof window.initSakuraPetals !== 'function') {
+  window.initSakuraPetals = function() {
+    const container = document.getElementById('sakuraContainer');
+    if (!container || container.children.length > 0) return;
+    for (let i = 0; i < 30; i++) {
+      const petal = document.createElement('div');
+      petal.className = 'sakura-petal';
+      const size = Math.random() * 12 + 8;
+      petal.style.width = `${size}px`;
+      petal.style.height = `${size * 1.3}px`;
+      petal.style.left = `${Math.random() * 100}%`;
+      petal.style.animationDuration = `${Math.random() * 8 + 6}s`;
+      petal.style.animationDelay = `${Math.random() * 5}s`;
+      container.appendChild(petal);
+    }
+  };
 }
 
 // ─── AUDIO SUB / DUB TOGGLE ───

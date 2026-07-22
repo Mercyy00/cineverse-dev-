@@ -96,20 +96,26 @@ class CommentsEngine {
     comments.forEach(c => {
       if (c.reports > 2) return; // Hidden by moderation
 
-      const starsHtml = '★'.repeat(c.rating || 5) + '☆'.repeat(5 - (c.rating || 5));
+      const safeAuthor = escapeHTML(c.author || 'Anonymous');
+      const safeAvatar = escapeHTML(c.avatar || '🍿');
+      const safeText = escapeHTML(c.text || '');
+      const safeDate = escapeHTML(c.date || 'Just now');
+      const safeId = escapeHTML(c.id || '');
+
+      const starsHtml = '★'.repeat(Math.min(5, Math.max(1, c.rating || 5))) + '☆'.repeat(5 - Math.min(5, Math.max(1, c.rating || 5)));
       const card = document.createElement('div');
       card.className = 'review-card';
       card.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
           <div style="font-weight:800;font-size:0.85rem;display:flex;align-items:center;gap:6px;">
-            <span>${c.avatar}</span> <span>${c.author}</span>
+            <span>${safeAvatar}</span> <span>${safeAuthor}</span>
           </div>
           <div style="color:#ffb800;font-size:0.75rem;">${starsHtml}</div>
         </div>
-        <div style="font-size:0.85rem;line-height:1.6;color:var(--text);opacity:0.9;">${c.text}</div>
+        <div style="font-size:0.85rem;line-height:1.6;color:var(--text);opacity:0.9;">${safeText}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:0.72rem;color:var(--muted);">
-          <span>${c.date}</span>
-          <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.7rem;" onclick="reportComment('${c.id}')">🚩 Report</button>
+          <span>${safeDate}</span>
+          <button style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.7rem;" onclick="reportComment('${safeId}', '${this.movieId}')">🚩 Report</button>
         </div>
       `;
       container.appendChild(card);
@@ -117,6 +123,28 @@ class CommentsEngine {
   }
 }
 
-function reportComment(commentId) {
+function escapeHTML(str) {
+  if (typeof window.sanitizeHTML === 'function') return window.sanitizeHTML(str);
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function reportComment(commentId, movieId) {
+  if (!commentId) return;
+  const targetMovieId = movieId || '157336';
+  const key = `cs_comments_${targetMovieId}`;
+  const existing = JSON.parse(localStorage.getItem(key) || '[]');
+  const item = existing.find(c => c.id === commentId);
+  if (item) {
+    item.reports = (item.reports || 0) + 1;
+    localStorage.setItem(key, JSON.stringify(existing));
+  }
   if (typeof showToast === 'function') showToast('Comment reported to moderators', '🚩');
+  if (window.commentsEngineInstance && typeof window.commentsEngineInstance.render === 'function') {
+    window.commentsEngineInstance.render();
+  }
 }
